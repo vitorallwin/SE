@@ -88,6 +88,12 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None = 
             errors.append(f"fase sem faixa numérica de semanas: {phase.get('name')}")
     # A single phase's own range may be written too; any other range must be the total.
     allowed_ranges = {(low, high)} | {tuple(phase["weeks"]) for phase in phases if len(phase.get("weeks") or []) == 2}
+    if int(proposal.get("rules_version", 0) or 0) >= 11:
+        # A3: faixas de ondas opcionais declaradas (cada uma e a soma) também podem aparecer no texto.
+        waves = [tuple(w["weeks"]) for w in (proposal.get("optional_phase") or {}).get("waves", []) if len(w.get("weeks") or []) == 2]
+        allowed_ranges |= set(waves)
+        if waves:
+            allowed_ranges.add((sum(w[0] for w in waves), sum(w[1] for w in waves)))
     for text in _client_visible_texts(proposal):
         for found in week_ranges(str(text)):
             if found not in allowed_ranges:
@@ -179,10 +185,12 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None = 
         errors.extend(_validate_approval_quotes(proposal, source_text))
     if int(proposal.get("rules_version", 0) or 0) >= 10:
         errors.extend(_validate_rules_v10(proposal))
+    if int(proposal.get("rules_version", 0) or 0) >= 11:
+        errors.extend(_validate_rules_v11(proposal, source_text))
     return errors
 
 
-LATEST_RULES_VERSION = 10
+LATEST_RULES_VERSION = 11
 STATE_SCHEMA = Path(__file__).resolve().parents[1] / "skills" / "akamai-proposal-authoring" / "references" / "state.schema.json"
 
 
@@ -378,9 +386,13 @@ def _validate_rules_v6(proposal: dict[str, Any]) -> list[str]:
                 errors.append(f"evento sem data e sem pergunta pendente: {event.get('name')}")
             continue
         item = feasibility.get(event.get("name"))
+        if event.get("kind") == "freeze":
+            continue  # congelamento entra como restrição de um evento, não como evento próprio
         if not item:
             errors.append(f"evento com data conhecida sem viabilidade declarada: {event.get('name')}")
             continue
+        if _rules_version(proposal) >= 11:
+            continue  # v11: janelas, datas limite e classificação são calculadas pelo motor (feasibility.py)
         earliest, latest = phase_window(_date(item["reference_date"]), phases)
         if (item.get("phase1_end_earliest"), item.get("phase1_end_latest")) != (earliest.isoformat(), latest.isoformat()):
             errors.append(f"janela da Fase 1 declarada diverge do cálculo ({earliest:%d/%m}–{latest:%d/%m}): {event.get('name')}")
@@ -524,7 +536,7 @@ def _validate_rules_v8(proposal: dict[str, Any]) -> list[str]:
     # SLA institucional: a aplicabilidade é da instituição (whitelist) ou de uma decisão aprovada do caso.
     engagement = proposal.get("governance", {}).get("engagement_type", {}).get("value")
     applicability = proposal.get("governance", {}).get("sla_applicability") or {}
-    if engagement not in sla_applicable_engagements() and not (
+    if _rules_version(proposal) < 11 and engagement not in sla_applicable_engagements() and not (
         applicability.get("state") == "commitment" and engagement in (applicability.get("value") or [])
     ):
         errors.append(
@@ -621,7 +633,7 @@ def _client_texts_v10(proposal: dict[str, Any]) -> Iterable[tuple[str, str]]:
         yield f"traceability.{item.get('requirement_id')}", f"{item.get('requirement', '')} {item.get('solution', '')}"
     for field in ("assumptions", "restrictions", "event_readiness", "client_roles", "team_competencies", "assessment_items"):
         for text in proposal.get(field) or []:
-            yield field, str(text)
+            yield field, _readiness_text(text)
     for field, items in (proposal.get("scope") or {}).items():
         for text in items or []:
             yield f"scope.{field}", str(text)
@@ -659,15 +671,15 @@ def _validate_rules_v10(proposal: dict[str, Any]) -> list[str]:
     # Plano de evento proporcional ao escopo.
     if not recommended & TRAFFIC_PATH_PRODUCTS:
         for item in proposal.get("event_readiness", []):
-            if _HEAVY_READINESS.search(str(item)):
-                errors.append(f"plano de evento desproporcional ao escopo (nenhum produto no caminho do tráfego): {str(item)[:70]}")
+            if _HEAVY_READINESS.search(_readiness_text(item)):
+                errors.append(f"plano de evento desproporcional ao escopo (nenhum produto no caminho do tráfego): {_readiness_text(item)[:70]}")
 
     # Prazo de licença desconhecido vira data limite, não rebaixamento.
     phases = proposal.get("delivery", {}).get("phases", [])
     high = sum((phase.get("weeks") or [0, 0])[1] for phase in phases)
     events = {e.get("name"): e for e in proposal.get("critical_events", [])}
     summary = normalize_document_text(" ".join(p for s in proposal.get("sections", []) for p in s.get("paragraphs", [])))
-    for item in proposal.get("event_feasibility", []):
+    for item in proposal.get("event_feasibility", []) if _rules_version(proposal) < 11 else []:
         if not _license_lead_unknown(item.get("lead_times")) or item.get("classification") == "does_not_fit":
             continue
         event_date = (events.get(item.get("event")) or {}).get("date")
@@ -695,7 +707,74 @@ def _validate_rules_v10(proposal: dict[str, Any]) -> list[str]:
                 errors.append(f"conflito com padrão POPULOS sem decisão de governança (decision_key): {item.get('requirement_id')} {category}")
             elif entry.get("status") == "compatible" and not entry.get("reason"):
                 errors.append(f"exigência declarada compatível com padrão POPULOS sem motivo: {item.get('requirement_id')} {category}")
+            elif entry.get("status") == "client_clarification" and entry.get("clarification_question") not in proposal.get("open_questions", []):
+                errors.append(f"contradição do cliente sem pedido de esclarecimento em open_questions: {item.get('requirement_id')} {category}")
     return errors
+
+
+def _readiness_text(item: Any) -> str:
+    return str(item.get("text", "")) if isinstance(item, dict) else str(item)
+
+
+def option_refs(proposal: dict[str, Any]) -> dict[str, str]:
+    """Every committed phase, optional wave and fast track a scoped item may point to, with its client label."""
+    refs = {str(p.get("name")): str(p.get("name")) for p in proposal.get("delivery", {}).get("phases", []) if p.get("name")}
+    for wave in (proposal.get("optional_phase") or {}).get("waves", []):
+        if wave.get("id"):
+            refs[str(wave["id"])] = f"{wave.get('name', wave['id'])} (opcional)"
+    track = proposal.get("fast_track") or {}
+    if track.get("id"):
+        refs[str(track["id"])] = f"{track.get('title', track['id'])} (opcional)"
+    return refs
+
+
+def _validate_rules_v11(proposal: dict[str, Any], source_text: str | None) -> list[str]:
+    """Issues from the v10 audit: dates computed by the engine (N1, N2, A4), per-phase scope of the SLA and of
+    readiness items (A2, N3), and no date in client text that neither the source nor the engine produced."""
+    from .feasibility import compute, day_months
+
+    errors: list[str] = []
+    try:
+        date.fromisoformat(str(proposal.get("proposal_date", "")))
+    except ValueError:
+        errors.append("proposal_date ausente ou inválida (AAAA-MM-DD, a data do pedido)")
+    results = compute(proposal)
+    for result in results:
+        errors.extend(result.errors)
+
+    refs = option_refs(proposal)
+    for item in proposal.get("event_readiness", []):
+        if not isinstance(item, dict) or item.get("phase") not in refs:
+            errors.append(f"item de prontidão sem fase ou opção válida (phase ∈ {sorted(refs)}): {_readiness_text(item)[:60]}")
+
+    engagement = proposal.get("governance", {}).get("engagement_type", {}).get("value")
+    applicability = proposal.get("governance", {}).get("sla_applicability") or {}
+    if engagement not in sla_applicable_engagements():
+        scope = applicability.get("applies_to_phases") or []
+        if applicability.get("state") != "commitment":
+            errors.append(f"decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para '{engagement}')")
+        elif not scope or any(ref not in refs for ref in scope):
+            errors.append(f"sla_applicability aprovada sem as fases ou opções a que se aplica (applies_to_phases ⊆ {sorted(refs)})")
+
+    if source_text is not None:
+        allowed = day_months(source_text)
+        for result in results:
+            allowed |= {(d.day, d.month) for d in result.dates()}
+        try:
+            proposal_date = date.fromisoformat(str(proposal.get("proposal_date", "")))
+            allowed.add((proposal_date.day, proposal_date.month))
+        except ValueError:
+            pass
+        for field, text in _client_texts_v10(proposal):
+            for day, month in sorted(day_months(text) - allowed):
+                errors.append(f"data {day:02d}/{month:02d} em texto do cliente sem origem no insumo nem no cálculo do motor: {field}")
+    return errors
+
+
+def feasibility_paragraphs(proposal: dict[str, Any]) -> list[str]:
+    from .feasibility import compute, paragraph
+
+    return [paragraph(result) for result in compute(proposal)] if _rules_version(proposal) >= 11 else []
 
 
 def assert_proposal_rules(proposal: dict[str, Any]) -> None:

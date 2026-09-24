@@ -19,7 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
 from .catalog import PRODUCTS
 from .document_validation import detect_skill_leakage, find_case_residue, find_vocabulary_violations, validate_state_against_docx
 from .institutional_policy import validate_institutional_whitelist
-from .proposal_rules import FRONT_GROUPS, assert_proposal_rules
+from .proposal_rules import FRONT_GROUPS, assert_proposal_rules, feasibility_paragraphs, option_refs
 
 
 def _text(value: Any) -> str:
@@ -231,6 +231,36 @@ def _fit(draw, text: str, paths: Iterable[str], size: int, max_width: int):
     return _font(paths, 16)
 
 
+def _wrap(draw, text: str, font, max_width: int) -> list[str]:
+    lines: list[str] = []
+    for word in text.split():
+        candidate = f"{lines[-1]} {word}" if lines else word
+        if lines and draw.textbbox((0, 0), candidate, font=font)[2] <= max_width:
+            lines[-1] = candidate
+        else:
+            lines.append(word)
+    return lines
+
+
+def _draw_block(draw, text: str, paths: Iterable[str], size: int, x: int, band: tuple[int, int], fill: str) -> None:
+    """Center `text` in the box column and vertical band: wrap first (up to 3 lines), shrink only if still too big.
+
+    V1 (auditoria v10): long labels used to shrink to an illegible size and overflow the box.
+    """
+    top, bottom = band
+    for candidate in range(size, 19, -1):
+        font = _font(paths, candidate)
+        lines = _wrap(draw, text, font, 330)
+        height = candidate + 6
+        if len(lines) <= 3 and all(draw.textbbox((0, 0), line, font=font)[2] <= 330 for line in lines) and len(lines) * height <= bottom - top:
+            break
+    y = top + ((bottom - top) - len(lines) * height) / 2
+    for line in lines:
+        width = draw.textbbox((0, 0), line, font=font)[2]
+        draw.text((x + (360 - width) / 2, y), line, font=font, fill=fill)
+        y += height
+
+
 def _architecture_diagram(proposal: dict[str, Any]) -> BytesIO:
     width, height = 1800, 560
     image = Image.new("RGB", (width, height), "white")
@@ -241,12 +271,8 @@ def _architecture_diagram(proposal: dict[str, Any]) -> BytesIO:
     x_positions = [40, 480, 930, 1380]
     for index, ((title, sub), x) in enumerate(zip(boxes, x_positions)):
         draw.rounded_rectangle((x, 125, x + 360, 405), radius=24, fill="#F3F4F6", outline="#6B46C1", width=4)
-        title_font = _fit(draw, title, BOLD_FONTS, 32, 330)
-        tb = draw.textbbox((0, 0), title, font=title_font)
-        draw.text((x + (360 - (tb[2] - tb[0])) / 2, 205), title, font=title_font, fill="#1F2A5E")
-        sub_font = _fit(draw, sub, REGULAR_FONTS, 30, 330)
-        sb = draw.textbbox((0, 0), sub, font=sub_font)
-        draw.text((x + (360 - (sb[2] - sb[0])) / 2, 285), sub, font=sub_font, fill="#3F4A6B")
+        _draw_block(draw, title, BOLD_FONTS, 32, x, (140, 250), "#1F2A5E")
+        _draw_block(draw, sub, REGULAR_FONTS, 28, x, (255, 395), "#3F4A6B")
         if index < len(boxes) - 1:
             draw.line((x + 370, 265, x_positions[index + 1] - 10, 265), fill="#6B46C1", width=7)
             draw.polygon([(x_positions[index + 1] - 10, 265), (x_positions[index + 1] - 34, 251), (x_positions[index + 1] - 34, 279)], fill="#6B46C1")
@@ -322,6 +348,10 @@ def _product_names_in(text: Any) -> str:
 
 def _v10(proposal: dict[str, Any]) -> bool:
     return int(proposal.get("rules_version", 0) or 0) >= 10
+
+
+def _v11(proposal: dict[str, Any]) -> bool:
+    return int(proposal.get("rules_version", 0) or 0) >= 11
 
 
 _FRONT_SENTENCES = {
@@ -432,6 +462,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     decisions = [d for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended"]
     product_names = [_product_name(str(d.get("product_id"))) for d in decisions]
     summary = next((s.get("paragraphs", []) for s in proposal.get("sections", []) if s.get("title", "").casefold() == "resumo executivo"), [])
+    summary = list(summary) + feasibility_paragraphs(proposal)  # v11: datas e viabilidade escritas pelo motor
     month = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"][datetime.now().month - 1]
 
     _replace_paragraph(p[11], f"{opportunity} · {client} · {proposal.get('code', '')}")
@@ -676,7 +707,12 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     _replace_paragraph(p[146], _doc_text(proposal, "warranty_intro", "A garantia técnica cobre a correção de defeitos diretamente atribuíveis aos serviços executados pela POPULOS. O prazo consta do quadro Garantia e vigência."))
     _replace_paragraph(p[148], _slot(proposal, "closing", "O projeto encerra-se após o aceite e a estabilização assistida. Operação continuada, suporte gerenciado, NOC 24x7 e equipe residente exigem contratação específica."))
     _replace_paragraph(p[149], "Condições de atendimento")
-    _replace_paragraph(p[150], "Durante a execução e a garantia, a POPULOS adotará o padrão institucional de atendimento abaixo para falhas atribuíveis aos serviços executados.")
+    sla_scope = (proposal.get("governance", {}).get("sla_applicability") or {}).get("applies_to_phases") or []
+    if sla_scope and _v11(proposal):
+        labels = ", ".join(option_refs(proposal).get(ref, ref) for ref in sla_scope)
+        _replace_paragraph(p[150], f"O padrão institucional de atendimento abaixo aplica-se somente a: {labels}, para falhas atribuíveis aos serviços executados. Nas demais fases, não há compromisso de tempo de atendimento.")
+    else:
+        _replace_paragraph(p[150], "Durante a execução e a garantia, a POPULOS adotará o padrão institucional de atendimento abaixo para falhas atribuíveis aos serviços executados.")
 
     responsibilities = proposal.get("delivery", {}).get("responsibilities", [])
     p[154].paragraph_format.keep_with_next = True
@@ -728,7 +764,10 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
         readiness_intro = _doc_text(proposal, "readiness_intro", "")
         if readiness_intro:
             body_like(trace_heading, readiness_intro)
+        refs = option_refs(proposal)
         for item in readiness:
+            if isinstance(item, dict):  # v11: todo item declara a fase ou opção a que pertence
+                item = f"{refs.get(item.get('phase'), item.get('phase'))}: {item.get('text', '')}"
             _insert_paragraph_like(trace_heading, p[110], item)
         options_anchor = readiness_heading
     if optional_decisions:

@@ -107,7 +107,7 @@ class SchemaFirstTests(unittest.TestCase):
 
     def test_schema_ships_with_the_skill(self) -> None:
         schema = ROOT / "skills" / "akamai-proposal-authoring" / "references" / "state.schema.json"
-        self.assertEqual(json.loads(schema.read_text(encoding="utf-8"))["$id"], "populos/proposal-state/v10")
+        self.assertEqual(json.loads(schema.read_text(encoding="utf-8"))["$id"], "populos/proposal-state/v11")
 
 
 class ProportionalEventPlanTests(unittest.TestCase):
@@ -115,34 +115,14 @@ class ProportionalEventPlanTests(unittest.TestCase):
 
     def test_heavy_readiness_without_traffic_path_product_blocks(self) -> None:
         proposal = vertice_latest()
-        proposal["event_readiness"].append("Sala de crise no início das matrículas;")
+        proposal["event_readiness"].append({"text": "Sala de crise no início das matrículas;", "phase": proposal["delivery"]["phases"][-1]["name"]})
         self.assertIn("plano de evento desproporcional ao escopo", errors_of(proposal))
 
     def test_heavy_readiness_is_fine_with_traffic_path_product(self) -> None:
         proposal = vertice_latest()
-        proposal["event_readiness"].append("Sala de crise no início das matrículas;")
+        proposal["event_readiness"].append({"text": "Sala de crise no início das matrículas;", "phase": proposal["delivery"]["phases"][-1]["name"]})
         next(d for d in proposal["solution_decisions"] if d["product_id"] == "app_api_protector")["status"] = "recommended"
         self.assertNotIn("plano de evento desproporcional", errors_of(proposal))
-
-
-class LicenseDeadlineTests(unittest.TestCase):
-    """Auditoria v8.3, item 6: prazo desconhecido vira data limite."""
-
-    def test_unknown_lead_time_can_fit_with_the_right_deadline(self) -> None:
-        proposal = vertice_latest()
-        item = proposal["event_feasibility"][0]
-        self.assertEqual((item["classification"], item["license_deadline"]), ("fits", "2026-12-14"))
-        self.assertIsNone(item["lead_times"]["licenciamento"]["weeks"])
-        self.assertEqual(validate_proposal_rules(proposal, vertice_source()), [])
-
-    def test_wrong_or_undeclared_deadline_blocks(self) -> None:
-        proposal = vertice_latest()
-        proposal["event_feasibility"][0]["license_deadline"] = "2026-12-31"
-        self.assertIn("sem data limite (license_deadline = 2026-12-14)", errors_of(proposal))
-        proposal = vertice_latest()
-        summary = next(s for s in proposal["sections"] if s["title"].casefold() == "resumo executivo")
-        summary["paragraphs"] = [p for p in summary["paragraphs"] if "14/12" not in p]
-        self.assertIn("sumário não declara a data limite das licenças (14/12)", errors_of(proposal))
 
 
 class StandardConflictTests(unittest.TestCase):

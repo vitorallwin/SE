@@ -156,6 +156,8 @@ class SlaApplicabilityTests(unittest.TestCase):
         approved = deepcopy(proposal["governance"]["warranty"])
         approved.update({"value": ["phased"], "approved_value": ["phased"], "source": "decisão do caso sobre o SLA"})
         proposal["governance"]["sla_applicability"] = approved
+        self.assertIn("sla_applicability aprovada sem as fases ou opções a que se aplica", errors_of(proposal))  # v11
+        approved["applies_to_phases"] = [proposal["delivery"]["phases"][-1]["name"]]
         self.assertNotIn("sla_applicability", errors_of(proposal))
 
 

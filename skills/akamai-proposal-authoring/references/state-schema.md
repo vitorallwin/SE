@@ -1,4 +1,4 @@
-# Proposal state schema (rules v10)
+# Proposal state schema (rules v11)
 
 The author produces one JSON object. The validator (`scripts/validate_attempt.py`) checks the rules; the compositor maps the fields below into fixed slots of the approved template. Text fields are client-facing Portuguese unless noted. Values in angle brackets are placeholders, not examples to copy.
 
@@ -6,7 +6,8 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
 
 | Field | Type | Notes |
 |---|---|---|
-| `rules_version` | int | Must be `10`. |
+| `rules_version` | int | Must be `11`. |
+| `proposal_date` | YYYY-MM-DD | The proposal date given in `request.json`. |
 | `data_mode` | `"test"` or `"production"` | Marks where the data comes from. It never relaxes a check. |
 | `client_name`, `opportunity`, `code`, `opportunity_id` | string | `code` names the output file. |
 
@@ -29,7 +30,7 @@ Both fields are required and are checked before any other rule.
   - A decision is `commitment` only when the source material contains an explicit approval: who, when, and where it is recorded (`approval_record`). Otherwise keep `populos_internal_decision` with `value: null`; emission then blocks, which is the correct outcome.
   - `approved_value` equals `value`. `engagement_ref` equals the current `engagement_type` value.
   - `approval_quote` is a verbatim excerpt of the source material that records the approval: it names the decision, the approver and the approved value (for a table, the whole row). The validator looks for it in the source material; an approval that is not written there does not exist.
-  - An institutional standard is not approved per case. Only `sla` is an institutional decision; every other decision belongs to the case, even when it repeats an existing contract. For `sla`: use `{ "state": "commitment", "basis": "populos_standard", "value", "source", "template_version": <current template version> }`, without approver fields.
+  - An institutional standard is not approved per case. Only `sla` is an institutional decision; every other decision belongs to the case, even when it repeats an existing contract. For `sla`: use `{ "state": "commitment", "basis": "populos_standard", "value", "source", "template_version": <current template version> }`, without approver fields. The values of the institutional SLA table are in `institutional-standards.json`; compare client demands with them before classifying a conflict.
   - The engine decides where the institutional SLA table applies. For an engagement type outside that list, the case needs an approved decision `sla_applicability` (a commitment whose `value` lists the engagement types). Without it, emission blocks as an internal decision; do not create it without an explicit approval in the source material.
 
 ## Discovery and provenance
@@ -39,7 +40,7 @@ Both fields are required and are checked before any other rule.
 - `source_coverage`: every relevant statement of the source material: `{ "ref", "statement", "status": "coberto" | "pendente" | "descartado", "targets": [REQ ids or "sumário", "escopo", "exclusões", "premissas", "dimensionamento", "engajamento"], "reason" (when discarded) }`.
 - `client_numbers`: every number the client said: `{ "quote", "ref", "destination": "meta" | "contexto_de_dor" | "dimensionamento" | "descartado_com_motivo", "summary_marker" (pain context: a phrase that appears in the executive summary), "reason" }`.
 - `open_questions`: list of strings.
-- `standard_conflicts`: `[{ "category": "sla" | "warranty" | "qualification" | "deadline", "requirement_id", "status": "conflict" | "compatible", "decision_key" (conflict), "reason" (compatible) }]`. Every client requirement about service levels, warranty, qualification or certification, or delivery deadlines is classified here. A `conflict` with a POPULOS standard points to a governance decision (`decision_key`), which stays `populos_internal_decision` unless the source material approves it. The code only detects these four categories; recognizing any other conflict with a POPULOS standard remains the author's responsibility.
+- `standard_conflicts`: `[{ "category": "sla" | "warranty" | "qualification" | "deadline", "requirement_id", "status": "conflict" | "compatible" | "client_clarification", "decision_key" (conflict), "reason" (compatible), "clarification_question" (client_clarification) }]`. When the client's own documents contradict each other (e.g. two different deadlines in the same TR), the status is `client_clarification`: it is not a POPULOS decision, and the clarification question also goes to `open_questions`. Every client requirement about service levels, warranty, qualification or certification, or delivery deadlines is classified here. A `conflict` with a POPULOS standard points to a governance decision (`decision_key`), which stays `populos_internal_decision` unless the source material approves it. The code only detects these four categories; recognizing any other conflict with a POPULOS standard remains the author's responsibility.
 
 ## Solution
 
@@ -58,16 +59,21 @@ Both fields are required and are checked before any other rule.
 - `scope`: `{ "included": [...], "deliverables": [...], "excluded": [...] }`.
 - `delivery.phases`: committed phases, at most 4: `{ "name", "kind", "weeks": [min, max], "duration", "objective", "dependency", "outputs": [...] }`. A week range written in client text must equal the sum of these phases, or the range of one phase.
 - `delivery.responsibilities`: client-side parties, as `[{ "party", "responsibility" }]`; `populos_roles`: optional list of `[role, responsibility, commitment]` rows (table capacity 12 rows in total).
-- `optional_phase` (optional): `{ "title", "intro", "conditions": [...], "waves": [{ "id", "name", "components": [product ids], "goes_to_production": bool, "activities", "acceptance", "milestone" }] }`. Each recommended product appears in exactly one wave.
+- `optional_phase` (optional): `{ "title", "intro", "conditions": [...], "waves": [{ "id", "name", "components": [product ids], "weeks": [min, max], "goes_to_production": bool, "activities", "acceptance", "milestone" }] }`. A wave's range (and the sum of the waves) may be written in client text exactly as approved. Each recommended product appears in exactly one wave.
 - `fast_track` (optional): `{ "id", "title", "components", "production_change": bool, "controls": ["janela", "reversão", "aprovação"], "deadline_reference": "freeze", "first_question", "paragraphs", "items", "schedule_row", "lead_times": { "licenciamento": { "weeks", "source" } } }`. When the license lead time is unknown, use `{ "weeks": null, "pending_question": <question> }` instead of estimating.
 - `assumptions` (up to 8), `restrictions` (exactly 4, required), `risks`: `[{ "risk", "impact", "mitigation" }]`.
 - `acceptance_criteria`: `[{ "requirement_id", "phase": "committed" | "optional", "option_id" (for optional: the id of the wave or fast track), "criterion" }]`. Every option that touches production has at least one criterion of its own.
 
-## Critical events
+## Critical events and dates
 
-- `event_readiness`: list of strings, proportional to the scope. Heavy items (war room, load test, capacity review) only when a recommended product sits in the application traffic path; a DNS-only project uses change window, rollback and monitoring.
-- `critical_events`: `[{ "name", "date" (YYYY-MM-DD or null), "source", "pending_question" (when date is null) }]`.
-- `event_feasibility`: for each event with a date: `{ "event", "reference_date", "phase1_end_earliest", "phase1_end_latest", "classification": "fits" | "partially_fits" | "does_not_fit", "path", "reason", "summary_marker", "lead_times": { "licenciamento": { "weeks", "source" } or { "weeks": null, "pending_question" } } }`. With an unknown license lead time, do not downgrade the classification: state `license_deadline` (YYYY-MM-DD), the date by which licenses must be active, equal to the event date minus the maximum committed weeks, and write that date (DD/MM) in the executive summary. The end dates are the reference date plus the sum of committed phase weeks, and the summary states them.
+Do not compute dates. You declare the inputs; the engine computes every window, deadline and classification and writes the feasibility paragraph into the executive summary.
+
+- `critical_events`: `[{ "name", "kind": "event" | "freeze", "date" (YYYY-MM-DD or null), "source", "pending_question" (when date is null) }]`. A change freeze is its own entry with `kind: "freeze"`.
+- `event_feasibility`: for each dated event: `{ "event", "freeze": <freeze name or null>, "path": [ordered steps before the event], "lead_times": { "<key>": { "label", "weeks": [min, max] or null, "source", "pending_question" } } }`. Each step of `path` is a committed phase name, an optional wave id or a key of `lead_times` (for example `licenciamento`). Every declared lead time is on the path. An unknown lead time has `weeks: null` and a pending question; the engine turns it into the date by which that step must be done.
+- Stabilization before an event exists only as an approved case decision `governance.stabilization_buffer` (e.g. value "5 dias úteis"). There is no default: without it, the engine states that no buffer was considered.
+- `event_readiness`: `[{ "text", "phase" }]`, where `phase` is a committed phase name, an optional wave id or the fast-track id. Proportional to the scope: war room, load test and capacity review only when a recommended product sits in the application traffic path.
+- Any date written in client text must appear in the source material or come from the engine's calculation; a date computed by hand blocks.
+- For an engagement type outside the institutional SLA scope, the approved `sla_applicability` lists the phases or options it covers in `applies_to_phases`; the document then states that the table applies only to them.
 
 ## Client text
 

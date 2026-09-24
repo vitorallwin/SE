@@ -53,8 +53,9 @@ def _client_visible_items(proposal: dict[str, Any]) -> Iterable[tuple[str, str]]
         if str(value).strip():
             yield "acceptance_criteria", str(value)
     for item in proposal.get("event_readiness", []):
-        if str(item).strip():
-            yield "event_readiness", str(item)
+        text = item.get("text", "") if isinstance(item, dict) else item
+        if str(text).strip():
+            yield "event_readiness", str(text)
     for wave in (proposal.get("optional_phase") or {}).get("waves", []):
         for field in ("name", "activities", "acceptance"):
             if str(wave.get(field, "")).strip():

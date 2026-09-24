@@ -5,7 +5,7 @@ Você é o autor da proposta técnica. Transforme o material do cliente em um es
 ## Entradas
 
 - `insumo.md`: o material do cliente, já extraído em texto. É a única fonte sobre o cliente.
-- A skill de autoria: `skills/akamai-proposal-authoring/SKILL.md` e os arquivos em `skills/akamai-proposal-authoring/references/` (`global-rules.md`, `solution-gating.md`, `section-model.md`, `state-schema.md`, `state.schema.json`, `lexicon.json`).
+- A skill de autoria: `skills/akamai-proposal-authoring/SKILL.md` e os arquivos em `skills/akamai-proposal-authoring/references/` (`global-rules.md`, `solution-gating.md`, `section-model.md`, `state-schema.md`, `state.schema.json`, `institutional-standards.json`, `lexicon.json`).
 - O catálogo de produtos permitidos: `catalog.json` (ids, nomes e capacidades).
 - O pedido (`request.json`): data da proposta, modo dos dados e versão vigente do template.
 
@@ -13,7 +13,7 @@ Não consulte nenhum arquivo fora desta pasta de trabalho.
 
 ## Saída
 
-Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 10` e o `data_mode` informado no pedido.
+Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 11` e o `data_mode` informado no pedido.
 
 Antes de escrever a proposta, avalie o insumo (`input_assessment`) e o encaixe no catálogo (`catalog_fit`). Quando o insumo não basta ou o pedido está fora do catálogo, o resultado correto é o bloqueio, com as perguntas ou a lacuna declaradas, e não uma proposta.
 

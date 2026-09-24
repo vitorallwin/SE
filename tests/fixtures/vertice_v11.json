@@ -1,5 +1,5 @@
 {
- "rules_version": 10,
+ "rules_version": 11,
  "data_mode": "test",
  "client_name": "Vértice Educação",
  "opportunity": "Migração de DNS autoritativo para Edge DNS",
@@ -294,7 +294,8 @@
   "Quem na Vértice Educação detém o acesso ao registrador para trocar os servidores de nomes e publicar os registros DS?",
   "A zona portalaluno.vertice.edu.br é delegada a partir de vertice.edu.br ou gerenciada no mesmo painel do registrador?",
   "É possível exportar o arquivo completo de cada zona do painel atual?",
-  "Quais janelas de mudança estão aprovadas para a troca de delegação?"
+  "Quais janelas de mudança estão aprovadas para a troca de delegação?",
+  "Existe congelamento de mudanças no calendário acadêmico antes das matrículas? Se sim, a partir de quando?"
  ],
  "solution_decisions": [
   {
@@ -382,9 +383,8 @@
    "title": "Resumo executivo",
    "paragraphs": [
     "A Vértice Educação mantém hoje o DNS dos seus domínios no painel do registrador e registrou dois episódios em 2026 em que o painel ficou fora do ar e não foi possível alterar registros. Esta proposta migra as 4 zonas (vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br), com cerca de 380 registros, para o Edge DNS da Akamai, com DNSSEC e sem interrupção da resolução de nomes do portal do aluno.",
-    "A implantação está estimada entre 3 e 4 semanas a partir da reunião de início. Se o início ocorresse na data desta proposta (24/09/2026), o término ficaria entre 15/10/2026 e 22/10/2026, com margem ampla até o início das matrículas em 11/01/2027. A viabilidade frente às matrículas fica condicionada ao prazo de licenciamento, ainda não informado: as licenças são adquiridas diretamente pela Vértice Educação junto à Akamai, e a data real de início depende dessa ativação e de eventual congelamento de mudanças antes das matrículas.",
-    "A troca de delegação será feita em janela aprovada, com os registros já publicados e conferidos na Akamai, TTLs reduzidos previamente e plano de reversão para os servidores atuais. A assinatura DNSSEC é ativada somente após a estabilização da nova delegação.",
-    "Para concluir antes das matrículas de 11/01/2027, as licenças Edge DNS precisam estar ativas até 14/12/2026."
+    "A implantação está estimada entre 3 e 4 semanas a partir da reunião de início. A viabilidade frente às matrículas de 11/01/2027 depende do prazo de ativação das licenças, adquiridas diretamente pela Vértice Educação junto à Akamai, e de eventual congelamento de mudanças antes das matrículas.",
+    "A troca de delegação será feita em janela aprovada, com os registros já publicados e conferidos na Akamai, TTLs reduzidos previamente e plano de reversão para os servidores atuais. A assinatura DNSSEC é ativada somente após a estabilização da nova delegação."
    ]
   }
  ],
@@ -563,35 +563,55 @@
   }
  ],
  "event_readiness": [
-  "Concluir a troca de delegação e a ativação do DNSSEC com antecedência ao início das matrículas;",
-  "Respeitar eventual congelamento de mudanças definido pela Vértice Educação antes das matrículas;",
-  "Manter procedimento de reversão documentado para a delegação e para o DNSSEC;",
-  "Monitorar a resolução dos nomes do portal do aluno e do vestibular durante a estabilização assistida."
+  {
+   "text": "Concluir a troca de delegação e a ativação do DNSSEC com antecedência ao início das matrículas;",
+   "phase": "Fase 2 — Implantação e troca de delegação"
+  },
+  {
+   "text": "Respeitar eventual congelamento de mudanças definido pela Vértice Educação antes das matrículas;",
+   "phase": "Fase 2 — Implantação e troca de delegação"
+  },
+  {
+   "text": "Manter procedimento de reversão documentado para a delegação e para o DNSSEC;",
+   "phase": "Fase 3 — DNSSEC, estabilização e aceite"
+  },
+  {
+   "text": "Monitorar a resolução dos nomes do portal do aluno e do vestibular durante a estabilização assistida.",
+   "phase": "Fase 3 — DNSSEC, estabilização e aceite"
+  }
  ],
  "critical_events": [
   {
    "name": "Início das matrículas",
    "date": "2027-01-11",
-   "source": "E-mail de 22/09/2026, parágrafo 4"
+   "source": "E-mail de 22/09/2026, parágrafo 4",
+   "kind": "event"
+  },
+  {
+   "name": "Congelamento de mudanças do calendário acadêmico",
+   "kind": "freeze",
+   "date": null,
+   "source": "Não informado no e-mail de 22/09/2026",
+   "pending_question": "Existe congelamento de mudanças no calendário acadêmico antes das matrículas? Se sim, a partir de quando?"
   }
  ],
  "event_feasibility": [
   {
    "event": "Início das matrículas",
-   "reference_date": "2026-09-24",
-   "phase1_end_earliest": "2026-10-15",
-   "phase1_end_latest": "2026-10-22",
-   "classification": "fits",
-   "path": "Implantação completa de 3 a 4 semanas a partir do início",
-   "reason": "O esforço de serviços cabe com ampla margem antes de 11/01/2027, mas o prazo de licenciamento na compra direta junto à Akamai e eventual congelamento de mudanças são desconhecidos, o que impede classificar como cabe.",
-   "summary_marker": "condicionada ao prazo de licenciamento",
+   "freeze": "Congelamento de mudanças do calendário acadêmico",
+   "path": [
+    "licenciamento",
+    "Fase 1 — Levantamento e desenho",
+    "Fase 2 — Implantação e troca de delegação",
+    "Fase 3 — DNSSEC, estabilização e aceite"
+   ],
    "lead_times": {
     "licenciamento": {
+     "label": "Ativação das licenças Edge DNS",
      "weeks": null,
      "pending_question": "Qual o prazo de fornecimento e ativação das licenças Edge DNS na compra direta da Vértice Educação junto à Akamai?"
     }
-   },
-   "license_deadline": "2026-12-14"
+   }
   }
  ],
  "document_text": {
@@ -641,5 +661,6 @@
  "team_competencies": [
   "DNS autoritativo, DNSSEC e migração de zonas;",
   "Gestão de projeto, testes e documentação técnica."
- ]
+ ],
+ "proposal_date": "2026-09-24"
 }

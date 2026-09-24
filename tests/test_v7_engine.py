@@ -19,7 +19,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 def vertice_latest() -> dict:
     """A real authoring output (diverse-case round, case 01), upgraded to the latest contract."""
-    return json.loads((FIXTURES / "vertice_v10.json").read_text(encoding="utf-8"))
+    return json.loads((FIXTURES / "vertice_v11.json").read_text(encoding="utf-8"))
 
 
 def vertice_source() -> str:
@@ -173,7 +173,7 @@ class CaseRunnerTests(unittest.TestCase):
     def test_iteration_limit_is_enforced(self) -> None:
         with mock.patch.object(case_runner, "engine_config", return_value={"max_iterations": 2}):
             self.assertEqual(self._submit("{").get("status"), "violations")
-            self.assertEqual(self._submit({"rules_version": 10}).get("status"), "violations")
+            self.assertEqual(self._submit({"rules_version": 11}).get("status"), "violations")
             self.assertEqual(self._submit(vertice_latest())["status"], "limit_reached")
         log = json.loads((self.run_dir / "attempts.json").read_text(encoding="utf-8"))
         self.assertEqual([a["attempt"] for a in log["attempts"]], [1, 2])
@@ -181,8 +181,8 @@ class CaseRunnerTests(unittest.TestCase):
 
     def test_malformed_and_old_states_come_back_as_feedback(self) -> None:
         self.assertIn("não é um objeto JSON", validate_state([])[0])
-        self.assertIn("rules_version deve ser 10", validate_state({"rules_version": 9})[0])
-        self.assertEqual(validate_state({"rules_version": 10, "input_assessment": "x"}),
+        self.assertIn("rules_version deve ser 11", validate_state({"rules_version": 10})[0])
+        self.assertEqual(validate_state({"rules_version": 11, "input_assessment": "x"}),
                          ["formato (input_assessment): 'x' is not of type 'object'"])
 
     def test_source_extraction_reads_text_and_docx(self) -> None:

@@ -9,6 +9,7 @@ from typing import Any
 
 from .neutral_template_builder import build_neutral_template_docx
 from .proposal_rules import LATEST_RULES_VERSION, approved_template_version, validate_proposal_rules
+from .violation_codes import code_of
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -68,7 +69,8 @@ def record_attempt(run_dir: Path, state_path: Path) -> dict[str, Any]:
         errors = validate_state(state, source.read_text(encoding="utf-8") if source.exists() else None)
         if not source.exists():
             errors.append("insumo.md ausente na pasta da execução: aprovações não podem ser conferidas")
-    entry = {"attempt": number, "at": datetime.now(timezone.utc).isoformat(), "errors_count": len(errors), "errors": errors}
+    entry = {"attempt": number, "at": datetime.now(timezone.utc).isoformat(), "errors_count": len(errors), "errors": errors,
+             "codes": sorted({code_of(error) for error in errors})}
     if not errors and state is not None:
         entry["composition"] = compose(state, run_dir / "final")
     log["attempts"].append(entry)
@@ -148,7 +150,7 @@ ENGINE_FILES = [
     "scripts/author_with_gemini.py",
     *(f"sales_engineer/{name}.py" for name in (
         "__init__", "ai", "case_runner", "catalog", "document_validation",
-        "institutional_policy", "neutral_template_builder", "proposal_rules",
+        "feasibility", "institutional_policy", "neutral_template_builder", "proposal_rules", "violation_codes",
     )),
 ]
 

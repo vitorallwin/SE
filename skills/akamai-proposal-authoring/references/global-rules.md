@@ -42,7 +42,7 @@ The global state separates client facts, requirements, decisions, scope, commerc
 - An effort estimate has a technical owner (architect, engineering, delivery, or technical presales).
 - Provenance records who said it: client, vendor, or input document. A requirement supported only by the vendor is a hypothesis to validate.
 - Committed deliverables and acceptance criteria never require an action that the scope boundary forbids.
-- For a critical event with a known date, feasibility is computed in the proposal from the proposal date, including the license lead time, and stated in the executive summary. An unknown lead time is an open question, never an estimate, and rules out a `fits` classification. A dateless event becomes an open question.
+- For a critical event with a known date, feasibility is computed by the engine from the declared path (phases, optional waves and lead times, including licensing), the change freeze and any approved stabilization buffer. An unknown lead time is an open question, never an estimate; the engine states the date by which that step must be done instead of downgrading the classification. A dateless event or freeze becomes an open question.
 - Every option that touches production (a wave, a fast track) declares it, has its own window, rollback, approval, and acceptance criteria, and must fit before the change freeze, not only before the event.
 
 ## Before writing a proposal (rules v8)

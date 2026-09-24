@@ -579,6 +579,20 @@ O `make_workspace --sealed` cria um workspace sem o código do motor: só brief,
 
 Também: a citação de aprovação tolera marcadores de e-mail (`>`) e quebras de linha; o QA visual (`scripts/render_pdf.py`) encontrou e corrigiu colunas estreitas no cronograma, texto ilegível no diagrama fora do Windows e texto justificado em tabelas.
 
+### Motor v8.5 (regras v11), após a auditoria da rodada v10
+
+| Item | Correção |
+|---|---|
+| A1 | Valores da tabela institucional de SLA publicados na skill (`institutional-standards.json`), gerados do template por `scripts/export_institutional_standards.py` e conferidos por teste. |
+| A2, N3 | `sla_applicability.applies_to_phases` e `event_readiness[].phase`: SLA e prontidão declaram a fase ou opção; o documento diz a que se aplicam. |
+| N1, A4 | `sales_engineer/feasibility.py`: o autor declara o caminho (fases, ondas, prazos como licenciamento); o motor calcula janelas, datas limite e classificação e escreve o parágrafo de viabilidade. Data no texto do cliente sem origem no insumo nem no cálculo bloqueia. |
+| N2 | Congelamento (`kind: freeze`) e folga de estabilização aprovada (`stabilization_buffer`, sem valor padrão) entram na data limite; ausentes, viram ressalva explícita. |
+| A3 | Faixas de ondas opcionais aceitas no texto. |
+| A5 | `global-rules.md` alinhado ao cálculo do motor. |
+| N4 | `standard_conflicts.status = client_clarification`, com pergunta obrigatória em `open_questions`. |
+| V1 | Rótulos do diagrama quebram em até 3 linhas; tamanho limitado no schema. |
+| N5 | Código estável por violação (`attempts.json`, campo `codes`), para agregar por rodada. |
+
 ## 19. Arquivos de trabalho fora da aplicação
 
 Estes arquivos ajudaram na geração e auditoria, mas não são necessários para executar a aplicação:
