@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from .document_validation import normalize_document_text
+from .catalog import FRONT_GROUPS, PACKAGES, PRODUCTS
 
 
 RULES_VERSION = 5
@@ -551,6 +552,7 @@ _APPROVAL_TOPICS = {
     "license_supply": ("licen",),
     "engagement_type": ("engajamento", "engagement"),
     "sla_applicability": ("sla",),
+    "support_terms": ("suporte", "sustenta", "atendimento"),
 }
 _ESTIMATE_TOPICS = ("estimativa", "semana")
 MIN_QUOTE_LENGTH = 15
@@ -593,17 +595,13 @@ def _validate_approval_quotes(proposal: dict[str, Any], source_text: str) -> lis
 
 
 # Frentes do documento: grupo -> produtos. O título de cada frente presente vem do estado.
-FRONT_GROUPS = {
-    "continuity": ("edge_dns", "gtm", "alb", "ion"),
-    "protection": ("app_api_protector", "prolexic"),
-    "automation": ("bot_manager", "account_protector"),
-}
 REQUIRED_DOCUMENT_TEXT_V10 = (
-    "about_akamai", "partnership", "knowledge_transfer", "callout_limits", "callout_qualifications", "assessment_outcome",
+    "about_vendor", "partnership", "knowledge_transfer", "callout_limits", "callout_qualifications", "assessment_outcome",
 )
 # Produtos que ficam no caminho do tráfego da aplicação. Sem nenhum deles recomendado, o plano de evento
 # não pode trazer sala de crise, teste de carga nem revisão de capacidade: seria superdimensionar o escopo.
-TRAFFIC_PATH_PRODUCTS = {"app_api_protector", "bot_manager", "account_protector", "prolexic", "ion", "gtm", "alb", "ip_accelerator", "malware_protection"}
+TRAFFIC_PATH_PRODUCTS = {pid for pid, product in PRODUCTS.items() if product.get("traffic_path")}
+MAX_FRONTS = 3  # o template tem três blocos de frente na seção 3
 _HEAVY_READINESS = re.compile(r"sala de crise|war room|teste de carga|revis[aã]o de capacidade", re.IGNORECASE)
 # Exigências do cliente que costumam colidir com padrões POPULOS. O código obriga a classificá-las;
 # fora destas categorias, identificar o conflito é responsabilidade do autor.
@@ -650,7 +648,7 @@ def _validate_rules_v10(proposal: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     document_text = proposal.get("document_text") or {}
     for key in REQUIRED_DOCUMENT_TEXT_V10:
-        if not _text_value(document_text.get(key)):
+        if not _text_value(document_text.get(key) or (document_text.get("about_akamai") if key == "about_vendor" else None)):
             errors.append(f"document_text.{key} ausente: o compositor não usa texto padrão para este slot")
     competencies = [c for c in proposal.get("team_competencies") or [] if c]
     if not 1 <= len(competencies) <= 3:
@@ -660,6 +658,25 @@ def _validate_rules_v10(proposal: dict[str, Any]) -> list[str]:
     for group, members in FRONT_GROUPS.items():
         if recommended & set(members) and not _text_value(titles.get(group)):
             errors.append(f"document_text.front_titles.{group} ausente: a frente existe e precisa de título do caso")
+    present = [group for group, members in FRONT_GROUPS.items() if recommended & set(members)]
+    if len(present) > MAX_FRONTS:
+        errors.append(f"escopo com {len(present)} frentes ({', '.join(present)}): o template comporta {MAX_FRONTS}; mova produtos para opcional ou divida a proposta")
+
+    # Pacotes de fabricante: rascunho só em teste; serviço contínuo só com os termos aprovados.
+    offered_ids = [str(d.get("product_id")) for d in proposal.get("solution_decisions", []) if d.get("status") in {"recommended", "optional"}]
+    for package_id in sorted({PRODUCTS[pid]["package"] for pid in offered_ids if pid in PRODUCTS}):
+        if PACKAGES[package_id].get("status") != "validated" and proposal.get("data_mode") != "test":
+            errors.append(f"pacote {package_id} em rascunho (não validado pela POPULOS): só pode ser emitido com data_mode test")
+    governance = proposal.get("governance", {})
+    required = {}
+    for product_id in sorted(recommended):
+        decision_key = PRODUCTS.get(str(product_id), {}).get("requires_decision")
+        if decision_key:
+            required.setdefault(decision_key, []).append(PRODUCTS[product_id]["name"])
+    for decision_key, names in required.items():
+        state = (governance.get(decision_key) or {}).get("state")
+        if state not in {"commitment", "populos_internal_decision"}:  # aberta já é reportada pela regra geral
+            errors.append(f"decisão interna aberta: {decision_key} (exigida por {', '.join(names)}: horário, cobertura e prazos de atendimento aprovados)")
 
     # Nome comercial, nunca o identificador interno.
     ids = _catalog_ids()

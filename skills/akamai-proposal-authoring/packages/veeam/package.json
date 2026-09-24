@@ -1,0 +1,46 @@
+{
+  "id": "veeam",
+  "vendor": "Veeam",
+  "status": "draft",
+  "description": "Backup, replicação e recuperação de cargas virtualizadas e do Microsoft 365.",
+  "fronts": {
+    "backup": [
+      "veeam_vbr",
+      "veeam_m365"
+    ]
+  },
+  "diagram_layers": [
+    {
+      "id": "backup",
+      "title": "Backup e continuidade"
+    }
+  ],
+  "products": {
+    "veeam_vbr": {
+      "name": "Veeam Backup & Replication",
+      "summary": "Backup e replicação de máquinas virtuais, com cópias em destinos separados e restauração granular.",
+      "capabilities": [
+        "backup de máquinas virtuais VMware",
+        "cópia secundária em outro destino",
+        "replicação",
+        "restauração granular"
+      ],
+      "diagram_label": "Backup & Replication",
+      "diagram_layer": "backup",
+      "traffic_path": false
+    },
+    "veeam_m365": {
+      "name": "Veeam Backup for Microsoft 365",
+      "summary": "Backup de caixas de e-mail, OneDrive, SharePoint e Teams.",
+      "capabilities": [
+        "Exchange Online",
+        "OneDrive e SharePoint",
+        "Teams",
+        "restauração de itens"
+      ],
+      "diagram_label": "Microsoft 365",
+      "diagram_layer": "backup",
+      "traffic_path": false
+    }
+  }
+}

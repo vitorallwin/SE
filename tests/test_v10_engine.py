@@ -66,7 +66,9 @@ class ClientFacingTextTests(unittest.TestCase):
     def test_every_new_slot_is_required(self) -> None:
         for key in REQUIRED_DOCUMENT_TEXT_V10:
             proposal = vertice_latest()
-            del proposal["document_text"][key]
+            proposal["document_text"].pop(key, None)
+            if key == "about_vendor":  # nome anterior do slot, ainda aceito
+                proposal["document_text"].pop("about_akamai")
             self.assertIn(f"document_text.{key} ausente", errors_of(proposal))
         proposal = vertice_latest()
         del proposal["document_text"]["front_titles"]["continuity"]

@@ -28,7 +28,7 @@ The approved template defines the canonical order below. A section may be shorte
 - Support and operations: include only when support is in scope or operational ownership needs definition.
 - SLA: preserve the fixed table from the approved template as an institutional POPULOS commitment; do not append a hedge that postpones its definition.
 - Warranty: populate only after an explicit opportunity-specific POPULOS decision. An unresolved warranty placeholder blocks emission.
-- License supply: state whether POPULOS resells the Akamai licenses or the client purchases them directly. An unresolved supply model blocks emission.
+- License supply: state whether POPULOS resells the vendor licenses (resale, MSP subscription) or the client purchases them directly. An unresolved supply model blocks emission.
 - Critical-event readiness: include when a named peak or seasonal event is material to the opportunity.
 - Compliance and privacy: include when requirements or regulated data justify it.
 - Confidentiality: include when required by the proposal process.

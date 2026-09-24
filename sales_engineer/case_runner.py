@@ -252,7 +252,8 @@ def make_workspace(workspace: Path, source_dir: Path, proposal_date: str, data_m
 def skill_bundle() -> str:
     """The brief plus every skill file, as given to an author that cannot read files itself."""
     skill = ROOT / "skills" / "akamai-proposal-authoring"
-    files = [ROOT / engine_config()["author_brief"], skill / "SKILL.md", *sorted((skill / "references").glob("*"))]
+    files = [ROOT / engine_config()["author_brief"], skill / "SKILL.md", *sorted((skill / "references").glob("*")),
+             *sorted((skill / "packages").glob("*/gating.md"))]  # os produtos vão no catálogo (catalog.json)
     return "\n\n".join(f"### {path.relative_to(ROOT).as_posix()}\n\n{path.read_text(encoding='utf-8')}" for path in files if path.is_file())
 
 

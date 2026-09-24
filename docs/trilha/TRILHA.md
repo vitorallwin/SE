@@ -151,6 +151,7 @@ final/<código>.docx + relatorio-cobertura.md
 |---|---|
 | `authoring/AUTHOR_BRIEF.md` | Brief do autor (igual para qualquer modelo) |
 | `skills/akamai-proposal-authoring/` | Skill: `SKILL.md`, `references/global-rules.md`, `solution-gating.md`, `section-model.md`, `state-schema.md`, `state.schema.json`, `institutional-standards.json`, `lexicon.json` |
+| `skills/akamai-proposal-authoring/packages/` | **Pacotes de fabricante (motor-v9.0):** Akamai (validado), SentinelOne, Fortinet, Veeam e serviços POPULOS (rascunhos). Cada um tem `package.json` (produtos, frentes, camadas do diagrama, status) e `gating.md` |
 | `sales_engineer/proposal_rules.py` | Validador: gates e regras v5 a v11 |
 | `sales_engineer/feasibility.py` | Cálculo de janelas, datas limite e classificação frente a eventos |
 | `sales_engineer/neutral_template_builder.py` | Compositor sobre o template neutro |
@@ -217,6 +218,18 @@ O `pipeline.py` antigo (Gemini em várias etapas) e a web app que o usa (`app.py
 | R4 | A checagem de datas leu "5.2/9.1" como a data 02/09 | Ignorar números precedidos de ponto |
 | R5 | Escopo do SLA institucional × suporte contratado | Decisão da POPULOS |
 | R6 | Minúscula no início do valor aprovado citado; sigla "AAP" no diagrama | Ajuste de apresentação |
+
+### 6.1.1 Pacotes de fabricante (motor-v9.0)
+
+- O catálogo virou a união dos pacotes. Frentes, diagrama, "Sobre o fabricante", parceria e rodapé vêm dos fabricantes dos produtos recomendados. A proposta Akamai (Vértice) sai com texto idêntico ao de antes.
+- **Rascunho só em teste:** SentinelOne, Fortinet, Veeam e serviços POPULOS estão em `draft`. O motor só emite com `data_mode` `test` até a POPULOS validar os produtos e SKUs.
+- **Sustentação exige termos aprovados:** produtos de serviço contínuo exigem `governance.support_terms` (horário, cobertura, prazos). A tabela de SLA institucional continua valendo só para a implantação, e o documento diz isso.
+- No máximo 3 frentes por proposta (limite do template).
+- Caso Eletronet (endpoint, Veeam e suporte Fortinet), escrito pelo autor Claude:
+  - só com a transcrição: bloqueado por 4 decisões da POPULOS (garantia, licenciamento, termos de suporte, estimativa);
+  - com aprovações fictícias de teste: emitido em 11 páginas.
+
+**R8 (novo, aberto):** o motor confia no `catalog_fit` do autor. O Gemini encaixou um pedido de endpoint em Prolexic e App & API Protector. Correção proposta: o motor confere os fabricantes citados nos requisitos do cliente contra os pacotes dos produtos recomendados.
 
 ### 6.2 Próximas rodadas
 

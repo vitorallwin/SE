@@ -16,10 +16,10 @@ from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 from PIL import Image, ImageDraw, ImageFont
 
-from .catalog import PRODUCTS
 from .document_validation import detect_skill_leakage, find_case_residue, find_vocabulary_violations, validate_state_against_docx
 from .institutional_policy import validate_institutional_whitelist
-from .proposal_rules import FRONT_GROUPS, assert_proposal_rules, feasibility_paragraphs, option_refs
+from .catalog import FRONT_GROUPS, PACKAGES, PRODUCTS, vendors_of
+from .proposal_rules import assert_proposal_rules, feasibility_paragraphs, option_refs
 
 
 def _text(value: Any) -> str:
@@ -185,21 +185,41 @@ def _state_list(proposal: dict[str, Any], key: str, legacy_default: list, since:
     return legacy_default
 
 
-_DIAGRAM_LABELS = {
-    "ion": "Ion", "app_api_protector": "AAP", "bot_manager": "Bot Manager",
-    "account_protector": "Account", "edge_dns": "Edge DNS", "gtm": "GTM", "alb": "ALB",
-}
+
+
+def _vendors(proposal: dict[str, Any]) -> list[str]:
+    """Fabricantes dos produtos recomendados; sem nenhum, o template original (Akamai)."""
+    recommended = [str(d.get("product_id")) for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended"]
+    return vendors_of(recommended) or ["Akamai"]
+
+
+def _join(names: list[str]) -> str:
+    return names[0] if len(names) == 1 else ", ".join(names[:-1]) + " e " + names[-1]
 
 
 def _diagram_boxes(proposal: dict[str, Any]) -> list[tuple[str, str]]:
-    """Only recommended products enter the main diagram; options stay in their own section."""
-    recommended = [d.get("product_id") for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended"]
-    edge = [_DIAGRAM_LABELS[p] for p in ("ion", "app_api_protector", "bot_manager", "account_protector") if p in recommended]
-    traffic = [_DIAGRAM_LABELS[p] for p in ("edge_dns", "gtm", "alb") if p in recommended]
+    """Only recommended products enter the main diagram; options stay in their own section.
+
+    The middle boxes are the diagram layers of the packages involved (Akamai: edge and traffic decision).
+    """
+    recommended = [str(d.get("product_id")) for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended"]
+    layers: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    packages = [PACKAGES[pid] for pid in dict.fromkeys(PRODUCTS[r]["package"] for r in recommended if r in PRODUCTS)] or [PACKAGES["akamai"]]
+    for package in packages:
+        for layer in package.get("diagram_layers", []):
+            if layer["id"] in seen:
+                continue
+            seen.add(layer["id"])
+            labels = [PRODUCTS[r]["diagram_label"] for pkg in packages for r in recommended
+                      if PRODUCTS.get(r, {}).get("diagram_layer") == layer["id"] and PRODUCTS[r]["package"] == pkg["id"]]
+            if labels or package.get("always_show_layers"):
+                layers.append((layer["title"], " · ".join(labels) or layer.get("empty", "")))
+    if len(layers) > 2:  # o desenho comporta quatro caixas
+        layers = [layers[0], ("Demais controles", " · ".join(detail for _, detail in layers[1:]))]
     return [
         (_slot(proposal, "diagram_users", "Clientes e lojistas"), _slot(proposal, "diagram_users_detail", "Jornadas web e API")),
-        ("Borda Akamai", " · ".join(edge) or "Controles de borda"),
-        ("Decisão de tráfego", " · ".join(traffic) or "DNS atual"),
+        *layers,
         (_slot(proposal, "diagram_origins_title", "Origens do cliente"), _slot(proposal, "diagram_origins", "Cloud A · Cloud B · DC")),
     ]
 
@@ -268,7 +288,8 @@ def _architecture_diagram(proposal: dict[str, Any]) -> BytesIO:
     font = _font(REGULAR_FONTS, 30)
     bold = _font(BOLD_FONTS, 32)
     boxes = _diagram_boxes(proposal)
-    x_positions = [40, 480, 930, 1380]
+    x_positions = [40, 480, 930, 1380] if len(boxes) == 4 else [
+        (width - (len(boxes) * 360 + (len(boxes) - 1) * 90)) // 2 + i * 450 for i in range(len(boxes))]
     for index, ((title, sub), x) in enumerate(zip(boxes, x_positions)):
         draw.rounded_rectangle((x, 125, x + 360, 405), radius=24, fill="#F3F4F6", outline="#6B46C1", width=4)
         _draw_block(draw, title, BOLD_FONTS, 32, x, (140, 250), "#1F2A5E")
@@ -376,7 +397,7 @@ def _fronts(proposal: dict[str, Any]) -> list[dict[str, Any]]:
     }
     titles = proposal.get("document_text", {}).get("front_titles") or {}
     groups = [
-        (_text(titles.get(group)) if int(proposal.get("rules_version", 0) or 0) >= 10 else legacy_titles[group], list(members))
+        (_text(titles.get(group)) if int(proposal.get("rules_version", 0) or 0) >= 10 else legacy_titles.get(group, ""), list(members))
         for group, members in FRONT_GROUPS.items()
     ]
     fronts: list[dict[str, Any]] = []
@@ -469,10 +490,17 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     _replace_paragraph(p[12], f"EMPRESA: {client}")
     _replace_paragraph(p[13], f"| {month.upper()} {datetime.now().year} |")
 
-    _replace_paragraph(p[19], "Sobre a Akamai")
-    _replace_paragraph(p[20], _slot(proposal, "about_akamai", since=10, legacy_default=f"A Akamai oferece serviços distribuídos de entrega, desempenho, proteção e observabilidade para aplicações, APIs e infraestrutura exposta à internet. A arquitetura desta proposta combina apenas as capacidades ligadas às jornadas e riscos priorizados por {client}."))
+    vendors = _vendors(proposal)
+    # Serviço contínuo (pacote POPULOS) só entra com os termos aprovados; o validador garante isso.
+    continuous = any(PRODUCTS.get(str(d.get("product_id")), {}).get("requires_decision") == "support_terms"
+                     for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended")
+    terms = proposal.get("governance", {}).get("support_terms") or {}
+    support_terms = _text(terms.get("value")) if continuous and terms.get("state") == "commitment" else ""
+    _replace_paragraph(p[19], f"Sobre a {vendors[0]}" if len(vendors) == 1 else "Sobre os fabricantes")
+    about_key = "about_vendor" if _text((proposal.get("document_text") or {}).get("about_vendor")) else "about_akamai"
+    _replace_paragraph(p[20], _slot(proposal, about_key, since=10, legacy_default=f"A Akamai oferece serviços distribuídos de entrega, desempenho, proteção e observabilidade para aplicações, APIs e infraestrutura exposta à internet. A arquitetura desta proposta combina apenas as capacidades ligadas às jornadas e riscos priorizados por {client}."))
     _replace_paragraph(p[21], _slot(proposal, "about_solution", f"Para {client}, a solução integra continuidade multi-cloud, proteção de aplicações e APIs, defesa contra abuso automatizado e otimização das jornadas de checkout e cadastro. Cada frente possui escopo de configuração, evidência de teste e responsável definidos."))
-    _replace_paragraph(p[22], "Parceria POPULOS e Akamai")
+    _replace_paragraph(p[22], f"Parceria POPULOS e {_join(vendors)}")
     _replace_paragraph(p[23], _slot(proposal, "partnership", since=10, legacy_default="A POPULOS responde pela arquitetura, implantação, testes e documentação do projeto, com profissionais qualificados nas tecnologias previstas. As credenciais nominais da equipe serão apresentadas na mobilização, conforme os requisitos formais da contratação."))
     _set_rows(p, range(24, 28), _state_list(proposal, "team_competencies", ["Arquitetura e segurança de aplicações Akamai;", "DNS, gestão global de tráfego e entrega de aplicações;", "Gestão de projeto, testes e documentação técnica."], since=10))
     _replace_paragraph(p[28], "A composição final da equipe será confirmada no plano de projeto, preservando as competências exigidas para cada frente.")
@@ -518,7 +546,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
         _remove_paragraph(p[65])
     else:
         _replace_paragraph(p[65], "Observação: a linha de base será levantada e validada durante o Assessment.")
-    _replace_paragraph(p[66], "4.2 Componentes centralizados e serviços de borda")
+    _replace_paragraph(p[66], "4.2 Componentes centralizados e serviços de borda" if vendors == ["Akamai"] else "4.2 Componentes e posição na proposta")
     p[66].paragraph_format.page_break_before = False
     dims = _state_list(proposal, "dimensioning", [
         ("Zonas DNS e domínios críticos", "Faixa inicial: 3 a 8", "Validar inventário", "Premissa"),
@@ -711,6 +739,9 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     if sla_scope and _v11(proposal):
         labels = ", ".join(option_refs(proposal).get(ref, ref) for ref in sla_scope)
         _replace_paragraph(p[150], f"O padrão institucional de atendimento abaixo aplica-se somente a: {labels}, para falhas atribuíveis aos serviços executados. Nas demais fases, não há compromisso de tempo de atendimento.")
+    elif support_terms:
+        _replace_paragraph(p[150], "O padrão institucional de atendimento abaixo aplica-se à implantação, para falhas atribuíveis aos serviços executados. "
+                                   f"A sustentação segue os termos aprovados para esta proposta: {support_terms.rstrip('.')}.")
     else:
         _replace_paragraph(p[150], "Durante a execução e a garantia, a POPULOS adotará o padrão institucional de atendimento abaixo para falhas atribuíveis aos serviços executados.")
 
@@ -720,7 +751,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
         ["Gerência do PMO", "Supervisão executiva e escalonamento do projeto.", "Sob demanda"],
         ["Executivo de Contas", "Gestão comercial, contratos e governança da conta.", "Sob demanda"],
         ["Gerente de Projeto POPULOS", "Planejamento, coordenação, riscos e reportes.", "Durante o projeto"],
-        ["Arquiteto POPULOS", "Desenho e validação da arquitetura Akamai.", "Conforme cronograma"],
+        ["Arquiteto POPULOS", f"Desenho e validação da arquitetura {_join(vendors)}.", "Conforme cronograma"],
         ["Equipe Técnica POPULOS", "Configuração, testes e documentação.", "Conforme cronograma"],
         ["Ponto focal do cliente", "Decisões, acessos e escalonamentos.", "Durante o projeto"],
     ]
@@ -785,7 +816,8 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
             1: ("Modelo de fornecimento", " ".join(filter(None, [_doc_text(proposal, "license_prefix", ""), str(license_supply)]))),
             2: ("Limite da frente", _slot(proposal, "callout_limits", since=10, legacy_default="A solução cobre configuração e integração dos componentes recomendados. Alterações no código das aplicações e serviços de terceiros permanecem fora do escopo.")),
             5: ("Estratégia de migração", _slot(proposal, "callout_migration", "Implantação em ondas: homologação, produção controlada e estabilização, com janela aprovada, critérios de avanço e plano de reversão.")),
-            6: ("Itens que exigem contratação específica", "Operação continuada, NOC 24x7, equipe residente, desenvolvimento de aplicações e serviços gerenciados adicionais não estão incluídos."),
+            6: ("Itens que exigem contratação específica", "Os serviços contínuos desta proposta limitam-se à sustentação descrita, nos termos de atendimento aprovados. Equipe residente, desenvolvimento de aplicações e serviços além da sustentação não estão incluídos."
+                if support_terms else "Operação continuada, NOC 24x7, equipe residente, desenvolvimento de aplicações e serviços gerenciados adicionais não estão incluídos."),
             8: ("Marcos formais de aceite", _slot(proposal, "callout_milestones", "Desenho aprovado, homologação concluída, produção validada e documentação final aceita.")),
             9: ("Garantia e vigência", str(warranty)),
         }[table_index]
@@ -794,7 +826,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
 
     token_replacements = {
         "«CLIENTE»": client,
-        "«FABRICANTE»": "Akamai",
+        "«FABRICANTE»": _join(vendors),
         "«CERTIFICAÇÕES»": "qualificações validadas",
         "«X»": "requisito aplicável registrado na matriz de rastreabilidade",
         "«CONTRATANTE ou POPULOS»": "conforme contrato aprovado",
@@ -822,7 +854,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
         for footer in (section.footer, section.first_page_footer):
             for paragraph in footer.paragraphs:
                 if paragraph.text.strip():
-                    _replace_run_tokens(paragraph, {"«FABRICANTE»": "AKAMAI", "Partner|": "Partner |"})
+                    _replace_run_tokens(paragraph, {"«FABRICANTE»": " · ".join(v.upper() for v in vendors), "Partner|": "Partner |"})
 
     unresolved: list[str] = []
     all_paragraphs = list(doc.paragraphs)

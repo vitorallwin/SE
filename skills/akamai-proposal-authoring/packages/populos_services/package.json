@@ -1,0 +1,50 @@
+{
+  "id": "populos_services",
+  "vendor": "POPULOS",
+  "status": "draft",
+  "description": "Serviços contínuos da POPULOS sobre as plataformas do cliente. Horário, cobertura e prazos de atendimento são decisão aprovada do caso.",
+  "fronts": {
+    "operations": [
+      "sustentacao_endpoint",
+      "sustentacao_veeam",
+      "sustentacao_fortinet"
+    ]
+  },
+  "diagram_layers": [],
+  "products": {
+    "sustentacao_endpoint": {
+      "name": "Sustentação da plataforma de endpoint",
+      "summary": "Gestão contínua de políticas, agentes e alertas da plataforma de endpoint.",
+      "capabilities": [
+        "gestão de políticas e agentes",
+        "triagem de alertas",
+        "atualizações da plataforma"
+      ],
+      "requires_decision": "support_terms",
+      "traffic_path": false
+    },
+    "sustentacao_veeam": {
+      "name": "Sustentação do ambiente Veeam",
+      "summary": "Acompanhamento das rotinas de backup, testes de restauração e atualização do ambiente Veeam.",
+      "capabilities": [
+        "monitoramento das rotinas de backup",
+        "testes periódicos de restauração",
+        "atualizações do ambiente"
+      ],
+      "requires_decision": "support_terms",
+      "traffic_path": false
+    },
+    "sustentacao_fortinet": {
+      "name": "Sustentação de firewalls Fortinet",
+      "summary": "Suporte técnico, gestão de mudanças e atualização dos firewalls FortiGate do cliente.",
+      "capabilities": [
+        "suporte técnico",
+        "gestão de mudanças e regras",
+        "atualização de firmware",
+        "revisão de configuração"
+      ],
+      "requires_decision": "support_terms",
+      "traffic_path": false
+    }
+  }
+}

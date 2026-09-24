@@ -1,9 +1,9 @@
 ---
 name: akamai-proposal-authoring
-description: Transform discovery notes into a client-specific Akamai technical proposal with evidence-based product selection, modular sections, traceability, and measurable acceptance criteria. Use for proposal planning, generation, audit, or repair; do not use as a fixed product brochure.
+description: Transform discovery notes into a client-specific technical proposal for the vendors with a package (Akamai, SentinelOne, Fortinet, Veeam, POPULOS services) with evidence-based product selection, modular sections, traceability, and measurable acceptance criteria. Use for proposal planning, generation, audit, or repair; do not use as a fixed product brochure.
 ---
 
-# Akamai Proposal Authoring
+# Proposal Authoring (vendor packages)
 
 Create the smallest complete proposal that explains the client's problem, the recommended solution, how it will be delivered, and how acceptance will be demonstrated.
 
@@ -25,7 +25,7 @@ Create the smallest complete proposal that explains the client's problem, the re
 1. Normalize the meeting into goals, pain points, requirements, constraints, volumes, dependencies, stakeholders, and open questions.
 2. Decide whether the material supports a proposal (`input_assessment`) and whether the catalog covers the request (`catalog_fit`). If not, stop with the questions or the declared gap.
 3. Evaluate each catalog product independently. Do not begin with a preselected bundle.
-4. Apply the product gating criteria in [solution gating](references/solution-gating.md).
+4. Apply the general gating rules in [solution gating](references/solution-gating.md) and the table of each package involved in `packages/<id>/gating.md`. The catalog is the union of `packages/*/package.json`.
 5. Produce solution decisions and a requirement traceability matrix.
 6. Map the decisions onto the sections in [section model](references/section-model.md).
 7. Run a critic pass. Block unsupported products, absolute promises, hidden open questions, unmeasurable acceptance criteria, and unresolved internal POPULOS decisions.

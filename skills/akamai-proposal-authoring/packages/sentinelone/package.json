@@ -1,0 +1,82 @@
+{
+  "id": "sentinelone",
+  "vendor": "SentinelOne",
+  "status": "draft",
+  "description": "Plataforma Singularity: proteção de endpoints, servidores e dispositivos móveis com EPP, EDR e resposta automatizada.",
+  "fronts": {
+    "endpoint": [
+      "s1_singularity_complete",
+      "s1_ranger",
+      "s1_mobile",
+      "s1_purple_ai",
+      "s1_hyperautomation"
+    ]
+  },
+  "diagram_layers": [
+    {
+      "id": "endpoint",
+      "title": "Proteção de endpoint"
+    }
+  ],
+  "products": {
+    "s1_singularity_complete": {
+      "name": "Singularity Complete",
+      "summary": "Proteção de endpoints e servidores com prevenção, detecção e resposta em um único agente.",
+      "capabilities": [
+        "antivírus de nova geração (EPP)",
+        "EDR com correlação de eventos",
+        "resposta e remediação automáticas",
+        "rollback em Windows",
+        "controle de dispositivos",
+        "firewall de host"
+      ],
+      "diagram_label": "Singularity",
+      "diagram_layer": "endpoint",
+      "traffic_path": false
+    },
+    "s1_ranger": {
+      "name": "Singularity Ranger",
+      "summary": "Descoberta e inventário de dispositivos na rede a partir dos agentes instalados, incluindo ativos sem proteção.",
+      "capabilities": [
+        "inventário de rede",
+        "descoberta de dispositivos sem agente",
+        "visibilidade de ativos"
+      ],
+      "diagram_label": "Ranger",
+      "diagram_layer": "endpoint",
+      "traffic_path": false
+    },
+    "s1_mobile": {
+      "name": "Singularity Mobile",
+      "summary": "Proteção de dispositivos móveis contra ameaças de aplicativos, rede e sistema.",
+      "capabilities": [
+        "iOS e Android",
+        "detecção de ameaças móveis",
+        "integração com gestão de dispositivos"
+      ],
+      "diagram_label": "Mobile",
+      "diagram_layer": "endpoint",
+      "traffic_path": false
+    },
+    "s1_purple_ai": {
+      "name": "Purple AI",
+      "summary": "Assistente de investigação que consulta a telemetria da plataforma em linguagem natural.",
+      "capabilities": [
+        "investigação em linguagem natural",
+        "resumo de incidentes",
+        "apoio à caça de ameaças"
+      ],
+      "traffic_path": false
+    },
+    "s1_hyperautomation": {
+      "name": "Singularity Hyperautomation",
+      "summary": "Fluxos de resposta sem código disparados por eventos, com integração a outras ferramentas.",
+      "capabilities": [
+        "fluxos de resposta sem código",
+        "gatilhos por evento",
+        "integração por webhooks"
+      ],
+      "traffic_path": false
+    }
+  }
+}

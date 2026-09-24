@@ -1,0 +1,47 @@
+{
+  "id": "fortinet",
+  "vendor": "Fortinet",
+  "status": "draft",
+  "description": "Proteção de endpoints Fortinet integrada ao Security Fabric.",
+  "fronts": {
+    "endpoint": [
+      "fortiedr",
+      "forticlient_ems"
+    ]
+  },
+  "diagram_layers": [
+    {
+      "id": "endpoint",
+      "title": "Proteção de endpoint"
+    }
+  ],
+  "products": {
+    "fortiedr": {
+      "name": "FortiEDR",
+      "summary": "Detecção e resposta em endpoints e servidores com bloqueio pré e pós-infecção.",
+      "capabilities": [
+        "prevenção pré-infecção",
+        "detecção e bloqueio pós-infecção",
+        "resposta automatizada por playbooks",
+        "proteção de servidores"
+      ],
+      "diagram_label": "FortiEDR",
+      "diagram_layer": "endpoint",
+      "traffic_path": false
+    },
+    "forticlient_ems": {
+      "name": "FortiClient com EMS",
+      "summary": "Agente de endpoint gerenciado centralmente, com proteção, controle de uso e acesso remoto integrado ao FortiGate.",
+      "capabilities": [
+        "antivírus e controle de aplicações",
+        "filtro web",
+        "gestão de vulnerabilidades",
+        "agente de VPN e ZTNA",
+        "integração com o Security Fabric"
+      ],
+      "diagram_label": "FortiClient",
+      "diagram_layer": "endpoint",
+      "traffic_path": false
+    }
+  }
+}

@@ -1,0 +1,259 @@
+{
+  "id": "akamai",
+  "vendor": "Akamai",
+  "status": "validated",
+  "description": "Borda Akamai: DNS, gestão de tráfego, entrega e proteção de aplicações, APIs e infraestrutura.",
+  "fronts": {
+    "continuity": [
+      "edge_dns",
+      "gtm",
+      "alb",
+      "ion"
+    ],
+    "protection": [
+      "app_api_protector",
+      "prolexic"
+    ],
+    "automation": [
+      "bot_manager",
+      "account_protector"
+    ]
+  },
+  "diagram_layers": [
+    {
+      "id": "edge",
+      "title": "Borda Akamai",
+      "empty": "Controles de borda"
+    },
+    {
+      "id": "traffic",
+      "title": "Decisão de tráfego",
+      "empty": "DNS atual"
+    }
+  ],
+  "always_show_layers": true,
+  "products": {
+    "edge_dns": {
+      "name": "Edge DNS",
+      "template_heading": "Sobre o Edge DNS",
+      "summary": "DNS autoritativo global, resiliente e distribuído na borda.",
+      "capabilities": [
+        "DNS autoritativo",
+        "Anycast",
+        "DNSSEC",
+        "zonas primárias e secundárias",
+        "API de gestão"
+      ],
+      "include_when": [
+        "DNS autoritativo está no escopo",
+        "resiliência de DNS é um requisito",
+        "DNSSEC ou gestão de zonas é necessária"
+      ],
+      "exclude_when": [
+        "o cliente apenas possui domínio público",
+        "DNS permanece explicitamente fora do escopo"
+      ],
+      "traffic_path": false,
+      "diagram_label": "Edge DNS",
+      "diagram_layer": "traffic"
+    },
+    "app_api_protector": {
+      "name": "App & API Protector",
+      "template_heading": "Sobre o AAP Advanced Delivery",
+      "summary": "Proteção de aplicações e APIs com WAF adaptativo e mitigação de DDoS na borda.",
+      "capabilities": [
+        "WAF",
+        "proteção de APIs",
+        "Adaptive Security Engine",
+        "DDoS L7",
+        "integração SIEM"
+      ],
+      "include_when": [
+        "aplicações web ou APIs públicas precisam de proteção",
+        "há requisito de WAF, segurança de API ou DDoS de aplicação"
+      ],
+      "exclude_when": [
+        "o escopo não possui aplicação ou API publicada",
+        "o pedido menciona apenas segurança genérica"
+      ],
+      "traffic_path": true,
+      "diagram_label": "AAP",
+      "diagram_layer": "edge"
+    },
+    "malware_protection": {
+      "name": "Malware Protection",
+      "template_heading": "Malware Protection",
+      "summary": "Inspeção de uploads para reduzir risco de malware em aplicações web.",
+      "capabilities": [
+        "análise de arquivos",
+        "políticas por aplicação",
+        "quarentena",
+        "telemetria"
+      ],
+      "include_when": [
+        "usuários enviam arquivos",
+        "há requisito de inspeção ou bloqueio de malware em uploads"
+      ],
+      "exclude_when": [
+        "a aplicação apenas entrega conteúdo",
+        "não existe fluxo de upload"
+      ],
+      "traffic_path": true
+    },
+    "alb": {
+      "name": "Application Load Balancer",
+      "template_heading": "Application Load Balancer - ALB",
+      "summary": "Balanceamento global entre origens com saúde, prioridade e continuidade.",
+      "capabilities": [
+        "balanceamento global",
+        "health checks",
+        "failover",
+        "multi-cloud"
+      ],
+      "include_when": [
+        "há múltiplas origens",
+        "roteamento por saúde, active-active, active-passive ou failover é necessário"
+      ],
+      "exclude_when": [
+        "existe somente uma origem",
+        "alta disponibilidade foi mencionada sem distribuição entre origens"
+      ],
+      "traffic_path": true,
+      "diagram_label": "ALB",
+      "diagram_layer": "traffic"
+    },
+    "gtm": {
+      "name": "Global Traffic Management",
+      "template_heading": "Global Traffic Management",
+      "summary": "Decisão DNS dinâmica para continuidade, distribuição de tráfego e otimização multi-cloud.",
+      "capabilities": [
+        "políticas de tráfego",
+        "liveness tests",
+        "failover entre provedores",
+        "balanceamento ponderado",
+        "roteamento por desempenho"
+      ],
+      "include_when": [
+        "há múltiplos data centers ou provedores",
+        "failover DNS ou continuidade multi-cloud é requisito",
+        "roteamento por saúde ou desempenho é necessário"
+      ],
+      "exclude_when": [
+        "há uma única origem",
+        "a decisão precisa ocorrer somente após a requisição atingir a borda HTTP"
+      ],
+      "traffic_path": true,
+      "diagram_label": "GTM",
+      "diagram_layer": "traffic"
+    },
+    "ion": {
+      "name": "Ion",
+      "template_heading": "Ion",
+      "summary": "Entrega e otimização de aplicações web e conteúdo dinâmico na borda.",
+      "capabilities": [
+        "aceleração dinâmica",
+        "otimização de protocolo",
+        "offload de origem",
+        "HTTP/3",
+        "integração com medição de experiência"
+      ],
+      "include_when": [
+        "há meta de experiência ou latência web",
+        "conteúdo dinâmico ou checkout precisa de otimização",
+        "offload de origem é relevante"
+      ],
+      "exclude_when": [
+        "não há aplicação web no escopo",
+        "performance não foi ligada a uma jornada mensurável"
+      ],
+      "traffic_path": true,
+      "diagram_label": "Ion",
+      "diagram_layer": "edge"
+    },
+    "prolexic": {
+      "name": "Prolexic",
+      "template_heading": "Prolexic",
+      "summary": "Proteção DDoS de infraestrutura para ambientes cloud, on-premises e híbridos.",
+      "capabilities": [
+        "mitigação DDoS L3/L4",
+        "scrubbing distribuído",
+        "modelos always-on ou on-demand",
+        "runbooks de resposta",
+        "proteção de origens"
+      ],
+      "include_when": [
+        "há requisito de DDoS volumétrico L3/L4",
+        "links ou IPs de origem precisam de proteção",
+        "continuidade da infraestrutura exposta é requisito"
+      ],
+      "exclude_when": [
+        "o requisito limita-se a ataques de aplicação L7",
+        "não há ativos de rede ou origens diretamente expostos"
+      ],
+      "traffic_path": true
+    },
+    "account_protector": {
+      "name": "Account Protector",
+      "template_heading": "Account Protector",
+      "summary": "Detecção de risco e abuso ao longo do ciclo de vida da conta.",
+      "capabilities": [
+        "proteção de criação de conta",
+        "risco de login",
+        "perfil comportamental",
+        "detecção de abuso",
+        "sinais de confiança"
+      ],
+      "include_when": [
+        "há fraude ou abuso em criação, login, recuperação ou pós-login",
+        "risco por usuário ou conta precisa ser avaliado"
+      ],
+      "exclude_when": [
+        "o caso se limita a bots sem identidade de conta",
+        "não há jornada autenticada no escopo"
+      ],
+      "traffic_path": true,
+      "diagram_label": "Account",
+      "diagram_layer": "edge"
+    },
+    "ip_accelerator": {
+      "name": "IP Accelerator",
+      "template_heading": "IP Accelerator",
+      "summary": "Aceleração e disponibilidade para aplicações baseadas em TCP/UDP.",
+      "capabilities": [
+        "aceleração TCP",
+        "roteamento otimizado",
+        "alta disponibilidade",
+        "origem protegida"
+      ],
+      "include_when": [
+        "uma aplicação TCP ou UDP não cacheável precisa de otimização ou disponibilidade"
+      ],
+      "exclude_when": [
+        "o caso se limita a APIs HTTPS",
+        "não há protocolo ou requisito de transporte compatível identificado"
+      ],
+      "traffic_path": true
+    },
+    "bot_manager": {
+      "name": "Bot Manager Premier",
+      "template_heading": "BOT Manager Premier - OPCIONAL",
+      "summary": "Detecção e resposta a automação maliciosa com controles por objetivo de negócio.",
+      "capabilities": [
+        "detecção de bots",
+        "resposta adaptativa",
+        "segmentação",
+        "telemetria"
+      ],
+      "include_when": [
+        "credential stuffing, scraping, criação automatizada de contas ou abuso transacional foi evidenciado"
+      ],
+      "exclude_when": [
+        "há somente tráfego malicioso genérico",
+        "não existe caso de uso de automação"
+      ],
+      "traffic_path": true,
+      "diagram_label": "Bot Manager",
+      "diagram_layer": "edge"
+    }
+  }
+}

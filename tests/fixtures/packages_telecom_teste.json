@@ -1,0 +1,710 @@
+{
+  "rules_version": 11,
+  "data_mode": "test",
+  "proposal_date": "2026-09-24",
+  "client_name": "Telecom Exemplo",
+  "opportunity": "Proteção de endpoint e sustentação da infraestrutura",
+  "code": "TELECOM-EXEMPLO-ENDPOINT-2026",
+  "opportunity_id": "TELECOM-EXEMPLO-2026-09",
+  "client_scope": {
+    "type": "implementation",
+    "excludes_implementation": false,
+    "source": "Resumo sintético: \"endpoint entra esse ano, porque o nosso contrato vence agora em novembro\" e \"a ideia é agrupar todos os serviços com um único player\"",
+    "forbidden_in_committed": [
+      "hiperconvergência",
+      "substituição do Avamar",
+      "ZTNA"
+    ]
+  },
+  "governance": {
+    "engagement_type": {
+      "state": "commitment",
+      "value": "implementation",
+      "approved_value": "implementation",
+      "source": "complemento-teste.md",
+      "approved_by": "Mariana Costa",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026 (fictício, teste do motor)",
+      "mode": "test",
+      "approval_quote": "Mariana Costa aprova o tipo de engajamento implementation para a Telecom Exemplo em 24/09/2026."
+    },
+    "warranty": {
+      "state": "commitment",
+      "value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final.",
+      "approved_value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final.",
+      "source": "complemento-teste.md",
+      "approved_by": "Mariana Costa",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026 (fictício, teste do motor)",
+      "mode": "test",
+      "approval_quote": "Mariana Costa aprova em 24/09/2026 a garantia: A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final.",
+      "engagement_ref": "implementation"
+    },
+    "license_supply": {
+      "state": "commitment",
+      "value": "As licenças SentinelOne serão fornecidas pela POPULOS no modelo MSP, com cobrança mensal por endpoint.",
+      "approved_value": "As licenças SentinelOne serão fornecidas pela POPULOS no modelo MSP, com cobrança mensal por endpoint.",
+      "source": "complemento-teste.md",
+      "approved_by": "Mariana Costa",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026 (fictício, teste do motor)",
+      "mode": "test",
+      "approval_quote": "Mariana Costa aprova em 24/09/2026 o licenciamento: As licenças SentinelOne serão fornecidas pela POPULOS no modelo MSP, com cobrança mensal por endpoint.",
+      "engagement_ref": "implementation"
+    },
+    "support_terms": {
+      "state": "commitment",
+      "value": "atendimento em dias úteis, das 8h às 18h, com resposta em até 4 horas úteis para incidentes críticos, cobrindo endpoint, Veeam e firewalls Fortinet",
+      "approved_value": "atendimento em dias úteis, das 8h às 18h, com resposta em até 4 horas úteis para incidentes críticos, cobrindo endpoint, Veeam e firewalls Fortinet",
+      "source": "complemento-teste.md",
+      "approved_by": "Mariana Costa",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026 (fictício, teste do motor)",
+      "mode": "test",
+      "approval_quote": "Mariana Costa aprova em 24/09/2026 os termos de suporte da sustentação: atendimento em dias úteis, das 8h às 18h, com resposta em até 4 horas úteis para incidentes críticos, cobrindo endpoint, Veeam e firewalls Fortinet.",
+      "engagement_ref": "implementation"
+    },
+    "effort_estimate": {
+      "state": "commitment",
+      "value": "5 a 7 semanas",
+      "approved_value": "5 a 7 semanas",
+      "source": "complemento-teste.md",
+      "approved_by": "Ana Ribeiro",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026 (fictício, teste do motor)",
+      "mode": "test",
+      "approval_quote": "Ana Ribeiro, arquiteta responsável, aprova em 24/09/2026 a estimativa de esforço de implantação: 5 a 7 semanas.",
+      "approver_role": "arquiteta",
+      "engagement_ref": "implementation"
+    },
+    "sla": {
+      "state": "commitment",
+      "basis": "populos_standard",
+      "value": "Tabela institucional de SLA do template POPULOS vigente",
+      "source": "Template POPULOS vigente",
+      "template_version": "2026.09.24-1",
+      "engagement_ref": "implementation"
+    }
+  },
+  "input_assessment": {
+    "status": "sufficient",
+    "missing": [],
+    "reason": "Cliente, ambiente, pedido e prazo do endpoint identificados na transcrição."
+  },
+  "catalog_fit": {
+    "status": "fits",
+    "requested": "Endpoint (SentinelOne e opção Fortinet), sustentação Veeam e suporte a firewalls Fortinet",
+    "reason": "Coberto pelos pacotes SentinelOne, Fortinet, Veeam e serviços POPULOS."
+  },
+  "discovery": {
+    "business_goals": [
+      "Substituir o Kaspersky antes do vencimento do contrato em novembro, sem perder funções usadas hoje (REQ-01, REQ-02, REQ-03)",
+      "Comparar tecnicamente as opções SentinelOne e Fortinet (REQ-04)",
+      "Concentrar em um único parceiro o suporte de endpoint, Veeam e firewalls (REQ-05, REQ-06, REQ-07)"
+    ]
+  },
+  "traceability": [
+    {
+      "requirement_id": "REQ-01",
+      "requirement": "Substituir a proteção de endpoint Kaspersky, cujo contrato vence em novembro, mantendo antivírus, EDR, políticas de bloqueio e de firewall de host.",
+      "solution": "Singularity Complete",
+      "evidence": "Agente instalado e política aplicada em 100% dos computadores e servidores do inventário aprovado, com o Kaspersky removido.",
+      "source": "Resumo sintético, 00:07:50 a 00:09:13 e 00:18:25",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-02",
+      "requirement": "Manter o inventário de rede que a solução atual oferece.",
+      "solution": "Singularity Ranger",
+      "evidence": "Relatório de dispositivos descobertos na rede, com os ativos sem agente identificados.",
+      "source": "Resumo sintético, 00:08:51",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-03",
+      "requirement": "Proteger os dispositivos móveis hoje cobertos pela solução atual.",
+      "solution": "Singularity Mobile",
+      "evidence": "Dispositivos móveis do inventário aprovado registrados e protegidos na console.",
+      "source": "Resumo sintético, 00:08:51",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-04",
+      "requirement": "Receber a proposta com as duas opções de endpoint, SentinelOne e Fortinet, para avaliação técnica.",
+      "solution": "Singularity Complete, com a alternativa apresentada na seção de opções",
+      "evidence": "Proposta com a alternativa descrita separadamente, com o gatilho de escolha.",
+      "source": "Resumo sintético, 00:27:53",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-05",
+      "requirement": "Assumir a sustentação dos dois ambientes Veeam: backup do Microsoft 365 e segunda cópia de backup.",
+      "solution": "Sustentação do ambiente Veeam",
+      "evidence": "Rotinas de backup dos dois ambientes monitoradas e teste de restauração registrado no primeiro mês.",
+      "source": "Resumo sintético, 00:31:05 a 00:32:43",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-06",
+      "requirement": "Assumir o suporte dos firewalls Fortinet, hoje com outro parceiro.",
+      "solution": "Sustentação de firewalls Fortinet",
+      "evidence": "Transição concluída com inventário de configuração dos firewalls e acessos entregues.",
+      "source": "Resumo sintético, 00:33:10 a 00:33:29",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-07",
+      "requirement": "Concentrar em um único parceiro o suporte de endpoint, Veeam e firewalls.",
+      "solution": "Sustentação da plataforma de endpoint, do ambiente Veeam e dos firewalls Fortinet",
+      "evidence": "Um único canal de atendimento POPULOS para as três frentes.",
+      "source": "Resumo sintético, 00:09:15 a 00:09:51 e 00:19:04",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    }
+  ],
+  "source_coverage": [
+    {
+      "ref": "Resumo sintético, 00:04:32",
+      "statement": "Empresa de telecom com cerca de 180 colaboradores.",
+      "status": "descartado",
+      "targets": [],
+      "reason": "Contexto; o dimensionamento usa a contagem de computadores e servidores."
+    },
+    {
+      "ref": "Resumo sintético, 00:05:02",
+      "statement": "Cerca de 190 computadores e 70 servidores.",
+      "status": "coberto",
+      "targets": [
+        "dimensionamento",
+        "sumário"
+      ]
+    },
+    {
+      "ref": "Resumo sintético, 00:07:50",
+      "statement": "Kaspersky em uso, licença perto do vencimento, modelo MSP.",
+      "status": "coberto",
+      "targets": [
+        "REQ-01",
+        "sumário"
+      ]
+    },
+    {
+      "ref": "Resumo sintético, 00:08:51",
+      "statement": "Funções usadas hoje: antivírus, EDR, mobile, inventário de rede, políticas de firewall e bloqueio.",
+      "status": "coberto",
+      "targets": [
+        "REQ-01",
+        "REQ-02",
+        "REQ-03"
+      ]
+    },
+    {
+      "ref": "Resumo sintético, 00:09:15",
+      "statement": "Consolidar o suporte de Veeam, endpoint e firewall em um único parceiro.",
+      "status": "coberto",
+      "targets": [
+        "REQ-07",
+        "escopo"
+      ]
+    },
+    {
+      "ref": "Resumo sintético, 00:17:16",
+      "statement": "Renovação da hiperconvergência Dell para 2027, ainda sem decisão.",
+      "status": "descartado",
+      "targets": [],
+      "reason": "O cliente situou o tema em 2027, fora desta proposta."
+    },
+    {
+      "ref": "Resumo sintético, 00:27:53",
+      "statement": "Proposta com as duas opções, SentinelOne e Fortinet.",
+      "status": "coberto",
+      "targets": [
+        "REQ-04"
+      ]
+    },
+    {
+      "ref": "Resumo sintético, 00:29:28",
+      "statement": "Dois clusters VxRail com oito nós e cerca de 100 máquinas virtuais.",
+      "status": "coberto",
+      "targets": [
+        "dimensionamento"
+      ]
+    },
+    {
+      "ref": "Resumo sintético, 00:31:05",
+      "statement": "Dois ambientes Veeam: backup do Microsoft 365 e segunda cópia de backup.",
+      "status": "coberto",
+      "targets": [
+        "REQ-05"
+      ]
+    },
+    {
+      "ref": "Resumo sintético, 00:33:29",
+      "statement": "Quatro firewalls Fortinet, suporte hoje com outro parceiro.",
+      "status": "coberto",
+      "targets": [
+        "REQ-06",
+        "dimensionamento"
+      ]
+    },
+    {
+      "ref": "Resumo sintético, 00:34:06",
+      "statement": "Anti-DDoS para os clientes ISP.",
+      "status": "descartado",
+      "targets": [],
+      "reason": "O cliente não pediu mudança nessa solução."
+    }
+  ],
+  "client_numbers": [
+    {
+      "quote": "180 colaboradores",
+      "ref": "Resumo sintético, 00:04:32",
+      "destination": "descartado_com_motivo",
+      "reason": "O dimensionamento usa computadores e servidores."
+    },
+    {
+      "quote": "190 computadores",
+      "ref": "Resumo sintético, 00:05:02",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "70 servidores",
+      "ref": "Resumo sintético, 00:05:30",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "quatro caixas",
+      "ref": "Resumo sintético, 00:06:40",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "100 VMs",
+      "ref": "Resumo sintético, 00:29:52",
+      "destination": "dimensionamento"
+    }
+  ],
+  "open_questions": [
+    "Qual a data exata de vencimento do contrato Kaspersky em novembro?",
+    "Qual o prazo de fornecimento e ativação das licenças de endpoint no modelo MSP?",
+    "Quantos dispositivos móveis devem ser protegidos?",
+    "Quais os modelos dos quatro firewalls Fortinet e a situação dos contratos de suporte do fabricante?",
+    "O licenciamento Veeam atual é da Telecom Exemplo ou do parceiro que presta o suporte hoje?"
+  ],
+  "solution_decisions": [
+    {
+      "product_id": "s1_singularity_complete",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-01",
+        "REQ-04"
+      ],
+      "rationale": "O cliente precisa substituir o Kaspersky com antivírus, EDR e políticas de bloqueio; a POPULOS recomendou a SentinelOne pela visibilidade e o cliente pediu a comparação com a Fortinet.",
+      "client_summary": "O Singularity Complete substitui o Kaspersky nos cerca de 190 computadores e 70 servidores, com prevenção, detecção e resposta automática em um único agente.",
+      "capabilities": [
+        "antivírus de nova geração (EPP)",
+        "EDR com correlação de eventos",
+        "controle de dispositivos"
+      ],
+      "confidence": "alta"
+    },
+    {
+      "product_id": "s1_ranger",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-02"
+      ],
+      "rationale": "O cliente listou o inventário de rede entre as funções que usa hoje.",
+      "client_summary": "O Singularity Ranger mantém o inventário dos dispositivos da rede, inclusive dos que estão sem proteção.",
+      "capabilities": [
+        "inventário de rede",
+        "descoberta de dispositivos sem agente"
+      ],
+      "confidence": "média"
+    },
+    {
+      "product_id": "s1_mobile",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-03"
+      ],
+      "rationale": "O cliente listou a proteção de dispositivos móveis entre as funções que usa hoje.",
+      "client_summary": "O Singularity Mobile protege os dispositivos móveis hoje cobertos pela solução atual.",
+      "capabilities": [
+        "iOS e Android",
+        "detecção de ameaças móveis"
+      ],
+      "confidence": "média"
+    },
+    {
+      "product_id": "fortiedr",
+      "status": "optional",
+      "requirement_ids": [
+        "REQ-04"
+      ],
+      "rationale": "O cliente pediu a opção Fortinet para comparar.",
+      "trigger": "Se a Telecom Exemplo preferir manter o ecossistema Fortinet já usado nos firewalls.",
+      "client_summary": "O FortiEDR é a alternativa de detecção e resposta integrada ao ecossistema Fortinet.",
+      "capabilities": [
+        "prevenção pré-infecção",
+        "resposta automatizada por playbooks"
+      ]
+    },
+    {
+      "product_id": "forticlient_ems",
+      "status": "optional",
+      "requirement_ids": [
+        "REQ-04"
+      ],
+      "rationale": "Complementa o FortiEDR na opção Fortinet com gestão central dos agentes.",
+      "trigger": "Junto com o FortiEDR, se a opção Fortinet for escolhida.",
+      "client_summary": "O FortiClient com EMS completa a opção Fortinet com proteção gerenciada e integração aos firewalls.",
+      "capabilities": [
+        "antivírus e controle de aplicações",
+        "integração com o Security Fabric"
+      ]
+    },
+    {
+      "product_id": "s1_purple_ai",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Apresentado pela POPULOS na reunião, sem pedido do cliente."
+    },
+    {
+      "product_id": "s1_hyperautomation",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Apresentado pela POPULOS na reunião, sem pedido do cliente."
+    },
+    {
+      "product_id": "veeam_vbr",
+      "status": "already_contracted",
+      "requirement_ids": [
+        "REQ-05"
+      ],
+      "rationale": "O ambiente Veeam de segunda cópia já opera na Telecom Exemplo.",
+      "contract_ref": "Ambiente Veeam em operação na Telecom Exemplo (transcrição, 00:31:05)"
+    },
+    {
+      "product_id": "veeam_m365",
+      "status": "already_contracted",
+      "requirement_ids": [
+        "REQ-05"
+      ],
+      "rationale": "O backup do Microsoft 365 com Veeam já opera na Telecom Exemplo.",
+      "contract_ref": "Ambiente Veeam em operação na Telecom Exemplo (transcrição, 00:32:12)"
+    },
+    {
+      "product_id": "sustentacao_endpoint",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-07"
+      ],
+      "rationale": "O cliente quer um único parceiro para o suporte, inclusive do endpoint.",
+      "client_summary": "Após a implantação, a POPULOS mantém políticas, agentes e alertas da plataforma de endpoint.",
+      "capabilities": [
+        "gestão de políticas e agentes",
+        "triagem de alertas"
+      ]
+    },
+    {
+      "product_id": "sustentacao_veeam",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-05",
+        "REQ-07"
+      ],
+      "rationale": "O cliente quer transferir para a POPULOS o suporte dos dois ambientes Veeam.",
+      "client_summary": "A POPULOS acompanha as rotinas de backup dos dois ambientes Veeam e testa restaurações periodicamente.",
+      "capabilities": [
+        "monitoramento das rotinas de backup",
+        "testes periódicos de restauração"
+      ]
+    },
+    {
+      "product_id": "sustentacao_fortinet",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-06",
+        "REQ-07"
+      ],
+      "rationale": "O cliente pretende substituir o parceiro atual no suporte dos firewalls Fortinet.",
+      "client_summary": "A POPULOS assume o suporte técnico e a gestão de mudanças dos quatro firewalls FortiGate.",
+      "capabilities": [
+        "suporte técnico",
+        "gestão de mudanças e regras"
+      ]
+    }
+  ],
+  "products": [
+    "s1_singularity_complete",
+    "s1_ranger",
+    "s1_mobile",
+    "sustentacao_endpoint",
+    "sustentacao_veeam",
+    "sustentacao_fortinet"
+  ],
+  "architecture": {
+    "summary": "O agente Singularity substitui o Kaspersky nos computadores e servidores das duas localidades de TI da Telecom Exemplo (sede e site secundário), com gestão central na console SentinelOne. O Ranger usa os agentes para manter o inventário de rede, e o Singularity Mobile cobre os dispositivos móveis. Os ambientes Veeam e os firewalls Fortinet continuam como estão e passam a ser sustentados pela POPULOS."
+  },
+  "sections": [
+    {
+      "title": "Resumo executivo",
+      "paragraphs": [
+        "A Telecom Exemplo usa hoje o Kaspersky nos cerca de 190 computadores e 70 servidores, com contrato que vence em novembro, e o suporte de endpoint, Veeam e firewalls está dividido entre parceiros. Esta proposta substitui a proteção de endpoint pela SentinelOne e concentra na POPULOS a sustentação das três frentes.",
+        "A implantação está estimada entre 5 e 7 semanas a partir da reunião de início, em quatro fases com piloto antes da migração em ondas. A opção Fortinet é apresentada separadamente, para a comparação pedida pela Telecom Exemplo."
+      ]
+    }
+  ],
+  "dimensioning": [
+    [
+      "Computadores e servidores",
+      "Cerca de 190 e 70",
+      "Informado pelo cliente; contagem exata no levantamento",
+      "Pendente"
+    ],
+    [
+      "Dispositivos móveis",
+      "A confirmar",
+      "Quantidade não informada",
+      "Pendente"
+    ],
+    [
+      "Ambientes Veeam e firewalls Fortinet",
+      "2 e 4",
+      "Backup do Microsoft 365, segunda cópia de backup e quatro firewalls; modelos a confirmar",
+      "Pendente"
+    ]
+  ],
+  "estimates": [
+    {
+      "item": "Esforço total de implantação",
+      "value": "5 a 7 semanas",
+      "owner": "Ana Ribeiro (arquiteta responsável)",
+      "owner_role": "arquiteto"
+    }
+  ],
+  "assessment_items": [
+    "Inventário de computadores, servidores e dispositivos móveis, com sistemas operacionais e localidades;",
+    "Mapeamento das políticas, exceções e integrações do Kaspersky;",
+    "Levantamento dos ambientes Veeam e dos firewalls Fortinet para a transição da sustentação."
+  ],
+  "scope": {
+    "included": [
+      "Implantação da console SentinelOne e das políticas aprovadas no levantamento;",
+      "Instalação do agente em piloto e em ondas, com remoção do Kaspersky;",
+      "Ativação do inventário de rede e da proteção de dispositivos móveis;",
+      "Transição e início da sustentação de endpoint, Veeam e firewalls Fortinet."
+    ],
+    "deliverables": [
+      "Plano de migração em ondas aprovado;",
+      "Relatório de cobertura dos agentes e de remoção do Kaspersky;",
+      "Documentação final das políticas e do procedimento de sustentação."
+    ],
+    "excluded": [
+      "Renovação ou substituição da hiperconvergência e do Avamar, previstas pelo cliente para 2027;",
+      "Mudança no acesso remoto dos técnicos de campo;",
+      "Alterações na solução anti-DDoS oferecida aos clientes da Telecom Exemplo."
+    ]
+  },
+  "delivery": {
+    "phases": [
+      {
+        "name": "Fase 1 — Levantamento e desenho",
+        "kind": "assessment",
+        "weeks": [
+          1,
+          1
+        ],
+        "duration": "1 semana",
+        "objective": "Inventariar computadores, servidores e dispositivos móveis, mapear as políticas do Kaspersky e aprovar o plano de migração em ondas.",
+        "dependency": "Acesso à console atual e lista de ativos",
+        "outputs": [
+          "inventário aprovado",
+          "plano de migração"
+        ]
+      },
+      {
+        "name": "Fase 2 — Piloto",
+        "kind": "implementation",
+        "weeks": [
+          1,
+          2
+        ],
+        "duration": "1 a 2 semanas",
+        "objective": "Instalar o agente em um grupo piloto, ajustar exceções e validar a remoção do Kaspersky.",
+        "dependency": "Licenças ativas e grupo piloto definido",
+        "outputs": [
+          "relatório do piloto",
+          "políticas aprovadas"
+        ]
+      },
+      {
+        "name": "Fase 3 — Implantação em ondas",
+        "kind": "implementation",
+        "weeks": [
+          2,
+          3
+        ],
+        "duration": "2 a 3 semanas",
+        "objective": "Instalar o agente nos demais computadores e servidores, remover o Kaspersky e ativar inventário de rede e proteção móvel.",
+        "dependency": "Janelas de mudança aprovadas",
+        "outputs": [
+          "cobertura de 100% do inventário"
+        ]
+      },
+      {
+        "name": "Fase 4 — Estabilização e transição para a sustentação",
+        "kind": "implementation",
+        "weeks": [
+          1,
+          1
+        ],
+        "duration": "1 semana",
+        "objective": "Acompanhar alertas, entregar a documentação, obter o aceite e iniciar a sustentação das três frentes.",
+        "dependency": "Aceite das ondas",
+        "outputs": [
+          "documentação final",
+          "aceite",
+          "início da sustentação"
+        ]
+      }
+    ],
+    "responsibilities": [
+      {
+        "party": "Telecom Exemplo — infraestrutura",
+        "responsibility": "Liberar acessos, definir o grupo piloto e aprovar as janelas de mudança."
+      },
+      {
+        "party": "Telecom Exemplo — parceiros atuais",
+        "responsibility": "Entregar configurações e acessos para a transição da sustentação."
+      }
+    ]
+  },
+  "assumptions": [
+    "Premissa de dimensionamento: cerca de 190 computadores e 70 servidores; divergência relevante no levantamento será tratada na Fase 1.",
+    "As licenças estão ativas antes do início da Fase 2.",
+    "A Telecom Exemplo aprova as janelas de mudança das ondas de instalação."
+  ],
+  "restrictions": [
+    "O cronograma depende da ativação das licenças e da aprovação das janelas de mudança;",
+    "A faixa de 5 a 7 semanas pressupõe acessos disponíveis no início de cada fase;",
+    "A sustentação segue os termos de atendimento aprovados, não a tabela de SLA da implantação;",
+    "A proposta não inclui a renovação da hiperconvergência nem mudanças no acesso remoto."
+  ],
+  "risks": [
+    {
+      "risk": "Conflito entre o Kaspersky e o novo agente durante a troca",
+      "impact": "Lentidão ou falha em estações",
+      "mitigation": "Piloto e remoção controlada do Kaspersky por onda"
+    },
+    {
+      "risk": "Servidor crítico sensível a mudança",
+      "impact": "Indisponibilidade de serviço interno",
+      "mitigation": "Ondas de servidores em janela aprovada, com exclusões validadas no piloto"
+    },
+    {
+      "risk": "Transição incompleta de acessos dos parceiros atuais",
+      "impact": "Atraso no início da sustentação",
+      "mitigation": "Lista de acessos e configurações cobrada na Fase 1"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "requirement_id": "REQ-01",
+      "phase": "committed",
+      "criterion": "Console mostra o agente ativo e a política aprovada em 100% dos computadores e servidores do inventário aprovado, com o Kaspersky removido."
+    },
+    {
+      "requirement_id": "REQ-02",
+      "phase": "committed",
+      "criterion": "Relatório do Ranger lista os dispositivos descobertos na rede e identifica os que estão sem agente."
+    },
+    {
+      "requirement_id": "REQ-03",
+      "phase": "committed",
+      "criterion": "Dispositivos móveis do inventário aprovado aparecem registrados e protegidos na console."
+    },
+    {
+      "requirement_id": "REQ-04",
+      "phase": "committed",
+      "criterion": "Proposta entregue com a opção Fortinet descrita separadamente e o gatilho de escolha."
+    },
+    {
+      "requirement_id": "REQ-05",
+      "phase": "committed",
+      "criterion": "Rotinas de backup dos dois ambientes Veeam monitoradas e um teste de restauração registrado no primeiro mês de sustentação."
+    },
+    {
+      "requirement_id": "REQ-06",
+      "phase": "committed",
+      "criterion": "Transição concluída com o inventário de configuração dos quatro firewalls e os acessos entregues à POPULOS."
+    },
+    {
+      "requirement_id": "REQ-07",
+      "phase": "committed",
+      "criterion": "Canal único de atendimento POPULOS ativo para endpoint, Veeam e firewalls."
+    }
+  ],
+  "event_readiness": [],
+  "critical_events": [],
+  "event_feasibility": [],
+  "client_roles": [
+    "Infraestrutura: acessos, grupo piloto e janelas de mudança;",
+    "Rede: informações e acessos dos firewalls Fortinet;",
+    "Backup: informações e acessos dos ambientes Veeam."
+  ],
+  "team_competencies": [
+    "Proteção de endpoint SentinelOne e Fortinet;",
+    "Backup Veeam e firewalls Fortinet;",
+    "Gestão de projeto, testes e documentação técnica."
+  ],
+  "document_text": {
+    "about_vendor": "A SentinelOne desenvolve a plataforma Singularity de proteção de endpoints, servidores e dispositivos móveis. Nesta proposta, são usados o Singularity Complete, o Ranger e o Singularity Mobile.",
+    "about_solution": "Para a Telecom Exemplo, a solução substitui o Kaspersky por um agente único de prevenção, detecção e resposta, mantém o inventário de rede e a proteção móvel e concentra na POPULOS o suporte de endpoint, Veeam e firewalls.",
+    "partnership": "A POPULOS responde pelo desenho, pela implantação, pelos testes, pela documentação e pela sustentação das três frentes. As credenciais nominais da equipe serão apresentadas na mobilização.",
+    "coverage": "Abrangência: computadores, servidores e dispositivos móveis da Telecom Exemplo, os dois ambientes Veeam e os quatro firewalls Fortinet.",
+    "dimensioning_intro": "O dimensionamento considera os cerca de 190 computadores e 70 servidores informados pela Telecom Exemplo. A contagem exata e a quantidade de dispositivos móveis serão confirmadas no levantamento.",
+    "methodology_intro": "A POPULOS conduzirá a implantação em quatro fases: levantamento e desenho, piloto, implantação em ondas e estabilização com transição para a sustentação.",
+    "knowledge_transfer": "A passagem de conhecimento abrangerá a console SentinelOne, as políticas aprovadas e o procedimento de atendimento da sustentação.",
+    "tests": "Os testes cobrirão a instalação no piloto, a remoção do Kaspersky, a detecção em ambiente controlado e a cobertura de agentes, conforme os critérios de aceite.",
+    "schedule_intro": "A implantação está estimada entre 5 e 7 semanas, contadas a partir da reunião de início, condicionada à ativação das licenças e à aprovação das janelas de mudança.",
+    "schedule_sequence": "A sequência inclui levantamento e desenho, piloto, implantação em ondas e estabilização com transição para a sustentação.",
+    "acceptance_intro": "A aceitação seguirá os critérios abaixo, vinculados aos requisitos da matriz de rastreabilidade:",
+    "warranty_intro": "A garantia técnica cobre a correção de defeitos diretamente atribuíveis aos serviços de implantação executados pela POPULOS, no prazo indicado no quadro Garantia e vigência.",
+    "closing": "A implantação encerra-se com o aceite final, e a sustentação segue nos termos de atendimento aprovados.",
+    "callout_limits": "A frente cobre a troca do Kaspersky pela SentinelOne nos ativos do inventário aprovado. Hiperconvergência, Avamar e acesso remoto ficam fora do escopo.",
+    "callout_migration": "Migração em ondas após o piloto, com remoção controlada do Kaspersky por onda e retorno ao agente anterior se o piloto falhar.",
+    "callout_milestones": "Plano de migração aprovado, piloto validado, cobertura de 100% do inventário e documentação final aceita.",
+    "license_prefix": "Licenciamento:",
+    "diagram_users": "Colaboradores e técnicos",
+    "diagram_users_detail": "190 computadores · 70 servidores",
+    "diagram_origins_title": "Ambiente Telecom Exemplo",
+    "diagram_origins": "Sede · Site secundário",
+    "callout_qualifications": "A equipe será mobilizada com experiência em SentinelOne, Veeam e Fortinet; as credenciais nominais serão apresentadas na mobilização.",
+    "assessment_outcome": "Com base no levantamento, será entregue o plano de migração em ondas, com inventário conferido, políticas mapeadas e janelas de mudança.",
+    "front_titles": {
+      "endpoint": "Proteção de endpoint com um agente único",
+      "operations": "Suporte concentrado em um único parceiro"
+    }
+  }
+}
