@@ -238,6 +238,8 @@ def _validate_rules_v7(proposal: dict[str, Any]) -> list[str]:
         if is_populos_standard(decision):
             if decision.get("template_version") != template_version:
                 errors.append(f"padrão institucional sem a versão vigente do template ({template_version}): {key}")
+            if _rules_version(proposal) >= 9 and key not in institutional_decisions():
+                errors.append(f"decisão do caso marcada como padrão institucional (só {', '.join(institutional_decisions())} pode): {key}")
             continue
         try:
             date.fromisoformat(str(decision.get("approved_at", "")))
@@ -449,6 +451,10 @@ def _pre_proposal_gate(proposal: dict[str, Any]) -> list[str] | None:
 
 def _text_value(value: Any) -> str:
     return " ".join(str(value or "").split())
+
+
+def institutional_decisions() -> list[str]:
+    return list(json.loads(_WHITELIST.read_text(encoding="utf-8")).get("institutional_decisions", []))
 
 
 def sla_applicable_engagements() -> list[str]:

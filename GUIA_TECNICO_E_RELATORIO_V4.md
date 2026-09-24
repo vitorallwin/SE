@@ -560,6 +560,11 @@ Na rodada v8, o autor Gemini escreveu decisões "aprovadas por Vitor" que não e
 
 O `make_workspace --sealed` cria um workspace sem o código do motor: só brief, skill, caso e um `validate_attempt.py` que chama o motor fora da pasta. Assim o autor conhece as regras apenas pela skill e pelas mensagens do validador.
 
+### Motor v8.2 e v8.3
+
+- v8.2: na rodada selada (autor sem acesso ao código) apareceram três divergências entre skill e validador. A linha "Estimativa" era sempre recusada; a faixa de semanas de uma fase isolada era tratada como total; o formato de `delivery.responsibilities` passava no validador e derrubava o compositor. As três foram alinhadas.
+- v8.3: o Gemini marcou a decisão de licença como `populos_standard` para pular a aprovação. Agora só as decisões listadas em `institutional_decisions` na whitelist (hoje, `sla`) podem usar essa base.
+
 ## 19. Arquivos de trabalho fora da aplicação
 
 Estes arquivos ajudaram na geração e auditoria, mas não são necessários para executar a aplicação:

@@ -245,3 +245,12 @@ class SealedRoundFixesTests(unittest.TestCase):
         errors = errors_of(proposal)
         self.assertIn("delivery.responsibilities deve ser lista de {party, responsibility}", errors)
         self.assertIn("populos_roles deve ser lista de [papel, responsabilidade, dedicação]", errors)
+
+    def test_case_decision_cannot_claim_institutional_standard(self) -> None:
+        """Estado real do Gemini (rodada v9, caso 04): licença marcada como padrão institucional para pular a aprovação."""
+        fixtures = ROOT / "tests" / "fixtures"
+        proposal = json.loads((fixtures / "lumina_gemini_falso_padrao_institucional.json").read_text(encoding="utf-8"))
+        self.assertEqual(proposal["governance"]["license_supply"].get("basis"), "populos_standard")
+        errors = validate_proposal_rules(proposal, (fixtures / "lumina_insumo.md").read_text(encoding="utf-8"))
+        self.assertIn("decisão do caso marcada como padrão institucional (só sla pode): license_supply", errors)
+        self.assertNotIn("decisão do caso marcada como padrão institucional (só sla pode): sla", errors)

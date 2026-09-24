@@ -11,5 +11,9 @@
   "sla_applies_to": [
     "implementation"
   ],
-  "sla_applies_to_note": "Engajamentos em que a tabela institucional de SLA vale sem decisão do caso. Outros tipos exigem governance.sla_applicability aprovada."
+  "sla_applies_to_note": "Engajamentos em que a tabela institucional de SLA vale sem decisão do caso. Outros tipos exigem governance.sla_applicability aprovada.",
+  "institutional_decisions": [
+    "sla"
+  ],
+  "institutional_decisions_note": "Únicas decisões de governança que podem usar basis populos_standard. Qualquer outra é decisão do caso e exige aprovação citada do insumo."
 }
