@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import base64
 import json
+import os
 import re
 import shutil
 import threading
@@ -64,6 +65,52 @@ def authors() -> dict[str, Any]:
         "gemini": GeminiClient().status(),
         "claude": ClaudeClient(config["configurations"]["B"]["author_model"]).status(),
     }
+
+
+KEY_VARIABLES = {"gemini": "GEMINI_API_KEY", "claude": "ANTHROPIC_API_KEY"}
+
+
+def set_key(provider: str, key: str) -> dict[str, Any]:
+    """Write an author key into the git-ignored .env (UTF-8 without BOM, no quotes) and test it right away.
+
+    The key goes browser → this local server → .env; it is never sent back to the browser.
+    """
+    variable = KEY_VARIABLES.get(provider)
+    if not variable:
+        raise LabError("autor inválido")
+    key = "".join(str(key or "").split()).strip("\"'")
+    if len(key) < 20:
+        raise LabError("a chave parece incompleta: copie a chave inteira")
+    env_file = ROOT / ".env"
+    lines = env_file.read_text(encoding="utf-8-sig").splitlines() if env_file.exists() else []
+    lines = [line for line in lines if line.strip().removeprefix("export ").partition("=")[0].strip() != variable]
+    lines.append(f"{variable}={key}")
+    env_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    load_dotenv(ROOT)
+    return {"provider": provider, "length": len(key), "check": check_key(provider), "authors": authors()}
+
+
+def check_key(provider: str) -> dict[str, Any]:
+    """Cheapest authenticated call of each API (list models): tells a rejected key from a working one."""
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+
+    load_dotenv(ROOT)
+    key = os.environ.get(KEY_VARIABLES[provider], "")
+    if provider == "gemini":
+        request = urllib.request.Request("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1&key=" + urllib.parse.quote(key, safe=""))
+    else:
+        request = urllib.request.Request("https://api.anthropic.com/v1/models?limit=1", headers={"x-api-key": key, "anthropic-version": "2023-06-01"})
+    try:
+        with urllib.request.urlopen(request, timeout=20):
+            return {"ok": True, "message": "chave aceita pelo provedor"}
+    except urllib.error.HTTPError as exc:
+        if exc.code in {400, 401, 403}:
+            return {"ok": False, "message": "o provedor recusou a chave: gere uma nova e cole de novo"}
+        return {"ok": False, "message": f"o provedor respondeu HTTP {exc.code}; tente de novo em instantes"}
+    except (urllib.error.URLError, TimeoutError) as exc:
+        return {"ok": False, "message": f"sem acesso ao provedor: {exc}"}
 
 
 def status() -> dict[str, Any]:

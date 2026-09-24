@@ -16,7 +16,10 @@
       <span class="brand-name">Bancada</span>
       <span class="brand-sub">motor de propostas POPULOS</span>
     </div>
-    <dl class="engine" id="engine" aria-label="Versão do motor"></dl>
+    <div class="mast-right">
+      <dl class="engine" id="engine" aria-label="Versão do motor"></dl>
+      <button class="btn" id="open-keys" type="button">Chaves</button>
+    </div>
   </header>
 
   <div class="layout">
@@ -95,6 +98,28 @@
       <div class="actions">
         <button class="btn" value="cancel" formnovalidate>Cancelar</button>
         <button class="btn btn-primary" value="submit">Criar execução complementada</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-keys" class="dialog">
+    <form method="dialog" id="form-keys">
+      <h2>Chave do autor</h2>
+      <p class="hint">Cole a chave abaixo. Ela é gravada no <code>.env</code> desta máquina e testada na hora. Não sai daqui nem volta para a tela.</p>
+      <label class="field">Autor
+        <select name="provider">
+          <option value="gemini">Gemini (aistudio.google.com/apikey)</option>
+          <option value="claude">Claude (console.anthropic.com)</option>
+        </select>
+      </label>
+      <label class="field">Chave
+        <input name="key" type="password" required autocomplete="off" spellcheck="false" placeholder="Clique aqui e aperte Ctrl+V">
+      </label>
+      <p class="key-result" id="key-result" role="status"></p>
+      <p class="form-error" id="keys-error" role="alert"></p>
+      <div class="actions">
+        <button class="btn" value="cancel" formnovalidate>Fechar</button>
+        <button class="btn btn-primary" value="save">Salvar e testar</button>
       </div>
     </form>
   </dialog>

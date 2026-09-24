@@ -86,5 +86,24 @@ class DotenvTests(unittest.TestCase):
             self.assertNotIn("nova-chave", message)
 
 
+    def test_key_from_the_bench_goes_to_env_without_bom_or_quotes(self) -> None:
+        import os
+
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {}, clear=False), \
+                mock.patch.object(lab, "ROOT", Path(tmp)), mock.patch.object(lab, "check_key", return_value={"ok": True, "message": "ok"}):
+            env = Path(tmp) / ".env"
+            env.write_bytes("\ufeffGEMINI_API_KEY=\nOUTRA=1\n".encode("utf-8"))
+            result = lab.set_key("gemini", ' "AIzaSyExemploExemploExemploExemplo123" ')
+            text = env.read_bytes().decode("utf-8")
+            self.assertFalse(text.startswith("\ufeff"))
+            self.assertIn("OUTRA=1", text)
+            self.assertEqual(text.count("GEMINI_API_KEY"), 1)
+            self.assertIn("GEMINI_API_KEY=AIzaSyExemploExemploExemploExemplo123\n", text)
+            self.assertEqual(result["length"], len("AIzaSyExemploExemploExemploExemplo123"))
+            self.assertNotIn("AIzaSy", json.dumps(result))
+            with self.assertRaises(lab.LabError):
+                lab.set_key("gemini", "")
+
+
 if __name__ == "__main__":
     unittest.main()

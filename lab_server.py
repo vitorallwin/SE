@@ -54,6 +54,7 @@ class Handler(BaseHTTPRequestHandler):
             ("POST", r"/api/runs/([a-z0-9-]+)/author", lambda r: lab.start_author(r, self._body().get("engine", ""))),
             ("POST", r"/api/runs/([a-z0-9-]+)/complement", lambda r: lab.complement_run(r, self._body().get("text", ""))),
             ("POST", r"/api/runs/([a-z0-9-]+)/pdf", lambda r: lab.render_pdf(r)),
+            ("POST", r"/api/keys", lambda: lab.set_key(*(lambda b: (b.get("provider", ""), b.get("key", "")))(self._body()))),
         ]
         for verb, pattern, handler in routes:
             match = re.fullmatch(pattern, path)
@@ -65,6 +66,12 @@ class Handler(BaseHTTPRequestHandler):
         raise lab.LabError("rota inexistente", 404)
 
     def _body(self) -> dict[str, Any]:
+        # Só a própria página pode escrever: JSON (força preflight em outra origem) e Origin local, quando houver.
+        if not (self.headers.get("Content-Type") or "").startswith("application/json"):
+            raise lab.LabError("Content-Type deve ser application/json", 415)
+        origin = self.headers.get("Origin")
+        if origin and urlparse(origin).hostname not in {"127.0.0.1", "localhost"}:
+            raise lab.LabError("origem não permitida", 403)
         length = int(self.headers.get("Content-Length") or 0)
         if length > MAX_BODY:
             raise lab.LabError("requisição grande demais", 413)

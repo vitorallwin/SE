@@ -191,7 +191,8 @@ function renderSheet() {
         h("span", { class: "sep", "aria-hidden": "true" }),
         h("button", { class: "btn", type: "button", disabled: running || full, onclick: () => openDialog("dlg-state") }, "Colar estado.json"),
         h("button", { class: "btn btn-quiet", type: "button", onclick: () => openDialog("dlg-complement") }, "Complementar insumo → nova execução")),
-      run.job?.state === "failed" ? h("div", { class: "job-error" }, `Autor falhou: ${run.job.error}`) : null,
+      run.job?.state === "failed" ? h("div", { class: "job-error" }, `Autor falhou: ${run.job.error}`,
+        /chave/i.test(run.job.error) ? h("div", { style: "margin-top:8px" }, h("button", { class: "btn", type: "button", onclick: () => $("open-keys").click() }, "Trocar a chave")) : null) : null,
     ),
 
     renderViolations(log),
@@ -340,6 +341,24 @@ fileInput.addEventListener("change", listFiles);
 drop.addEventListener("drop", () => setTimeout(listFiles));
 
 $("new-run").addEventListener("click", () => openDialog("dlg-new"));
+$("open-keys").addEventListener("click", () => { openDialog("dlg-keys"); $("key-result").textContent = ""; });
+
+$("form-keys").addEventListener("submit", async (event) => {
+  if (event.submitter?.value === "cancel") return;
+  event.preventDefault();
+  const form = event.target, button = event.submitter, result = $("key-result");
+  $("keys-error").textContent = ""; result.textContent = "Gravando e testando…"; result.className = "key-result";
+  button.disabled = true;
+  try {
+    const r = await api("/api/keys", { method: "POST", body: { provider: form.provider.value, key: form.key.value } });
+    form.key.value = "";
+    state.status.authors = r.authors; renderEngine();
+    if (state.current) renderSheet();
+    result.textContent = `${r.check.ok ? "✓" : "✗"} Gravada (${r.length} caracteres): ${r.check.message}.`;
+    result.className = `key-result ${r.check.ok ? "ok" : "bad"}`;
+  } catch (err) { result.textContent = ""; $("keys-error").textContent = err.message; }
+  finally { button.disabled = false; }
+});
 
 (async function init() {
   try {
