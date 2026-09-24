@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "populos/proposal-state/v10",
+  "title": "Estado da proposta (regras v10)",
+  "description": "Formato que o validador confere antes das regras. Um erro de formato volta como violação legível; o compositor só lê estados que passaram aqui.",
+  "type": "object",
+  "$defs": {
+    "text": {"type": "string"},
+    "texts": {"type": "array", "items": {"type": "string"}},
+    "decision": {
+      "type": "object",
+      "required": ["state"],
+      "properties": {
+        "state": {"enum": ["commitment", "populos_internal_decision"]},
+        "basis": {"type": "string"},
+        "source": {"type": "string"},
+        "approved_by": {"type": ["string", "null"]},
+        "approved_at": {"type": ["string", "null"]},
+        "approval_record": {"type": ["string", "null"]},
+        "approval_quote": {"type": ["string", "null"]},
+        "mode": {"type": ["string", "null"]},
+        "engagement_ref": {"type": ["string", "null"]},
+        "approver_role": {"type": ["string", "null"]},
+        "template_version": {"type": "string"}
+      }
+    }
+  },
+  "required": ["rules_version", "input_assessment"],
+  "properties": {
+    "rules_version": {"type": "integer"},
+    "data_mode": {"enum": ["test", "production"]},
+    "client_name": {"type": "string"},
+    "opportunity": {"type": "string"},
+    "code": {"type": "string"},
+    "opportunity_id": {"type": "string"},
+    "input_assessment": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {"status": {"enum": ["sufficient", "insufficient"]}, "missing": {"$ref": "#/$defs/texts"}, "reason": {"type": "string"}}
+    },
+    "catalog_fit": {
+      "type": "object",
+      "required": ["status"],
+      "properties": {"status": {"enum": ["fits", "no_catalog"]}, "requested": {"type": "string"}, "reason": {"type": "string"}}
+    },
+    "open_questions": {"$ref": "#/$defs/texts"},
+    "client_scope": {
+      "type": "object",
+      "properties": {"type": {"type": ["string", "null"]}, "excludes_implementation": {"type": "boolean"}, "source": {"type": "string"}, "forbidden_in_committed": {"$ref": "#/$defs/texts"}}
+    },
+    "governance": {"type": "object", "additionalProperties": {"$ref": "#/$defs/decision"}},
+    "discovery": {"type": "object", "properties": {"business_goals": {"$ref": "#/$defs/texts"}}},
+    "traceability": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["requirement_id", "requirement", "solution"],
+        "properties": {
+          "requirement_id": {"type": "string"}, "requirement": {"type": "string"}, "solution": {"type": "string"},
+          "evidence": {"type": "string"}, "source": {"type": "string"},
+          "speakers": {"type": "array", "items": {"enum": ["client", "vendor", "input_document"]}},
+          "hypothesis": {"type": "boolean"}
+        }
+      }
+    },
+    "source_coverage": {
+      "type": "array",
+      "items": {"type": "object", "required": ["ref", "statement", "status"], "properties": {"targets": {"$ref": "#/$defs/texts"}}}
+    },
+    "client_numbers": {"type": "array", "items": {"type": "object", "required": ["quote", "destination"]}},
+    "solution_decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["product_id", "status"],
+        "properties": {
+          "product_id": {"type": "string"},
+          "status": {"enum": ["recommended", "optional", "needs_information", "excluded", "already_contracted"]},
+          "requirement_ids": {"$ref": "#/$defs/texts"}, "rationale": {"type": "string"}, "client_summary": {"type": "string"},
+          "capabilities": {"$ref": "#/$defs/texts"}, "implementation_status": {"type": "string"},
+          "trigger": {"type": "string"}, "contract_ref": {"type": "string"}
+        }
+      }
+    },
+    "products": {"$ref": "#/$defs/texts"},
+    "architecture": {"type": "object", "properties": {"summary": {"type": "string"}}},
+    "sections": {
+      "type": "array",
+      "items": {"type": "object", "required": ["title", "paragraphs"], "properties": {"title": {"type": "string"}, "paragraphs": {"$ref": "#/$defs/texts"}}}
+    },
+    "dimensioning": {"type": "array", "items": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "string"}}},
+    "estimates": {
+      "type": "array",
+      "items": {"type": "object", "required": ["item", "value", "owner", "owner_role"], "properties": {"item": {"type": "string"}, "value": {"type": "string"}, "owner": {"type": "string"}, "owner_role": {"type": "string"}}}
+    },
+    "assessment_items": {"$ref": "#/$defs/texts"},
+    "client_roles": {"$ref": "#/$defs/texts"},
+    "team_competencies": {"$ref": "#/$defs/texts"},
+    "scope": {
+      "type": "object",
+      "properties": {"included": {"$ref": "#/$defs/texts"}, "deliverables": {"$ref": "#/$defs/texts"}, "excluded": {"$ref": "#/$defs/texts"}}
+    },
+    "delivery": {
+      "type": "object",
+      "properties": {
+        "phases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "weeks", "objective"],
+            "properties": {
+              "name": {"type": "string"}, "kind": {"type": "string"},
+              "weeks": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 0}},
+              "duration": {"type": "string"}, "objective": {"type": "string"}, "dependency": {"type": "string"}, "outputs": {"$ref": "#/$defs/texts"}
+            }
+          }
+        },
+        "responsibilities": {
+          "type": "array",
+          "items": {"type": "object", "required": ["party", "responsibility"], "properties": {"party": {"type": "string"}, "responsibility": {"type": "string"}}}
+        }
+      }
+    },
+    "populos_roles": {"type": "array", "items": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "string"}}},
+    "optional_phase": {
+      "type": ["object", "null"],
+      "properties": {
+        "title": {"type": "string"}, "intro": {"type": "string"}, "conditions": {"$ref": "#/$defs/texts"},
+        "waves": {
+          "type": "array",
+          "items": {
+            "type": "object", "required": ["name", "components"],
+            "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "components": {"$ref": "#/$defs/texts"}, "goes_to_production": {"type": "boolean"},
+                           "activities": {"type": "string"}, "acceptance": {"type": "string"}, "milestone": {"type": "string"}, "dependency": {"type": "string"}, "duration": {"type": "string"}}
+          }
+        }
+      }
+    },
+    "fast_track": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": {"type": "string"}, "title": {"type": "string"}, "components": {"$ref": "#/$defs/texts"}, "production_change": {"type": "boolean"},
+        "controls": {"$ref": "#/$defs/texts"}, "paragraphs": {"$ref": "#/$defs/texts"}, "items": {"$ref": "#/$defs/texts"},
+        "schedule_row": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"type": "string"}}
+      }
+    },
+    "assumptions": {"$ref": "#/$defs/texts"},
+    "restrictions": {"$ref": "#/$defs/texts"},
+    "risks": {
+      "type": "array",
+      "items": {"type": "object", "required": ["risk", "impact", "mitigation"], "properties": {"risk": {"type": "string"}, "impact": {"type": "string"}, "mitigation": {"type": "string"}}}
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {"type": "object", "required": ["requirement_id", "phase", "criterion"], "properties": {"requirement_id": {"type": "string"}, "phase": {"enum": ["committed", "optional"]}, "option_id": {"type": "string"}, "criterion": {"type": "string"}}}
+    },
+    "event_readiness": {"$ref": "#/$defs/texts"},
+    "critical_events": {"type": "array", "items": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}, "date": {"type": ["string", "null"]}}}},
+    "event_feasibility": {
+      "type": "array",
+      "items": {"type": "object", "required": ["event", "classification"], "properties": {"license_deadline": {"type": ["string", "null"]}}}
+    },
+    "standard_conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object", "required": ["category", "requirement_id", "status"],
+        "properties": {"category": {"enum": ["sla", "warranty", "qualification", "deadline"]}, "requirement_id": {"type": "string"},
+                       "status": {"enum": ["conflict", "compatible"]}, "decision_key": {"type": "string"}, "reason": {"type": "string"}}
+      }
+    },
+    "document_text": {
+      "type": "object",
+      "properties": {"front_titles": {"type": "object", "additionalProperties": {"type": "string"}}},
+      "additionalProperties": {"type": "string"}
+    }
+  }
+}

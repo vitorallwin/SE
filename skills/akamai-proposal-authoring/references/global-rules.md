@@ -52,6 +52,10 @@ The global state separates client facts, requirements, decisions, scope, commerc
 - Products the client already has belong to the current environment. They are not offered again and are not treated as exclusions.
 - Every case-dependent paragraph comes from the state. The compositor holds no text from any previous case.
 
+## Verification method
+
+- Test parameters defined by POPULOS (number of resolvers, observation windows, measurement frequency) are verification method, not a promised result. State them as how acceptance is checked, never as a service level.
+
 ## Client-facing language
 
 Never expose pipeline or drafting language. The single source for forbidden and untranslated terms is `lexicon.json`, consumed by code. Rewrite internal terms as proposal language such as `levantamento`, `premissa de dimensionamento`, `condição de contratação`, or a named requirement.

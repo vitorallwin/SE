@@ -51,6 +51,9 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None = 
 
     `source_text` is the extracted source material; from rules v9 on, case approvals are checked against it.
     """
+    shape = schema_violations(proposal)
+    if shape:
+        return shape
     gate = _pre_proposal_gate(proposal)
     if gate is not None:
         return gate
@@ -174,10 +177,28 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None = 
         errors.extend(_validate_rules_v8(proposal))
     if int(proposal.get("rules_version", 0) or 0) >= 9 and source_text is not None:
         errors.extend(_validate_approval_quotes(proposal, source_text))
+    if int(proposal.get("rules_version", 0) or 0) >= 10:
+        errors.extend(_validate_rules_v10(proposal))
     return errors
 
 
-LATEST_RULES_VERSION = 9
+LATEST_RULES_VERSION = 10
+STATE_SCHEMA = Path(__file__).resolve().parents[1] / "skills" / "akamai-proposal-authoring" / "references" / "state.schema.json"
+
+
+def schema_violations(proposal: Any) -> list[str]:
+    """v10: the formal JSON Schema runs before any rule. A shape error comes back as a readable
+    violation, so a state the validator accepts can always be read by the compositor."""
+    if not isinstance(proposal, dict) or int(proposal.get("rules_version", 0) or 0) < 10:
+        return []
+    from jsonschema import Draft202012Validator
+
+    validator = Draft202012Validator(json.loads(STATE_SCHEMA.read_text(encoding="utf-8")))
+    errors = []
+    for error in sorted(validator.iter_errors(proposal), key=lambda e: list(e.absolute_path)):
+        path = ".".join(str(part) for part in error.absolute_path) or "(raiz)"
+        errors.append(f"formato ({path}): {error.message[:160]}")
+    return errors
 DATA_MODES = {"test", "production"}
 # Prefixos normalizados (sem acento, minúsculos): aceitam "Arquiteto", "arquiteta", "Engenheira de redes"...
 _TECHNICAL_ROLE_PREFIXES = ("arquitet", "engenh", "delivery", "pre-vendas tecnic", "pre vendas tecnic", "presales tecnic")
@@ -278,7 +299,7 @@ def _validate_rules_v7(proposal: dict[str, Any]) -> list[str]:
         problem = _license_lead_problem(item.get("lead_times"))
         if problem:
             errors.append(f"viabilidade {problem}: {item.get('event')}")
-        elif _license_lead_unknown(item.get("lead_times")) and item.get("classification") == "fits":
+        elif _license_lead_unknown(item.get("lead_times")) and item.get("classification") == "fits" and _rules_version(proposal) < 10:
             errors.append(f"viabilidade 'fits' com prazo de licenciamento desconhecido: {item.get('event')}")
     track = proposal.get("fast_track")
     if track and track.get("components"):
@@ -556,6 +577,124 @@ def _validate_approval_quotes(proposal: dict[str, Any], source_text: str) -> lis
         approver = _quote_text(str(decision.get("approved_by", "")).split("(")[0]).split(" ")[0]
         if approver and approver not in quote:
             errors.append(f"citação da aprovação não nomeia o aprovador ({decision.get('approved_by')}): {key}")
+    return errors
+
+
+# Frentes do documento: grupo -> produtos. O título de cada frente presente vem do estado.
+FRONT_GROUPS = {
+    "continuity": ("edge_dns", "gtm", "alb", "ion"),
+    "protection": ("app_api_protector", "prolexic"),
+    "automation": ("bot_manager", "account_protector"),
+}
+REQUIRED_DOCUMENT_TEXT_V10 = (
+    "about_akamai", "partnership", "knowledge_transfer", "callout_limits", "callout_qualifications", "assessment_outcome",
+)
+# Produtos que ficam no caminho do tráfego da aplicação. Sem nenhum deles recomendado, o plano de evento
+# não pode trazer sala de crise, teste de carga nem revisão de capacidade: seria superdimensionar o escopo.
+TRAFFIC_PATH_PRODUCTS = {"app_api_protector", "bot_manager", "account_protector", "prolexic", "ion", "gtm", "alb", "ip_accelerator", "malware_protection"}
+_HEAVY_READINESS = re.compile(r"sala de crise|war room|teste de carga|revis[aã]o de capacidade", re.IGNORECASE)
+# Exigências do cliente que costumam colidir com padrões POPULOS. O código obriga a classificá-las;
+# fora destas categorias, identificar o conflito é responsabilidade do autor.
+STANDARD_CATEGORIES = {
+    "sla": re.compile(r"\bsla\b|tempo (?:m[aá]ximo )?de (?:resolu[cç][aã]o|resposta|atendimento)|24x7|24 ?x ?7", re.IGNORECASE),
+    "warranty": re.compile(r"garantia", re.IGNORECASE),
+    "qualification": re.compile(r"certifica|atestado|qualifica[cç][aã]o t[eé]cnica", re.IGNORECASE),
+    "deadline": re.compile(r"prazo de (?:implanta|entrega|execu)|dias corridos|dias [uú]teis", re.IGNORECASE),
+}
+
+
+def _catalog_ids() -> set[str]:
+    from .catalog import PRODUCTS
+
+    return {product_id for product_id in PRODUCTS if "_" in product_id}
+
+
+def _client_texts_v10(proposal: dict[str, Any]) -> Iterable[tuple[str, str]]:
+    for key, value in (proposal.get("document_text") or {}).items():
+        values = value.values() if isinstance(value, dict) else [value]
+        for text in values:
+            yield f"document_text.{key}", str(text)
+    for section in proposal.get("sections", []):
+        for text in section.get("paragraphs", []):
+            yield "sections", str(text)
+    for item in proposal.get("traceability", []):
+        yield f"traceability.{item.get('requirement_id')}", f"{item.get('requirement', '')} {item.get('solution', '')}"
+    for field in ("assumptions", "restrictions", "event_readiness", "client_roles", "team_competencies", "assessment_items"):
+        for text in proposal.get(field) or []:
+            yield field, str(text)
+    for field, items in (proposal.get("scope") or {}).items():
+        for text in items or []:
+            yield f"scope.{field}", str(text)
+    for item in proposal.get("acceptance_criteria", []):
+        yield "acceptance_criteria", str(item.get("criterion", ""))
+    for item in proposal.get("risks", []):
+        yield "risks", " ".join(str(item.get(k, "")) for k in ("risk", "impact", "mitigation"))
+
+
+def _validate_rules_v10(proposal: dict[str, Any]) -> list[str]:
+    """Issues from the v8.3 audit: template text bound to the case, catalog ids never shown to the client,
+    proportional event plans, license deadlines instead of downgraded feasibility, and classified conflicts
+    between client demands and POPULOS standards."""
+    errors: list[str] = []
+    document_text = proposal.get("document_text") or {}
+    for key in REQUIRED_DOCUMENT_TEXT_V10:
+        if not _text_value(document_text.get(key)):
+            errors.append(f"document_text.{key} ausente: o compositor não usa texto padrão para este slot")
+    competencies = [c for c in proposal.get("team_competencies") or [] if c]
+    if not 1 <= len(competencies) <= 3:
+        errors.append(f"team_competencies deve ter de 1 a 3 itens (tem {len(competencies)})")
+    recommended = {d.get("product_id") for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended"}
+    titles = document_text.get("front_titles") if isinstance(document_text.get("front_titles"), dict) else {}
+    for group, members in FRONT_GROUPS.items():
+        if recommended & set(members) and not _text_value(titles.get(group)):
+            errors.append(f"document_text.front_titles.{group} ausente: a frente existe e precisa de título do caso")
+
+    # Nome comercial, nunca o identificador interno.
+    ids = _catalog_ids()
+    for field, text in _client_texts_v10(proposal):
+        for product_id in sorted(ids):
+            if re.search(rf"(?<![\w-]){re.escape(product_id)}(?![\w-])", text):
+                errors.append(f"identificador interno de produto em texto do cliente ({product_id}): {field}")
+
+    # Plano de evento proporcional ao escopo.
+    if not recommended & TRAFFIC_PATH_PRODUCTS:
+        for item in proposal.get("event_readiness", []):
+            if _HEAVY_READINESS.search(str(item)):
+                errors.append(f"plano de evento desproporcional ao escopo (nenhum produto no caminho do tráfego): {str(item)[:70]}")
+
+    # Prazo de licença desconhecido vira data limite, não rebaixamento.
+    phases = proposal.get("delivery", {}).get("phases", [])
+    high = sum((phase.get("weeks") or [0, 0])[1] for phase in phases)
+    events = {e.get("name"): e for e in proposal.get("critical_events", [])}
+    summary = normalize_document_text(" ".join(p for s in proposal.get("sections", []) for p in s.get("paragraphs", [])))
+    for item in proposal.get("event_feasibility", []):
+        if not _license_lead_unknown(item.get("lead_times")) or item.get("classification") == "does_not_fit":
+            continue
+        event_date = (events.get(item.get("event")) or {}).get("date")
+        if not event_date:
+            continue
+        expected = (_date(event_date) - timedelta(weeks=high)).isoformat()
+        if item.get("license_deadline") != expected:
+            errors.append(f"prazo de licença desconhecido sem data limite (license_deadline = {expected}): {item.get('event')}")
+        elif normalize_document_text(f"{_date(expected):%d/%m}") not in summary:
+            errors.append(f"sumário não declara a data limite das licenças ({_date(expected):%d/%m}): {item.get('event')}")
+
+    # Exigência do cliente em categoria conhecida: classificada como conflito (decisão interna) ou compatível.
+    conflicts = {(c.get("category"), c.get("requirement_id")): c for c in proposal.get("standard_conflicts", [])}
+    governance = proposal.get("governance", {})
+    for item in proposal.get("traceability", []):
+        if not set(item.get("speakers", [])) & {"client", "input_document"}:
+            continue
+        for category, pattern in STANDARD_CATEGORIES.items():
+            if not pattern.search(str(item.get("requirement", ""))):
+                continue
+            entry = conflicts.get((category, item.get("requirement_id")))
+            if not entry:
+                errors.append(f"exigência do cliente em categoria de padrão POPULOS sem classificação (standard_conflicts, {category}): {item.get('requirement_id')}")
+            elif entry.get("status") == "conflict" and entry.get("decision_key") not in governance:
+                errors.append(f"conflito com padrão POPULOS sem decisão de governança (decision_key): {item.get('requirement_id')} {category}")
+            elif entry.get("status") == "compatible" and not entry.get("reason"):
+                errors.append(f"exigência declarada compatível com padrão POPULOS sem motivo: {item.get('requirement_id')} {category}")
     return errors
 
 

@@ -565,6 +565,20 @@ O `make_workspace --sealed` cria um workspace sem o código do motor: só brief,
 - v8.2: na rodada selada (autor sem acesso ao código) apareceram três divergências entre skill e validador. A linha "Estimativa" era sempre recusada; a faixa de semanas de uma fase isolada era tratada como total; o formato de `delivery.responsibilities` passava no validador e derrubava o compositor. As três foram alinhadas.
 - v8.3: o Gemini marcou a decisão de licença como `populos_standard` para pular a aprovação. Agora só as decisões listadas em `institutional_decisions` na whitelist (hoje, `sla`) podem usar essa base.
 
+### Motor v8.4 (regras v10), após a auditoria externa da v8.3
+
+| Item da auditoria | Correção |
+|---|---|
+| 2. ID interno (`edge_dns`) na proposta | O validador recusa id de catálogo em qualquer texto do cliente; o compositor traduz por defesa em profundidade; o DOCX final é varrido. |
+| 3. Coluna "Evidência de aceite" com a origem do requisito | A coluna mostra os critérios de aceite do requisito. A origem fica no relatório de cobertura. |
+| 4. Texto fixo do template fora do contexto | Parceria, competências da equipe, passagem de conhecimento, qualificações, limite da frente, resultado do levantamento (o antigo "future state") e títulos das frentes vêm do estado. |
+| 5. Plano de evento desproporcional | Sala de crise, teste de carga e revisão de capacidade só com produto no caminho do tráfego. |
+| 6. "Viabilidade parcial" com folga | Prazo de licença desconhecido vira `license_deadline`, declarada no sumário; a classificação não é rebaixada. |
+| 7. Conflito com padrão POPULOS | Nas categorias SLA, garantia, qualificação e prazo, o código obriga a classificar (`standard_conflicts`); conflito aponta decisão de governança. Fora delas, é regra de autor. |
+| 8. Compositor quebrando com erro Python | JSON Schema formal (`state.schema.json`, na skill) roda antes das regras; erro de formato volta como `formato (<caminho>): ...`. |
+
+Também: a citação de aprovação tolera marcadores de e-mail (`>`) e quebras de linha; o QA visual (`scripts/render_pdf.py`) encontrou e corrigiu colunas estreitas no cronograma, texto ilegível no diagrama fora do Windows e texto justificado em tabelas.
+
 ## 19. Arquivos de trabalho fora da aplicação
 
 Estes arquivos ajudaram na geração e auditoria, mas não são necessários para executar a aplicação:

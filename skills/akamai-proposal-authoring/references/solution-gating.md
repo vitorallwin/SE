@@ -12,7 +12,7 @@ Do not claim that one layer covers another. If a requirement spans layers, recom
 
 ## Critical-event trigger
 
-When discovery names a seasonal or business-critical peak such as Black Friday or Pix Day, require an event-readiness block with load testing, capacity review, change freeze, monitoring, rollback/degradation runbook, and a POPULOS-led war room. Akamai participation may be stated only when the contracted support tier and escalation plan authorize it.
+When discovery names a seasonal or business-critical peak such as Black Friday or Pix Day, require an event-readiness block proportional to the scope: change freeze, monitoring and rollback always; load testing, capacity review and a POPULOS-led war room only when a recommended product sits in the application traffic path. Akamai participation may be stated only when the contracted support tier and escalation plan authorize it.
 
 Evaluate products against explicit evidence from the discovery.
 

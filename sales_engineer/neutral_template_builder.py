@@ -19,7 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
 from .catalog import PRODUCTS
 from .document_validation import detect_skill_leakage, find_case_residue, find_vocabulary_violations, validate_state_against_docx
 from .institutional_policy import validate_institutional_whitelist
-from .proposal_rules import assert_proposal_rules
+from .proposal_rules import FRONT_GROUPS, assert_proposal_rules
 
 
 def _text(value: Any) -> str:
@@ -124,6 +124,7 @@ def _format_added_table(table, widths: list[float]) -> None:
             _set_cell_shading(cell, "1F2A5E" if row_index == 0 else ("F3F4F6" if row_index % 2 == 0 else "FFFFFF"))
             for paragraph in cell.paragraphs:
                 paragraph.paragraph_format.space_after = Pt(2)
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
                 for run in paragraph.runs:
                     run.font.name = "Lato"
                     run.font.size = Pt(7.5)
@@ -165,21 +166,21 @@ def _v8(proposal: dict[str, Any]) -> bool:
     return int(proposal.get("rules_version", 0) or 0) >= 8
 
 
-def _slot(proposal: dict[str, Any], key: str, legacy_default: str) -> str:
-    """Case-dependent slot. From v8 on there is no default: the old defaults carried a previous case."""
+def _slot(proposal: dict[str, Any], key: str, legacy_default: str, since: int = 8) -> str:
+    """Case-dependent slot. From `since` on there is no default: the old defaults carried a previous case."""
     value = _text(proposal.get("document_text", {}).get(key))
     if value:
         return value
-    if _v8(proposal):
+    if int(proposal.get("rules_version", 0) or 0) >= since:
         raise ValueError(f"Slot do documento sem texto do caso: document_text.{key}")
     return legacy_default
 
 
-def _state_list(proposal: dict[str, Any], key: str, legacy_default: list) -> list:
+def _state_list(proposal: dict[str, Any], key: str, legacy_default: list, since: int = 8) -> list:
     value = proposal.get(key)
     if value:
         return list(value)
-    if _v8(proposal):
+    if int(proposal.get("rules_version", 0) or 0) >= since:
         raise ValueError(f"Lista do documento sem conteúdo do caso: {key}")
     return legacy_default
 
@@ -203,25 +204,49 @@ def _diagram_boxes(proposal: dict[str, Any]) -> list[tuple[str, str]]:
     ]
 
 
+# Fontes por sistema: Windows primeiro, depois as livres do Linux/macOS. O fallback do Pillow tem
+# tamanho fixo e deixa o diagrama ilegível, então só é usado se nenhuma fonte real existir.
+REGULAR_FONTS = ("C:/Windows/Fonts/arial.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+                 "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", "/Library/Fonts/Arial.ttf")
+BOLD_FONTS = ("C:/Windows/Fonts/arialbd.ttf", "C:/Windows/Fonts/calibrib.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+              "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", "/Library/Fonts/Arial Bold.ttf")
+
+
+def _font(paths: Iterable[str], size: int):
+    for path in paths:
+        try:
+            return ImageFont.truetype(path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default(size=size)
+
+
+def _fit(draw, text: str, paths: Iterable[str], size: int, max_width: int):
+    """Largest font size (down to 16) whose rendering of `text` fits in `max_width` pixels."""
+    for candidate in range(size, 15, -1):
+        font = _font(paths, candidate)
+        box = draw.textbbox((0, 0), text, font=font)
+        if box[2] - box[0] <= max_width:
+            return font
+    return _font(paths, 16)
+
+
 def _architecture_diagram(proposal: dict[str, Any]) -> BytesIO:
     width, height = 1800, 560
     image = Image.new("RGB", (width, height), "white")
     draw = ImageDraw.Draw(image)
-    font_path = "C:/Windows/Fonts/arial.ttf"
-    bold_path = "C:/Windows/Fonts/arialbd.ttf"
-    try:
-        font = ImageFont.truetype(font_path, 30)
-        bold = ImageFont.truetype(bold_path, 32)
-    except OSError:
-        font = bold = ImageFont.load_default()
+    font = _font(REGULAR_FONTS, 30)
+    bold = _font(BOLD_FONTS, 32)
     boxes = _diagram_boxes(proposal)
     x_positions = [40, 480, 930, 1380]
     for index, ((title, sub), x) in enumerate(zip(boxes, x_positions)):
         draw.rounded_rectangle((x, 125, x + 360, 405), radius=24, fill="#F3F4F6", outline="#6B46C1", width=4)
-        tb = draw.textbbox((0, 0), title, font=bold)
-        draw.text((x + (360 - (tb[2] - tb[0])) / 2, 205), title, font=bold, fill="#1F2A5E")
-        sb = draw.textbbox((0, 0), sub, font=font)
-        draw.text((x + (360 - (sb[2] - sb[0])) / 2, 285), sub, font=font, fill="#3F4A6B")
+        title_font = _fit(draw, title, BOLD_FONTS, 32, 330)
+        tb = draw.textbbox((0, 0), title, font=title_font)
+        draw.text((x + (360 - (tb[2] - tb[0])) / 2, 205), title, font=title_font, fill="#1F2A5E")
+        sub_font = _fit(draw, sub, REGULAR_FONTS, 30, 330)
+        sb = draw.textbbox((0, 0), sub, font=sub_font)
+        draw.text((x + (360 - (sb[2] - sb[0])) / 2, 285), sub, font=sub_font, fill="#3F4A6B")
         if index < len(boxes) - 1:
             draw.line((x + 370, 265, x_positions[index + 1] - 10, 265), fill="#6B46C1", width=7)
             draw.polygon([(x_positions[index + 1] - 10, 265), (x_positions[index + 1] - 34, 251), (x_positions[index + 1] - 34, 279)], fill="#6B46C1")
@@ -287,6 +312,18 @@ def _product_name(product_id: str) -> str:
     return str(PRODUCTS.get(product_id, {}).get("name", product_id))
 
 
+def _product_names_in(text: Any) -> str:
+    """Replace internal catalog ids (edge_dns) by commercial names (Edge DNS) in client text."""
+    value = str(text or "")
+    for product_id in sorted(PRODUCTS, key=len, reverse=True):
+        value = re.sub(rf"(?<![\w-]){re.escape(product_id)}(?![\w-])", _product_name(product_id), value)
+    return value
+
+
+def _v10(proposal: dict[str, Any]) -> bool:
+    return int(proposal.get("rules_version", 0) or 0) >= 10
+
+
 _FRONT_SENTENCES = {
     "edge_dns": "Edge DNS mantém a camada autoritativa distribuída.",
     "gtm": "Global Traffic Management decide o destino entre as origens com base em saúde e política.",
@@ -302,10 +339,15 @@ _FRONT_SENTENCES = {
 def _fronts(proposal: dict[str, Any]) -> list[dict[str, Any]]:
     """Front text is composed only from recommended products, so options never read as part of the solution."""
     decisions = [d for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended"]
+    legacy_titles = {
+        "continuity": "Continuidade e desempenho das jornadas digitais",
+        "protection": "Proteção de aplicações, APIs e infraestrutura",
+        "automation": "Proteção contra automação e abuso de contas",
+    }
+    titles = proposal.get("document_text", {}).get("front_titles") or {}
     groups = [
-        ("Continuidade e desempenho das jornadas digitais", ["edge_dns", "gtm", "alb", "ion"]),
-        ("Proteção de aplicações, APIs e infraestrutura", ["app_api_protector", "prolexic"]),
-        ("Proteção contra automação e abuso de contas", ["bot_manager", "account_protector"]),
+        (_text(titles.get(group)) if int(proposal.get("rules_version", 0) or 0) >= 10 else legacy_titles[group], list(members))
+        for group, members in FRONT_GROUPS.items()
     ]
     fronts: list[dict[str, Any]] = []
     for title, ids in groups:
@@ -327,15 +369,7 @@ def _fronts(proposal: dict[str, Any]) -> list[dict[str, Any]]:
 def _client_mark(client: str) -> bytes:
     canvas = Image.new("RGB", (900, 900), "#F7F7FC")
     draw = ImageDraw.Draw(canvas)
-    fonts = ["C:/Windows/Fonts/arialbd.ttf", "C:/Windows/Fonts/calibrib.ttf"]
-    font = None
-    for path in fonts:
-        try:
-            font = ImageFont.truetype(path, 78)
-            break
-        except OSError:
-            pass
-    font = font or ImageFont.load_default()
+    font = _font(BOLD_FONTS, 78)
     words = client.upper().split()
     lines = [" ".join(words[: max(1, len(words) // 2)]), " ".join(words[max(1, len(words) // 2):])]
     lines = [line for line in lines if line]
@@ -405,11 +439,11 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     _replace_paragraph(p[13], f"| {month.upper()} {datetime.now().year} |")
 
     _replace_paragraph(p[19], "Sobre a Akamai")
-    _replace_paragraph(p[20], _doc_text(proposal, "about_akamai", f"A Akamai oferece serviços distribuídos de entrega, desempenho, proteção e observabilidade para aplicações, APIs e infraestrutura exposta à internet. A arquitetura desta proposta combina apenas as capacidades ligadas às jornadas e riscos priorizados por {client}."))
+    _replace_paragraph(p[20], _slot(proposal, "about_akamai", since=10, legacy_default=f"A Akamai oferece serviços distribuídos de entrega, desempenho, proteção e observabilidade para aplicações, APIs e infraestrutura exposta à internet. A arquitetura desta proposta combina apenas as capacidades ligadas às jornadas e riscos priorizados por {client}."))
     _replace_paragraph(p[21], _slot(proposal, "about_solution", f"Para {client}, a solução integra continuidade multi-cloud, proteção de aplicações e APIs, defesa contra abuso automatizado e otimização das jornadas de checkout e cadastro. Cada frente possui escopo de configuração, evidência de teste e responsável definidos."))
     _replace_paragraph(p[22], "Parceria POPULOS e Akamai")
-    _replace_paragraph(p[23], _doc_text(proposal, "partnership", "A POPULOS responde pela arquitetura, implantação, testes e documentação do projeto, com profissionais qualificados nas tecnologias previstas. As credenciais nominais da equipe serão apresentadas na mobilização, conforme os requisitos formais da contratação."))
-    _set_rows(p, range(24, 28), ["Arquitetura e segurança de aplicações Akamai;", "DNS, gestão global de tráfego e entrega de aplicações;", "Gestão de projeto, testes e documentação técnica."])
+    _replace_paragraph(p[23], _slot(proposal, "partnership", since=10, legacy_default="A POPULOS responde pela arquitetura, implantação, testes e documentação do projeto, com profissionais qualificados nas tecnologias previstas. As credenciais nominais da equipe serão apresentadas na mobilização, conforme os requisitos formais da contratação."))
+    _set_rows(p, range(24, 28), _state_list(proposal, "team_competencies", ["Arquitetura e segurança de aplicações Akamai;", "DNS, gestão global de tráfego e entrega de aplicações;", "Gestão de projeto, testes e documentação técnica."], since=10))
     _replace_paragraph(p[28], "A composição final da equipe será confirmada no plano de projeto, preservando as competências exigidas para cada frente.")
 
     if summary:
@@ -497,14 +531,24 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     trace_heading._p.addnext(trace_table._tbl)
     trace_headers = ["Requisito", "Necessidade", "Componente", "Evidência de aceite"]
     for c, value in zip(trace_table.rows[0].cells, trace_headers): _replace_cell(c, value)
+    acceptance_by_req: dict[str, list[str]] = {}
+    for criterion in proposal.get("acceptance_criteria", []):
+        if criterion.get("phase", "committed") == "committed":
+            acceptance_by_req.setdefault(str(criterion.get("requirement_id")), []).append(_text(criterion.get("criterion")))
     for item in proposal.get("traceability", []):
         row = trace_table.add_row().cells
-        values = [item.get("requirement_id", ""), item.get("requirement", ""), item.get("solution", ""), item.get("evidence", "")]
+        if _v10(proposal):
+            # A origem do requisito fica no relatório de cobertura; ao cliente vai o critério de aceite.
+            evidence = " ".join(acceptance_by_req.get(str(item.get("requirement_id")), [])) or "Critérios gerais da seção 10."
+        else:
+            evidence = item.get("evidence", "")
+        values = [item.get("requirement_id", ""), item.get("requirement", ""), _product_names_in(item.get("solution", "")), evidence]
         for c, value in zip(row, values): _replace_cell(c, value)
     _format_added_table(trace_table, [0.65, 2.2, 1.35, 2.4])
     _repeat_table_header(trace_table.rows[0])
 
     _replace_paragraph(p[68], "Como primeira etapa, a POPULOS realizará o levantamento detalhado do ambiente atual, contemplando no mínimo:")
+    _replace_paragraph(p[72], _slot(proposal, "assessment_outcome", p[72].text, since=10))
     _set_rows(p, range(69, 72), _state_list(proposal, "assessment_items", [
         "Inventário de domínios, aplicações, APIs e origens;",
         "Métricas de tráfego, latência, disponibilidade e eventos de segurança;",
@@ -553,7 +597,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
             phase4_body.paragraph_format.keep_with_next = True
     _replace_paragraph(p[93], "A POPULOS conduzirá o planejamento, a gestão de riscos e dependências e os reportes periódicos, em alinhamento com o ponto focal do cliente.")
 
-    _replace_paragraph(p[96], _doc_text(proposal, "knowledge_transfer", "A passagem de conhecimento abrangerá a arquitetura implantada, as configurações aprovadas, os procedimentos operacionais e a documentação final prevista no escopo."))
+    _replace_paragraph(p[96], _slot(proposal, "knowledge_transfer", since=10, legacy_default="A passagem de conhecimento abrangerá a arquitetura implantada, as configurações aprovadas, os procedimentos operacionais e a documentação final prevista no escopo."))
     _replace_paragraph(p[98], _slot(proposal, "tests", "Os testes validarão decisão de tráfego, failover, políticas de segurança, classificação de automações, risco de conta, desempenho das jornadas e envio de eventos ao SIEM, conforme critérios da seção 10."))
     _set_rows_dynamic(p, range(101, 106), proposal.get("scope", {}).get("excluded", []), p[106])
     _set_rows_dynamic(p, range(110, 118), proposal.get("assumptions", []), p[118])
@@ -578,6 +622,12 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     _replace_paragraph(p[134], _slot(proposal, "schedule_sequence", "A sequência inclui levantamento, desenho, implementação, homologação, entrada em produção e estabilização assistida."))
     _remove_paragraph(p[136])
     _trim_table_columns(t[7], 5)
+    for index, width in enumerate((1.2, 2.1, 1.35, 0.9, 1.1)):  # colunas herdadas eram estreitas demais
+        for cell in t[7].columns[index].cells:
+            cell.width = Inches(width)
+    grid = t[7]._tbl.tblGrid
+    for column, width in zip(grid, (1.2, 2.1, 1.35, 0.9, 1.1)):
+        column.set(qn("w:w"), str(int(width * 1440)))
     headers = ["Fase", "Atividade", "Dependência", "Duração", "Evidência"]
     for c, value in zip(t[7].rows[0].cells, headers): _replace_cell(c, value)
     _repeat_table_header(t[7].rows[0])
@@ -598,6 +648,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
                 _replace_cell(c, value)
                 _set_cell_shading(c, "FFFFFF" if row_index % 2 == 0 else "F3F4F6")
                 for paragraph in c.paragraphs:
+                    paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
                     for run in paragraph.runs:
                         run.font.color.rgb = RGBColor(31, 42, 94)
                         run.font.size = Pt(7.5)
@@ -691,9 +742,9 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
 
     for table_index, heading in ((0, "Aderência e qualificações"), (1, "Modelo de fornecimento"), (2, "Limite da frente"), (5, "Estratégia de migração"), (6, "Cláusulas não aplicáveis"), (8, "Marcos formais de aceite"), (9, "Garantia e vigência")):
         title, body = {
-            0: ("Aderência e qualificações", "A equipe será mobilizada com competências compatíveis com DNS, entrega, segurança de aplicações e gestão do projeto; as credenciais nominais serão apresentadas na mobilização."),
+            0: ("Aderência e qualificações", _slot(proposal, "callout_qualifications", since=10, legacy_default="A equipe será mobilizada com competências compatíveis com DNS, entrega, segurança de aplicações e gestão do projeto; as credenciais nominais serão apresentadas na mobilização.")),
             1: ("Modelo de fornecimento", " ".join(filter(None, [_doc_text(proposal, "license_prefix", ""), str(license_supply)]))),
-            2: ("Limite da frente", _doc_text(proposal, "callout_limits", "A solução cobre configuração e integração dos componentes recomendados. Alterações no código das aplicações e serviços de terceiros permanecem fora do escopo.")),
+            2: ("Limite da frente", _slot(proposal, "callout_limits", since=10, legacy_default="A solução cobre configuração e integração dos componentes recomendados. Alterações no código das aplicações e serviços de terceiros permanecem fora do escopo.")),
             5: ("Estratégia de migração", _slot(proposal, "callout_migration", "Implantação em ondas: homologação, produção controlada e estabilização, com janela aprovada, critérios de avanço e plano de reversão.")),
             6: ("Itens que exigem contratação específica", "Operação continuada, NOC 24x7, equipe residente, desenvolvimento de aplicações e serviços gerenciados adicionais não estão incluídos."),
             8: ("Marcos formais de aceite", _slot(proposal, "callout_milestones", "Desenho aprovado, homologação concluída, produção validada e documentação final aceita.")),
@@ -762,6 +813,10 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     leaked = detect_skill_leakage(client_text)
     if leaked:
         raise ValueError(f"Trechos copiados dos arquivos da skill: {'; '.join(leaked[:5])}")
+    if _v10(proposal):
+        internal_ids = sorted({pid for pid in PRODUCTS if "_" in pid and re.search(rf"(?<![\w-]){re.escape(pid)}(?![\w-])", client_text)})
+        if internal_ids:
+            raise ValueError(f"Identificador interno de produto no documento: {', '.join(internal_ids)}")
     if _v8(proposal):
         residue = find_case_residue(client_text, proposal)
         if residue:

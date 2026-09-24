@@ -229,9 +229,9 @@ def coverage_report(state: dict[str, Any]) -> str:
     lines += ["", "## Cobertura do insumo", "", "| Referência | Trecho | Status | Destino |", "|---|---|---|---|"]
     for entry in state.get("source_coverage", []):
         lines.append(f"| {entry.get('ref')} | {entry.get('statement')} | {entry.get('status')} | {', '.join(entry.get('targets', [])) or entry.get('reason', '')} |")
-    lines += ["", "## Requisitos", "", "| REQ | Requisito | Origem | Falantes |", "|---|---|---|---|"]
+    lines += ["", "## Requisitos", "", "| REQ | Requisito | Origem | Evidência no insumo | Falantes |", "|---|---|---|---|---|"]
     for item in state.get("traceability", []):
-        lines.append(f"| {item.get('requirement_id')} | {item.get('requirement')} | {item.get('source')} | {', '.join(item.get('speakers', []))} |")
+        lines.append(f"| {item.get('requirement_id')} | {item.get('requirement')} | {item.get('source')} | {item.get('evidence', '')} | {', '.join(item.get('speakers', []))} |")
     lines += ["", "## Números do cliente", ""]
     lines += [f"- {n.get('ref')}: {n.get('quote')} → {n.get('destination')}" for n in state.get("client_numbers", [])] or ["- nenhum"]
     lines += ["", "## Perguntas abertas", ""]

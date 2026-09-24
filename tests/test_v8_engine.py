@@ -94,6 +94,8 @@ class PreProposalGateTests(unittest.TestCase):
     def test_assessment_is_mandatory(self) -> None:
         proposal = vertice_v8()
         del proposal["input_assessment"]
+        self.assertEqual(validate_proposal_rules(proposal), ["formato ((raiz)): 'input_assessment' is a required property"])
+        proposal["rules_version"] = 9  # sem o JSON Schema, a regra do gate continua exigindo o campo
         self.assertEqual(validate_proposal_rules(proposal), ["input_assessment.status ausente ou inválido (sufficient | insufficient)"])
 
     def test_no_catalog_blocks_with_its_own_reason(self) -> None:
@@ -243,8 +245,8 @@ class SealedRoundFixesTests(unittest.TestCase):
         proposal["delivery"]["responsibilities"] = ["Cliente: acessos ao registrador"]
         proposal["populos_roles"] = [["Arquiteto", "Desenho"]]
         errors = errors_of(proposal)
-        self.assertIn("delivery.responsibilities deve ser lista de {party, responsibility}", errors)
-        self.assertIn("populos_roles deve ser lista de [papel, responsabilidade, dedicação]", errors)
+        self.assertIn("formato (delivery.responsibilities.0): 'Cliente: acessos ao registrador' is not of type 'object'", errors)
+        self.assertIn("formato (populos_roles.0): ['Arquiteto', 'Desenho'] is too short", errors)
 
     def test_case_decision_cannot_claim_institutional_standard(self) -> None:
         """Estado real do Gemini (rodada v9, caso 04): licença marcada como padrão institucional para pular a aprovação."""

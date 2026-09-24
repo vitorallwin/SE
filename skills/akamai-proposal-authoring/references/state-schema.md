@@ -1,4 +1,4 @@
-# Proposal state schema (rules v9)
+# Proposal state schema (rules v10)
 
 The author produces one JSON object. The validator (`scripts/validate_attempt.py`) checks the rules; the compositor maps the fields below into fixed slots of the approved template. Text fields are client-facing Portuguese unless noted. Values in angle brackets are placeholders, not examples to copy.
 
@@ -6,9 +6,13 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
 
 | Field | Type | Notes |
 |---|---|---|
-| `rules_version` | int | Must be `9`. |
+| `rules_version` | int | Must be `10`. |
 | `data_mode` | `"test"` or `"production"` | Marks where the data comes from. It never relaxes a check. |
 | `client_name`, `opportunity`, `code`, `opportunity_id` | string | `code` names the output file. |
+
+## Formal shape
+
+`state.schema.json` (same folder) is the formal JSON Schema of this state. The validator checks it before any rule; a shape error comes back as `formato (<path>): <message>`.
 
 ## Before the proposal: input and catalog
 
@@ -35,6 +39,7 @@ Both fields are required and are checked before any other rule.
 - `source_coverage`: every relevant statement of the source material: `{ "ref", "statement", "status": "coberto" | "pendente" | "descartado", "targets": [REQ ids or "sumário", "escopo", "exclusões", "premissas", "dimensionamento", "engajamento"], "reason" (when discarded) }`.
 - `client_numbers`: every number the client said: `{ "quote", "ref", "destination": "meta" | "contexto_de_dor" | "dimensionamento" | "descartado_com_motivo", "summary_marker" (pain context: a phrase that appears in the executive summary), "reason" }`.
 - `open_questions`: list of strings.
+- `standard_conflicts`: `[{ "category": "sla" | "warranty" | "qualification" | "deadline", "requirement_id", "status": "conflict" | "compatible", "decision_key" (conflict), "reason" (compatible) }]`. Every client requirement about service levels, warranty, qualification or certification, or delivery deadlines is classified here. A `conflict` with a POPULOS standard points to a governance decision (`decision_key`), which stays `populos_internal_decision` unless the source material approves it. The code only detects these four categories; recognizing any other conflict with a POPULOS standard remains the author's responsibility.
 
 ## Solution
 
@@ -49,6 +54,7 @@ Both fields are required and are checked before any other rule.
 - `estimates`: `[{ "item", "value", "owner", "owner_role": "arquiteto" | "engenharia" | "delivery" | "pré-vendas técnica" }]`.
 - `assessment_items`: exactly 3 strings (section 5).
 - `client_roles`: 1 to 4 strings, the client-side roles this project needs (section 8.2).
+- `team_competencies`: 1 to 3 strings, the POPULOS team competencies this project needs (section 1).
 - `scope`: `{ "included": [...], "deliverables": [...], "excluded": [...] }`.
 - `delivery.phases`: committed phases, at most 4: `{ "name", "kind", "weeks": [min, max], "duration", "objective", "dependency", "outputs": [...] }`. A week range written in client text must equal the sum of these phases, or the range of one phase.
 - `delivery.responsibilities`: client-side parties, as `[{ "party", "responsibility" }]`; `populos_roles`: optional list of `[role, responsibility, commitment]` rows (table capacity 12 rows in total).
@@ -59,10 +65,10 @@ Both fields are required and are checked before any other rule.
 
 ## Critical events
 
-- `event_readiness`: list of strings.
+- `event_readiness`: list of strings, proportional to the scope. Heavy items (war room, load test, capacity review) only when a recommended product sits in the application traffic path; a DNS-only project uses change window, rollback and monitoring.
 - `critical_events`: `[{ "name", "date" (YYYY-MM-DD or null), "source", "pending_question" (when date is null) }]`.
-- `event_feasibility`: for each event with a date: `{ "event", "reference_date", "phase1_end_earliest", "phase1_end_latest", "classification": "fits" | "partially_fits" | "does_not_fit", "path", "reason", "summary_marker", "lead_times": { "licenciamento": { "weeks", "source" } or { "weeks": null, "pending_question" } } }`. With an unknown lead time the classification cannot be `fits`. The end dates are the reference date plus the sum of committed phase weeks, and the summary states them.
+- `event_feasibility`: for each event with a date: `{ "event", "reference_date", "phase1_end_earliest", "phase1_end_latest", "classification": "fits" | "partially_fits" | "does_not_fit", "path", "reason", "summary_marker", "lead_times": { "licenciamento": { "weeks", "source" } or { "weeks": null, "pending_question" } } }`. With an unknown license lead time, do not downgrade the classification: state `license_deadline` (YYYY-MM-DD), the date by which licenses must be active, equal to the event date minus the maximum committed weeks, and write that date (DD/MM) in the executive summary. The end dates are the reference date plus the sum of committed phase weeks, and the summary states them.
 
 ## Client text
 
-`document_text`: case-specific paragraphs for fixed template slots. The compositor has no default text for these slots, so each one is required: `about_solution`, `coverage`, `dimensioning_intro`, `methodology_intro`, `tests`, `schedule_intro`, `schedule_sequence`, `closing`, `callout_migration`, `callout_milestones`, `diagram_users` and `diagram_users_detail` (who uses the service and through what), `diagram_origins_title` and `diagram_origins` (where the client's applications run). Optional keys: `about_akamai`, `partnership`, `readiness_intro`, `dimensioning_note`, `heading_6`, `knowledge_transfer`, `acceptance_intro`, `acceptance_optional_intro`, `warranty_intro`, `callout_limits`, `license_prefix`; omitted optional keys use neutral wording. `sections` must contain the `Resumo executivo`.
+`document_text`: case-specific paragraphs for fixed template slots. The compositor has no default text for these slots, so each one is required: `about_akamai`, `about_solution`, `partnership`, `coverage`, `dimensioning_intro`, `assessment_outcome` (what the survey of section 5 delivers), `methodology_intro`, `knowledge_transfer`, `tests`, `schedule_intro`, `schedule_sequence`, `closing`, `callout_qualifications`, `callout_limits`, `callout_migration`, `callout_milestones`, `diagram_users` and `diagram_users_detail`, `diagram_origins_title` and `diagram_origins`, and `front_titles` (an object with one title for each front present: `continuity` for Edge DNS, GTM, ALB and Ion; `protection` for App & API Protector and Prolexic; `automation` for Bot Manager and Account Protector). Optional keys: `readiness_intro`, `dimensioning_note`, `heading_6`, `acceptance_intro`, `acceptance_optional_intro`, `warranty_intro`, `license_prefix`. `sections` must contain the `Resumo executivo`. No client-facing text may mention a capability, product or deliverable outside the decisions of this state, and products are always named by their commercial name, never by the catalog id.
