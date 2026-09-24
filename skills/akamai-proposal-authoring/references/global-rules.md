@@ -38,10 +38,11 @@ The global state separates client facts, requirements, decisions, scope, commerc
 - A decision is committed only with an explicit approval: approver, ISO date, and a record of where the approval happened. Moving on without objecting is not approval. The approved text is kept verbatim; context goes outside it.
 - A decision is bound to the engagement type it was made for. When the engagement changes, dependent decisions reopen. An institutional block (such as the SLA table) is emitted only when declared applicable to the current engagement.
 - `data_mode: test` marks the origin of the data. It never disables a check.
+- An institutional standard is versioned with the approved template and is not approved per case.
 - An effort estimate has a technical owner (architect, engineering, delivery, or technical presales).
 - Provenance records who said it: client, vendor, or input document. A requirement supported only by the vendor is a hypothesis to validate.
 - Committed deliverables and acceptance criteria never require an action that the scope boundary forbids.
-- For a critical event with a known date, feasibility is computed in the proposal from the proposal date, including the license lead time, and stated in the executive summary. A dateless event becomes an open question.
+- For a critical event with a known date, feasibility is computed in the proposal from the proposal date, including the license lead time, and stated in the executive summary. An unknown lead time is an open question, never an estimate, and rules out a `fits` classification. A dateless event becomes an open question.
 - Every option that touches production (a wave, a fast track) declares it, has its own window, rollback, approval, and acceptance criteria, and must fit before the change freeze, not only before the event.
 
 ## Client-facing language

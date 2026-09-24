@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
 import re
+import unicodedata
 from datetime import date, timedelta
+from pathlib import Path
 from typing import Any, Iterable
 
 from .document_validation import normalize_document_text
@@ -163,8 +166,38 @@ def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
 
 LATEST_RULES_VERSION = 7
 DATA_MODES = {"test", "production"}
-TECHNICAL_ROLES = {"arquiteto", "engenharia", "delivery", "pré-vendas técnica"}
+# Prefixos normalizados (sem acento, minúsculos): aceitam "Arquiteto", "arquiteta", "Engenheira de redes"...
+_TECHNICAL_ROLE_PREFIXES = ("arquitet", "engenh", "delivery", "pre-vendas tecnic", "pre vendas tecnic", "presales tecnic")
 _IMPLICIT_APPROVAL = re.compile(r"ao seguir|impl[ií]cit|t[aá]cit|presumid|por padr[aã]o|dado de teste", re.IGNORECASE)
+_WHITELIST = Path(__file__).resolve().parents[1] / "assets" / "institutional_whitelist.json"
+
+
+def _is_technical_role(role: Any) -> bool:
+    normalized = unicodedata.normalize("NFKD", str(role or "")).encode("ascii", "ignore").decode().casefold().strip()
+    return normalized.startswith(_TECHNICAL_ROLE_PREFIXES)
+
+
+def is_populos_standard(decision: dict[str, Any]) -> bool:
+    """An institutional standard is versioned with the template, not approved per case."""
+    return decision.get("basis") == "populos_standard"
+
+
+def approved_template_version() -> str:
+    return str(json.loads(_WHITELIST.read_text(encoding="utf-8")).get("template_version", ""))
+
+
+def _license_lead_unknown(lead_times: Any) -> bool:
+    lead = (lead_times or {}).get("licenciamento") or {}
+    return lead.get("weeks") is None
+
+
+def _license_lead_problem(lead_times: Any) -> str | None:
+    lead = (lead_times or {}).get("licenciamento")
+    if not lead:
+        return "sem prazo de licenciamento declarado"
+    if lead.get("weeks") is None:
+        return None if lead.get("pending_question") else "com prazo de licenciamento desconhecido sem pergunta aberta"
+    return None if lead.get("source") else "com prazo de licenciamento sem origem"
 
 
 def _production_options(proposal: dict[str, Any]) -> list[dict[str, Any]]:
@@ -185,8 +218,13 @@ def _validate_rules_v7(proposal: dict[str, Any]) -> list[str]:
         errors.append("data_mode ausente ou inválido (use 'test' ou 'production')")
 
     # Aprovação explícita: aprovador, data ISO, registro da aprovação e modo; sem aprovação implícita.
+    template_version = approved_template_version()
     for key, decision in proposal.get("governance", {}).items():
         if decision.get("state") != "commitment":
+            continue
+        if is_populos_standard(decision):
+            if decision.get("template_version") != template_version:
+                errors.append(f"padrão institucional sem a versão vigente do template ({template_version}): {key}")
             continue
         try:
             date.fromisoformat(str(decision.get("approved_at", "")))
@@ -199,12 +237,12 @@ def _validate_rules_v7(proposal: dict[str, Any]) -> list[str]:
         for field in ("approved_by", "approval_record", "source"):
             if _IMPLICIT_APPROVAL.search(str(decision.get(field, ""))):
                 errors.append(f"aprovação implícita ou marcação de teste no texto ({field}): {key}")
-        if key.endswith("_estimate") and decision.get("approver_role") not in TECHNICAL_ROLES:
+        if key.endswith("_estimate") and not _is_technical_role(decision.get("approver_role")):
             errors.append(f"estimativa de esforço aprovada por papel não técnico: {key}")
 
     # Estimativa de esforço tem dono técnico.
     for estimate in proposal.get("estimates", []):
-        if estimate.get("owner_role") not in TECHNICAL_ROLES:
+        if not _is_technical_role(estimate.get("owner_role")):
             errors.append(f"estimativa sem dono técnico (owner_role): {estimate.get('item')}")
 
     # Toda opção que toca produção tem critério de aceite próprio.
@@ -219,16 +257,19 @@ def _validate_rules_v7(proposal: dict[str, Any]) -> list[str]:
         if criterion.get("phase") != "committed" and criterion.get("option_id") not in option_ids:
             errors.append(f"critério de fase opcional sem opção existente: {criterion.get('option_id')}")
 
-    # O prazo de licenciamento entra em qualquer cálculo de viabilidade.
+    # O prazo de licenciamento entra em qualquer cálculo de viabilidade: conhecido (semanas e origem)
+    # ou desconhecido (weeks null e pergunta aberta). Com prazo desconhecido, nada pode ser classificado como 'fits'.
     for item in proposal.get("event_feasibility", []):
-        lead = (item.get("lead_times") or {}).get("licenciamento")
-        if not lead or lead.get("weeks") is None or not lead.get("source"):
-            errors.append(f"viabilidade sem prazo de licenciamento declarado (semanas e origem): {item.get('event')}")
+        problem = _license_lead_problem(item.get("lead_times"))
+        if problem:
+            errors.append(f"viabilidade {problem}: {item.get('event')}")
+        elif _license_lead_unknown(item.get("lead_times")) and item.get("classification") == "fits":
+            errors.append(f"viabilidade 'fits' com prazo de licenciamento desconhecido: {item.get('event')}")
     track = proposal.get("fast_track")
     if track and track.get("components"):
-        lead = (track.get("lead_times") or {}).get("licenciamento")
-        if not lead or lead.get("weeks") is None or not lead.get("source"):
-            errors.append("trilha rápida sem prazo de licenciamento declarado")
+        problem = _license_lead_problem(track.get("lead_times"))
+        if problem:
+            errors.append(f"trilha rápida {problem}")
         if not any("licen" in str(text).casefold() for text in track.get("items", [])):
             errors.append("trilha rápida não lista o licenciamento entre os pré-requisitos")
     return errors
@@ -258,6 +299,8 @@ def _validate_rules_v6(proposal: dict[str, Any]) -> list[str]:
     for key, decision in governance.items():
         if decision.get("state") != "commitment":
             continue
+        if int(proposal.get("rules_version", 0) or 0) >= 7 and is_populos_standard(decision):
+            continue  # padrão institucional: versionado com o template (checado na v7), sem aprovação por caso
         if not decision.get("approved_by") or not decision.get("approved_at"):
             errors.append(f"decisão sem aprovador e data: {key}")
         if "confirmar" in str(decision.get("source", "")).casefold():

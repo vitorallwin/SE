@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .neutral_template_builder import build_neutral_template_docx
-from .proposal_rules import LATEST_RULES_VERSION, validate_proposal_rules
+from .proposal_rules import LATEST_RULES_VERSION, approved_template_version, validate_proposal_rules
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -111,13 +111,65 @@ def prepare_run(source_dir: Path, run_dir: Path, proposal_date: str, data_mode: 
     request = {
         "proposal_date": proposal_date,
         "data_mode": data_mode,
+        "template_version": approved_template_version(),
         "configuration": configuration,
         "author_model": config["configurations"][configuration]["author_model"],
         "engine_version": config["engine_version"],
+        "rules_version": config["rules_version"],
+        "skill_sha256": skill_hash(),
         "max_iterations": config["max_iterations"],
-        "source_dir": str(source_dir),
+        "source_folder": source_dir.name,
     }
     (run_dir / "request.json").write_text(json.dumps(request, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def skill_hash() -> str:
+    """SHA-256 over every skill file (path and content), recorded in the tag and in each execution."""
+    import hashlib
+
+    skill = ROOT / "skills" / "akamai-proposal-authoring"
+    digest = hashlib.sha256()
+    for path in sorted(p for p in skill.rglob("*") if p.is_file()):
+        digest.update(path.relative_to(skill).as_posix().encode("utf-8"))
+        digest.update(path.read_bytes().replace(b"\r\n", b"\n"))
+    return digest.hexdigest()
+
+
+ENGINE_FILES = [
+    "engine_config.json",
+    "authoring/AUTHOR_BRIEF.md",
+    "assets/proposal_neutral_template.docx",
+    "assets/institutional_whitelist.json",
+    "scripts/validate_attempt.py",
+    "scripts/author_with_gemini.py",
+    *(f"sales_engineer/{name}.py" for name in (
+        "__init__", "ai", "case_runner", "catalog", "document_validation",
+        "institutional_policy", "neutral_template_builder", "proposal_rules",
+    )),
+]
+
+
+def make_workspace(workspace: Path, source_dir: Path, proposal_date: str, data_mode: str, configuration: str) -> Path:
+    """Physical isolation: a folder with only what production gives the author (engine, skill, brief, one case).
+
+    No tests, fixtures, previous proposals, other cases, or version history are copied.
+    Returns the execution folder inside the workspace.
+    """
+    import shutil
+
+    if workspace.exists():
+        raise FileExistsError(f"Workspace já existe: {workspace}")
+    for relative in ENGINE_FILES:
+        target = workspace / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / relative, target)
+    shutil.copytree(ROOT / "skills", workspace / "skills")
+    env_file = ROOT / ".env"
+    if env_file.exists() and configuration == "A":
+        shutil.copy2(env_file, workspace / ".env")
+    run_dir = workspace / "execucao"
+    prepare_run(source_dir, run_dir, proposal_date, data_mode, configuration)
+    return run_dir
 
 
 def skill_bundle() -> str:

@@ -17,6 +17,7 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
 - Each decision: `{ "state": "commitment" | "populos_internal_decision", "value", "approved_value", "source", "approved_by", "approved_at" (YYYY-MM-DD), "approval_record", "mode", "engagement_ref", "approver_role" (estimates), "applies_to" (sla: list of engagement types) }`.
   - A decision is `commitment` only when the source material contains an explicit approval: who, when, and where it is recorded (`approval_record`). Otherwise keep `populos_internal_decision` with `value: null`; emission then blocks, which is the correct outcome.
   - `approved_value` equals `value`. `engagement_ref` equals the current `engagement_type` value.
+  - An institutional standard (such as the fixed SLA table) is not approved per case: use `{ "state": "commitment", "basis": "populos_standard", "value", "source", "template_version": <current template version>, "applies_to": [...] }`, without approver fields.
 
 ## Discovery and provenance
 
@@ -42,7 +43,7 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
 - `delivery.phases`: committed phases, at most 4: `{ "name", "kind", "weeks": [min, max], "duration", "objective", "dependency", "outputs": [...] }`. Every week range written in client text must equal the sum of these phases.
 - `delivery.responsibilities`: client-side parties; `populos_roles`: optional list of `[role, responsibility, commitment]` rows (table capacity 12 rows in total).
 - `optional_phase` (optional): `{ "title", "intro", "conditions": [...], "waves": [{ "id", "name", "components": [product ids], "goes_to_production": bool, "activities", "acceptance", "milestone" }] }`. Each recommended product appears in exactly one wave.
-- `fast_track` (optional): `{ "id", "title", "components", "production_change": bool, "controls": ["janela", "reversão", "aprovação"], "deadline_reference": "freeze", "first_question", "paragraphs", "items", "schedule_row", "lead_times": { "licenciamento": { "weeks", "source" } } }`.
+- `fast_track` (optional): `{ "id", "title", "components", "production_change": bool, "controls": ["janela", "reversão", "aprovação"], "deadline_reference": "freeze", "first_question", "paragraphs", "items", "schedule_row", "lead_times": { "licenciamento": { "weeks", "source" } } }`. When the license lead time is unknown, use `{ "weeks": null, "pending_question": <question> }` instead of estimating.
 - `assumptions` (up to 8), `restrictions` (exactly 4), `risks`: `[{ "risk", "impact", "mitigation" }]`.
 - `acceptance_criteria`: `[{ "requirement_id", "phase": "committed" | "optional", "option_id" (for optional: the id of the wave or fast track), "criterion" }]`. Every option that touches production has at least one criterion of its own.
 
@@ -50,7 +51,7 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
 
 - `event_readiness`: list of strings.
 - `critical_events`: `[{ "name", "date" (YYYY-MM-DD or null), "source", "pending_question" (when date is null) }]`.
-- `event_feasibility`: for each event with a date: `{ "event", "reference_date", "phase1_end_earliest", "phase1_end_latest", "classification": "fits" | "partially_fits" | "does_not_fit", "path", "reason", "summary_marker", "lead_times": { "licenciamento": { "weeks", "source" } } }`. The end dates are the reference date plus the sum of committed phase weeks, and the summary states them.
+- `event_feasibility`: for each event with a date: `{ "event", "reference_date", "phase1_end_earliest", "phase1_end_latest", "classification": "fits" | "partially_fits" | "does_not_fit", "path", "reason", "summary_marker", "lead_times": { "licenciamento": { "weeks", "source" } or { "weeks": null, "pending_question" } } }`. With an unknown lead time the classification cannot be `fits`. The end dates are the reference date plus the sum of committed phase weeks, and the summary states them.
 
 ## Client text overrides
 

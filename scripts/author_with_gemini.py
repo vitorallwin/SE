@@ -45,7 +45,7 @@ def main() -> int:
     client = GeminiClient()
     system = INSTRUCTION + "\n\n" + skill_bundle()
     payload = {
-        "pedido": {"data_da_proposta": request["proposal_date"], "data_mode": request["data_mode"]},
+        "pedido": {"data_da_proposta": request["proposal_date"], "data_mode": request["data_mode"], "template_version": request["template_version"]},
         "catalogo": json.loads((run_dir / "catalog.json").read_text(encoding="utf-8")),
         "insumo": (run_dir / "insumo.md").read_text(encoding="utf-8"),
     }

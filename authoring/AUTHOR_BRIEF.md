@@ -7,9 +7,9 @@ Você é o autor da proposta técnica. Transforme o material do cliente em um es
 - `insumo.md`: o material do cliente, já extraído em texto. É a única fonte sobre o cliente.
 - A skill de autoria: `skills/akamai-proposal-authoring/SKILL.md` e os arquivos em `skills/akamai-proposal-authoring/references/` (`global-rules.md`, `solution-gating.md`, `section-model.md`, `state-schema.md`, `lexicon.json`).
 - O catálogo de produtos permitidos: `catalog.json` (ids, nomes e capacidades).
-- A data da proposta e o modo dos dados, informados no pedido.
+- O pedido (`request.json`): data da proposta, modo dos dados e versão vigente do template.
 
-Não consulte nenhum outro arquivo do repositório.
+Não consulte nenhum arquivo fora desta pasta de trabalho.
 
 ## Saída
 

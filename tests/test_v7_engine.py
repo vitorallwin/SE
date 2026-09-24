@@ -25,6 +25,8 @@ def resolved_v7() -> dict:
             "approved_by": "Responsável comercial", "approved_at": "2026-09-24", "mode": "test",
             "approval_record": "resposta explícita no chat de 24/09", "source": f"decisão do caso para {key}",
         })
+    proposal["governance"]["sla"] = {"state": "commitment", "basis": "populos_standard", "value": "tabela institucional do template POPULOS",
+                                     "source": "template POPULOS vigente", "template_version": "2026.09.24-1", "applies_to": ["phased"]}
     proposal["governance"]["phase1_estimate"].update({"approved_by": "Arquiteto responsável", "approver_role": "arquiteto"})
     proposal["estimates"][0].update({"owner": "Arquiteto responsável", "owner_role": "arquiteto"})
     proposal["optional_phase"]["waves"][0]["id"] = "onda-1"
@@ -34,11 +36,12 @@ def resolved_v7() -> dict:
             criterion["option_id"] = "onda-2" if criterion["requirement_id"] in {"REQ-01", "REQ-04"} else "onda-1"
     track = proposal["fast_track"]
     track["id"] = "trilha-rapida"
-    track["lead_times"] = {"licenciamento": {"weeks": 2, "source": "estimativa do responsável comercial"}}
+    unknown_lead = {"licenciamento": {"weeks": None, "pending_question": "Qual o prazo de contrato e provisionamento das licenças?"}}
+    track["lead_times"] = deepcopy(unknown_lead)
     track["items"].append("Licenciamento: contrato de revenda e provisionamento das licenças antes da janela")
     proposal["acceptance_criteria"].append({"requirement_id": "REQ-02", "phase": "optional", "option_id": "trilha-rapida",
                                             "criterion": "Hostnames prioritários na borda sem regressão funcional e reversão executada em ensaio."})
-    proposal["event_feasibility"][0]["lead_times"] = {"licenciamento": {"weeks": 2, "source": "estimativa do responsável comercial"}}
+    proposal["event_feasibility"][0]["lead_times"] = deepcopy(unknown_lead)
     return proposal
 
 
@@ -71,8 +74,21 @@ class V7RulesTests(unittest.TestCase):
     # Modo de teste é flag, não texto, e não desliga checagem
     def test_test_marker_in_text_blocks(self) -> None:
         proposal = resolved_v7()
-        proposal["governance"]["sla"]["source"] = "dado de teste"
-        self.assertViolation(proposal, "(source): sla")
+        proposal["governance"]["warranty"]["source"] = "dado de teste"
+        self.assertViolation(proposal, "(source): warranty")
+
+    # Padrão institucional: versão do template, não aprovação por caso
+    def test_populos_standard_needs_current_template_version_not_case_approval(self) -> None:
+        proposal = resolved_v7()
+        self.assertNotIn("approved_by", proposal["governance"]["sla"])
+        proposal["governance"]["sla"]["template_version"] = "2025.01.01-1"
+        self.assertViolation(proposal, "padrão institucional sem a versão vigente do template (2026.09.24-1): sla")
+
+    def test_technical_role_is_normalized(self) -> None:
+        proposal = resolved_v7()
+        proposal["estimates"][0]["owner_role"] = "Arquiteta de Soluções"
+        proposal["governance"]["phase1_estimate"]["approver_role"] = "Engenharia"
+        self.assertEqual(validate_proposal_rules(proposal), [])
 
     def test_test_mode_does_not_disable_checks(self) -> None:
         proposal = resolved_v7()
@@ -103,11 +119,21 @@ class V7RulesTests(unittest.TestCase):
     def test_license_lead_time_required(self) -> None:
         proposal = resolved_v7()
         proposal["event_feasibility"][0]["lead_times"] = {}
-        proposal["fast_track"]["lead_times"] = {"licenciamento": {"weeks": None, "source": ""}}
+        proposal["fast_track"]["lead_times"] = {"licenciamento": {"weeks": None}}
         proposal["fast_track"]["items"] = [i for i in proposal["fast_track"]["items"] if "icen" not in i]
         self.assertViolation(proposal, "viabilidade sem prazo de licenciamento declarado")
-        self.assertViolation(proposal, "trilha rápida sem prazo de licenciamento declarado")
+        self.assertViolation(proposal, "trilha rápida com prazo de licenciamento desconhecido sem pergunta aberta")
         self.assertViolation(proposal, "trilha rápida não lista o licenciamento entre os pré-requisitos")
+
+    def test_known_license_lead_time_needs_source(self) -> None:
+        proposal = resolved_v7()
+        proposal["fast_track"]["lead_times"] = {"licenciamento": {"weeks": 2}}
+        self.assertViolation(proposal, "trilha rápida com prazo de licenciamento sem origem")
+
+    def test_unknown_license_lead_time_cannot_be_fits(self) -> None:
+        proposal = resolved_v7()
+        proposal["event_feasibility"][0]["classification"] = "fits"
+        self.assertViolation(proposal, "viabilidade 'fits' com prazo de licenciamento desconhecido")
 
 
 class CaseRunnerTests(unittest.TestCase):
@@ -157,6 +183,26 @@ class CaseRunnerTests(unittest.TestCase):
         self.assertIn("Pedido do cliente", text)
         self.assertIn("Ata da reunião", text)
         self.assertIn("formato não suportado pelo extrator: planilha.xlsx", text)
+
+    def test_workspace_is_physically_isolated_and_self_sufficient(self) -> None:
+        import subprocess, sys
+        source = Path(self.tmp.name) / "caso"
+        source.mkdir()
+        (source / "material.md").write_text("Pedido do cliente", encoding="utf-8")
+        workspace = Path(self.tmp.name) / "ws"
+        run_dir = case_runner.make_workspace(workspace, source, "2026-09-24", "test", "B")
+        files = {p.relative_to(workspace).as_posix() for p in workspace.rglob("*") if p.is_file()}
+        for forbidden in ("tests/", "data/", "demo_case", ".git", "generate_nexuspay", ".env"):
+            self.assertFalse([f for f in files if forbidden in f], forbidden)
+        request = json.loads((run_dir / "request.json").read_text(encoding="utf-8"))
+        self.assertEqual(request["template_version"], "2026.09.24-1")
+        self.assertEqual(request["skill_sha256"], case_runner.skill_hash())
+        state = Path(self.tmp.name) / "estado.json"
+        state.write_text(json.dumps(resolved_v7(), ensure_ascii=False), encoding="utf-8")
+        result = subprocess.run([sys.executable, "scripts/validate_attempt.py", "execucao", str(state)],
+                                cwd=workspace, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue((run_dir / "final" / "relatorio-cobertura.md").exists())
 
     def test_author_bundle_carries_no_case_material(self) -> None:
         bundle = skill_bundle()

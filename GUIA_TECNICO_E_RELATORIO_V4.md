@@ -520,10 +520,13 @@ O motor v7 é genérico: não depende de um arquivo Python por caso. O autor (hu
 | `engine_config.json` | Versão do motor, limite de iterações (3), template e modelo de cada configuração. |
 | `authoring/AUTHOR_BRIEF.md` | Brief do autor, idêntico nas duas configurações. |
 | `sales_engineer/case_runner.py` | Extração do insumo, pacote da skill, validação, registro de tentativas e composição. |
+| `scripts/make_workspace.py` | Cria um workspace isolado por execução: motor, skill, brief e um único caso. Sem testes, dados, histórico nem outros casos. |
 | `scripts/prepare_run.py` | Cria a pasta da execução com `insumo.md`, `catalog.json` e `request.json`. |
 | `scripts/validate_attempt.py` | Submete uma tentativa (`passN.json`, `attempts.json`) e compõe em `final/` quando está limpa. Recusa a partir da 4ª tentativa. |
 | `scripts/author_with_gemini.py` | Configuração A: autor via Gemini (requer `GEMINI_API_KEY`). |
 | `tests/test_v7_engine.py` | Regras v7 e executor genérico. |
+
+Padrão institucional (`basis: populos_standard`) exige a versão vigente do template, não aprovação por caso. Prazo de licenciamento desconhecido usa `weeks: null` com pergunta aberta e impede a classificação `fits`.
 
 Regras v7 (`_validate_rules_v7`): `data_mode` como flag que não desliga checagem; aprovação explícita com `approved_by`, `approved_at` ISO, `approval_record` e `mode`, sem aprovação implícita nem marcação de teste no texto; estimativa de esforço com dono técnico; critério de aceite próprio para toda opção que toca produção; prazo de licenciamento em toda viabilidade e na trilha rápida.
 
