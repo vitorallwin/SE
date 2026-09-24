@@ -183,6 +183,8 @@ function renderSheet() {
         run.parent ? h("div", {}, h("dt", {}, "Origem"), h("dd", {}, h("button", { class: "parent-link", type: "button", onclick: () => openRun(run.parent) }, run.parent))) : null),
     ),
 
+    renderNextStep(run),
+
     h("section", { class: "block", "aria-labelledby": "t-attempts" },
       h("div", { class: "block-title" }, h("h2", { id: "t-attempts" }, "Tentativas"), h("span", { class: "aside" }, `${log.length} de ${limit} usadas · limite físico`)),
       h("div", { class: "slots", style: `--limit:${limit}` }, ...slots),
@@ -205,6 +207,46 @@ function renderSheet() {
       run.notes ? h("details", { class: "raw", open: true }, h("summary", {}, "Notas do autor"), h("pre", { class: "pre" }, run.notes)) : null,
     ),
   );
+}
+
+const DECISIONS = { warranty: "garantia", license_supply: "fornecimento das licenças", sla: "SLA", sla_applicability: "a quais fases o SLA se aplica",
+  engagement_type: "tipo de engajamento", stabilization_buffer: "folga de estabilização antes do evento" };
+
+// Traduz o estado da execução em um próximo passo concreto, com o botão certo.
+function renderNextStep(run) {
+  const log = run.attempt_log, last = log[log.length - 1], left = run.limit - log.length;
+  const items = log.flatMap((a) => a.items || []);
+  const open = [...new Set(items.filter((i) => i.code === "DECISAO-ABERTA").map((i) => (i.message.match(/aberta: (\w+)/) || [])[1]).filter(Boolean))];
+  const openText = open.map((k) => DECISIONS[k] || k).join(", ");
+  const lastCodes = new Set(last?.codes || []);
+  const btn = (label, onclick, primary) => h("button", { class: `btn ${primary ? "btn-primary" : ""}`, type: "button", onclick }, label);
+  const complement = () => openDialog("dlg-complement");
+  const repeat = async () => {
+    try { const r = await api(`/api/runs/${run.id}/complement`, { method: "POST", body: { text: "" } }); await loadRuns(); await openRun(r.id); toast("Nova execução com o mesmo insumo."); }
+    catch (err) { toast(err.message); }
+  };
+  let text, actions = [];
+  if (run.job?.state === "running") text = "O autor está escrevendo. Cada tentativa aparece numa casa acima assim que o validador responde.";
+  else if (!log.length) text = "Clique em Rodar Claude ou Rodar Gemini. Se o estado foi escrito fora daqui, use Colar estado.json.";
+  else if (run.verdict.key === "emitted") {
+    text = "Proposta pronta. Baixe o DOCX (verde, em Saída) e gere o PDF para conferir as páginas.";
+  } else if (lastCodes.has("GATE-INSUMO")) {
+    text = "O insumo não basta para escrever uma proposta. Leve as perguntas ao cliente abaixo e, com as respostas, use Complementar insumo.";
+    actions = [btn("Complementar insumo", complement, true)];
+  } else if (lastCodes.has("GATE-CATALOGO")) {
+    text = "O pedido está fora do catálogo disponível. O motor precisa do pacote desse fabricante antes de gerar proposta.";
+  } else if (open.length && (run.verdict.key === "blocked" || !left)) {
+    text = `Falta uma decisão da POPULOS que o autor não pode inventar: ${openText}. Cole o e-mail de quem aprovou (nome, data e o valor aprovado) em Complementar insumo. Uma nova execução começa com isso.`;
+    actions = [btn("Complementar insumo com a aprovação", complement, true)];
+  } else if (left > 0) {
+    text = `O autor errou em ${last.errors_count} ponto(s). Rode o autor de novo: ele recebe as violações e corrige. Restam ${left} tentativa(s).`;
+  } else {
+    text = "As 3 tentativas acabaram sem proposta. Repita com o mesmo insumo (nova execução) ou complemente o insumo se faltou informação.";
+    actions = [btn("Repetir com o mesmo insumo", repeat, true), btn("Complementar insumo", complement)];
+  }
+  if (lastCodes.has("FORMATO") && run.verdict.key !== "emitted") text += " (FORMATO = o JSON fugiu do schema; é erro do autor, não do caso.)";
+  return h("section", { class: "next", "aria-labelledby": "t-next" },
+    h("h2", { id: "t-next" }, "O que fazer agora"), h("p", {}, text), actions.length ? h("div", { class: "toolbar" }, ...actions) : null);
 }
 
 function renderViolations(log) {
@@ -237,7 +279,7 @@ function renderPending(p, attempts) {
   return h("section", { class: "block", "aria-labelledby": "t-pend" }, title,
     h("div", { class: "pending" },
       h("div", {}, h("h3", {}, "Decisões internas abertas"),
-        list(p.decisions, "Nenhuma: todas aprovadas ou não aplicáveis.", (d) => h("li", {}, h("code", {}, d.key), ` · ${d.state}`, d.value ? ` · proposto: ${fmt(d.value)}` : ""))),
+        list(p.decisions, "Nenhuma: todas aprovadas ou não aplicáveis.", (d) => h("li", {}, DECISIONS[d.key] || d.key, " ", h("code", {}, d.key), d.state === "populos_internal_decision" ? " · aguardando aprovação" : ` · ${d.state}`, d.value ? ` · proposto: ${fmt(d.value)}` : ""))),
       h("div", {}, h("h3", {}, "Perguntas ao cliente"), list(p.questions, "Nenhuma.", (q) => h("li", {}, q))),
     ),
     ...p.feasibility.map((f) => h("div", { class: "feas" },

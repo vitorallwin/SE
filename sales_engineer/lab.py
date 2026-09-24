@@ -130,9 +130,10 @@ def create_run(payload: dict[str, Any]) -> dict[str, Any]:
     proposal_date = str(payload.get("proposal_date") or "").strip()
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", proposal_date):
         raise LabError("data da proposta inválida (AAAA-MM-DD)")
-    data_mode = payload.get("data_mode") or "real"
-    if data_mode not in {"real", "demo"}:
-        raise LabError("modo dos dados inválido")
+    # Valores do schema do estado; "real"/"demo" eram os rótulos da 1ª versão da bancada.
+    data_mode = {"real": "production", "demo": "test"}.get(payload.get("data_mode"), payload.get("data_mode") or "test")
+    if data_mode not in {"test", "production"}:
+        raise LabError("modo dos dados inválido (test | production)")
     files = payload.get("files") or []
     text = str(payload.get("text") or "").strip()
     if not files and not text and not payload.get("inherited"):
@@ -177,14 +178,16 @@ def complement_run(run_id: str, text: str) -> dict[str, Any]:
     """A new run with the same sources plus an operator note (e.g. an approval e-mail); the old run is kept."""
     parent = _run_dir(run_id)
     text = text.strip()
-    if not text:
-        raise LabError("complemento vazio")
     request = _read_json(parent / "request.json", {})
     meta = _read_json(parent / "bancada.json", {})
     inherited = [{"name": p.name, "bytes": p.read_bytes()} for p in sorted((parent / "fonte").glob("*")) if p.is_file()]
-    number = 1 + sum(1 for p in inherited if p["name"].startswith("complemento-"))
-    inherited.append({"name": f"complemento-{number}.md", "bytes": text.encode("utf-8")})
-    return create_run({"name": f"{meta.get('name', run_id)} + complemento {number}", "proposal_date": request.get("proposal_date"),
+    if text:
+        number = 1 + sum(1 for p in inherited if p["name"].startswith("complemento-"))
+        inherited.append({"name": f"complemento-{number}.md", "bytes": text.encode("utf-8")})
+        name = f"{meta.get('name', run_id)} + complemento {number}"
+    else:
+        name = f"{meta.get('name', run_id)} (repetição)"
+    return create_run({"name": name, "proposal_date": request.get("proposal_date"),
                        "data_mode": request.get("data_mode"), "inherited": inherited, "parent": run_id})
 
 
