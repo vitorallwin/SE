@@ -75,8 +75,9 @@ function renderEngine() {
     ...[["Motor", s.engine_version], ["Regras", `v${s.rules_version}`], ["Template", s.template_version]].map(([k, v]) =>
       h("div", {}, h("dt", {}, k), h("dd", {}, v))),
     h("div", {}, h("dt", {}, "Autores"), h("dd", {},
-      h("span", { class: `dot ${a.gemini.configured ? "on" : ""}` }), "Gemini ",
-      h("span", { class: `dot ${a.claude.configured ? "on" : ""}`, style: "margin-left:8px" }), "Claude")),
+      ...[["gemini", "Gemini"], ["claude", "Claude"]].map(([key, label], i) => h("span", {
+        title: a[key].configured ? `${a[key].model} · chave: ${a[key].key_source}` : "sem chave no .env",
+        style: i ? "margin-left:12px" : "" }, h("span", { class: `dot ${a[key].configured ? "on" : ""}` }), label)))),
   );
 }
 

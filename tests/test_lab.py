@@ -67,5 +67,24 @@ class BenchTests(unittest.TestCase):
         self.assertEqual(code_of("JSON inválido: x"), "JSON-INVALIDO")
 
 
+class DotenvTests(unittest.TestCase):
+    """Chave do .env escrita no Windows: BOM do Bloco de Notas, aspas e variável antiga da máquina."""
+
+    def test_notepad_env_with_quotes_wins_over_machine_variable(self) -> None:
+        import os
+
+        from sales_engineer.ai import explain_key_error, key_source, load_dotenv
+
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {"GEMINI_API_KEY": "antiga"}, clear=False):
+            (Path(tmp) / ".env").write_bytes('\ufeffGEMINI_API_KEY="nova-chave"\nexport ANTHROPIC_API_KEY = \'outra\'\n'.encode("utf-8"))
+            load_dotenv(tmp)
+            self.assertEqual(os.environ["GEMINI_API_KEY"], "nova-chave")
+            self.assertEqual(os.environ["ANTHROPIC_API_KEY"], "outra")
+            self.assertEqual(key_source("GEMINI_API_KEY"), ".env")
+            message = explain_key_error("Gemini", 400, '{"reason": "API_KEY_INVALID"}')
+            self.assertIn("recusou a chave (origem: .env)", message)
+            self.assertNotIn("nova-chave", message)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -63,7 +63,7 @@ class GeminiClient:
                     if exc.code in {429, 503} and attempt < 3:
                         time.sleep(2 ** (attempt + 1))
                         continue
-                    raise RuntimeError(f"Gemini retornou HTTP {exc.code}: {detail}") from exc
+                    raise RuntimeError(explain_key_error("Gemini", exc.code, detail)) from exc
                 except (urllib.error.URLError, TimeoutError) as exc:
                     if attempt < 3:
                         time.sleep(2 ** (attempt + 1))
@@ -91,7 +91,7 @@ class GeminiClient:
         return {
             "configured": self.configured,
             "model": self.model,
-            "key_source": "environment" if self.configured else None,
+            "key_source": key_source("GEMINI_API_KEY"),
         }
 
 
@@ -99,16 +99,38 @@ DOTENV_KEYS = {"GEMINI_API_KEY", "GEMINI_MODEL", "ANTHROPIC_API_KEY", "ANTHROPIC
 
 
 def load_dotenv(root: Any) -> None:
-    """Read the author keys from the git-ignored .env so no key passes through the command line or the browser."""
+    """Read the author keys from the git-ignored .env so no key passes through the command line or the browser.
+
+    The .env wins over a variable already set in the machine: it is the project's explicit configuration, and an
+    old Windows variable must not shadow it. Tolerates a UTF-8 BOM (Notepad), quotes and an `export ` prefix.
+    """
     from pathlib import Path
 
     env_file = Path(root) / ".env"
     if not env_file.exists():
         return
-    for line in env_file.read_text(encoding="utf-8").splitlines():
-        key, _, value = line.partition("=")
-        if key.strip() in DOTENV_KEYS and value.strip() and not os.getenv(key.strip()):
-            os.environ[key.strip()] = value.strip()
+    for line in env_file.read_text(encoding="utf-8-sig").splitlines():
+        key, sep, value = line.strip().removeprefix("export ").partition("=")
+        key, value = key.strip(), value.strip().strip('"').strip("'").strip()
+        if sep and key in DOTENV_KEYS and value:
+            os.environ[key] = value
+            os.environ[f"{key}__SOURCE"] = ".env"
+
+
+def key_source(name: str) -> str | None:
+    if not os.getenv(name, "").strip():
+        return None
+    return os.getenv(f"{name}__SOURCE") or "variável de ambiente"
+
+
+def explain_key_error(provider: str, status: int, detail: str) -> str:
+    """Short operator-facing message for a rejected key, instead of the raw API payload."""
+    if status in {400, 401, 403} and re.search(r"API_KEY_INVALID|API key not valid|invalid x-api-key|authentication_error|PERMISSION_DENIED", detail, re.I):
+        variable = "GEMINI_API_KEY" if provider == "Gemini" else "ANTHROPIC_API_KEY"
+        source = key_source(variable) or "?"
+        return (f"{provider} recusou a chave (origem: {source}). Confira {variable} no .env: sem aspas, sem espaços, "
+                f"chave ativa no console do provedor. Depois reinicie a bancada.")
+    return f"{provider} retornou HTTP {status}: {detail}"
 
 
 def _json_object(text: str) -> dict[str, Any] | None:
@@ -162,7 +184,7 @@ class ClaudeClient:
                 if exc.code in {429, 500, 529} and attempt < 3:
                     time.sleep(2 ** (attempt + 2))
                     continue
-                raise RuntimeError(f"Claude retornou HTTP {exc.code}: {detail}") from exc
+                raise RuntimeError(explain_key_error("Claude", exc.code, detail)) from exc
             except (urllib.error.URLError, TimeoutError) as exc:
                 if attempt < 3:
                     time.sleep(2 ** (attempt + 2))
@@ -184,4 +206,4 @@ class ClaudeClient:
         return parsed
 
     def status(self) -> dict[str, Any]:
-        return {"configured": self.configured, "model": self.model}
+        return {"configured": self.configured, "model": self.model, "key_source": key_source("ANTHROPIC_API_KEY")}
