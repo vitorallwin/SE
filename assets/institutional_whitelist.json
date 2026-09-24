@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "template_id": "populos-neutral-proposal",
+  "template_version": "2026.09.24-1",
+  "template_sha256": "2add189b681a0694b49f9155ed801de1255769ae84c8ae2c9d576900e8baab80",
+  "blocks": {
+    "about_populos": "68c203484136c009cb5842018383cdf372f1a98a0e6d170566dffeb8a5ba82c3",
+    "sla": "cdd6c5cc352509acfa39563db5896e6780d0c79233f54e7869aa8ccce93fe496",
+    "confidentiality": "17d46e1f6c3dd83ba26bcb74f7eb52594430fa84673eaa4fb78ff2c23a66ddd1"
+  }
+}

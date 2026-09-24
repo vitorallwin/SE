@@ -1,0 +1,1056 @@
+{
+  "id": "20260923-e54ccb6",
+  "code": "PT-2609-NXP2",
+  "client_name": "NexusPay Brasil",
+  "opportunity": "Resiliência e proteção da plataforma de pagamentos",
+  "owner": "Sales Engineer AI",
+  "due_date": "",
+  "products": [
+    "edge_dns",
+    "gtm",
+    "ion",
+    "app_api_protector",
+    "prolexic",
+    "bot_manager"
+  ],
+  "transcript": "[00:00:15] Carlos (Consultor Akamai): Olá a todos, obrigado por dedicarem este tempo. Meu objetivo hoje é entendermos a fundo os desafios atuais da NexusPay, especialmente com o crescimento acelerado das transações e os novos planos de expansão.\n[00:00:42] Marina (CTO NexusPay): Obrigado, Carlos. Nossa dor principal hoje é a estabilidade durante campanhas de grande porte, como a Black Friday e o Pix Day. No ano passado, tivemos gargalos no gateway e quedas parciais de API causadas por tráfego malicioso e tentativas de credential stuffing.\n[00:01:10] Roberto (CISO NexusPay): Exatamente, Marina. Além disso, a regulação do Banco Central nos obriga a manter uma auditoria rigorosa e baixa latência. Qualquer atraso superior a dois segundos no checkout resulta em abandono de carrinho. Também estamos sofrendo com bots raspadores que tentam copiar nossas tabelas de taxas e roubar dados de novos lojistas no cadastro.\n[00:01:45] Carlos (Consultor Akamai): Compreendo perfeitamente. Vocês hospedam a infraestrutura atual em um ambiente multi-cloud, certo? Como é feita a gestão do tráfego entre esses datacenters?\n[00:02:05] Marina (CTO NexusPay): Temos aplicações em dois provedores de nuvem pública e parte em um datacenter próprio. O roteamento atual é DNS tradicional com failover manual, o que nos custa preciosos minutos quando ocorre indisponibilidade em uma das pontas. Precisamos automatizar essa resiliência sem impactar o SLA.\n[00:02:35] Roberto (CISO NexusPay): E tem o desafio do compliance. Precisamos garantir que dados sensíveis de cartões e PII (Personally Identifiable Information) não fiquem expostos em logs ou sejam interceptados no trânsito, mantendo total conformidade com a LGPD e normas do PCI-DSS.\n[00:03:10] Carlos (Consultor Akamai): Perfeito. Entendi que precisamos endereçar a resiliência multi-cloud, a proteção avançada contra bots e ataques volumétricos de negação de serviço, a aceleração de APIs transacionais e a segurança de dados sensíveis na borda. Vou consolidar esses pontos para desenharmos nossa proposta técnica na próxima etapa.",
+  "requirements_input": "Garantir alta disponibilidade e failover automatizado entre ambientes multi-cloud; Proteger APIs de pagamento e portais de cadastro contra ataques de bot e fraudes automatizadas; Mitigar ataques de negação de serviço (DDoS) volumétricos e direcionados à aplicação; Reduzir a latência do checkout para melhorar a conversão de vendas; Assegurar conformidade com requisitos regulatórios de proteção de dados (LGPD e PCI-DSS); Oferecer visibilidade em tempo real do tráfego legítimo versus malicioso para o time de SOC.",
+  "scope_input": "Incluso: Análise de arquitetura de rede e DNS; avaliação de estratégias de mitigação de ameaças web e de API; cenários de roteamento global de tráfego; inspeção de conformidade de dados sensíveis em trânsito; dimensionamento de cenários de pico para e-commerce e serviços financeiros. Excluído: Alterações diretas no código interno do gateway de pagamentos; implementação prática de infraestrutura nesta fase de descoberta; homologação jurídica formal de contratos.",
+  "assumptions_input": "A NexusPay possui acesso administrativo aos seus atuais provedores de DNS e infraestrutura de nuvem; A equipe técnica da NexusPay participará das sessões de desenho técnico subsequentes; Os ambientes de homologação e produção possuem documentação de arquitetura atualizada disponível para análise.",
+  "status": "review",
+  "current_stage": "approval",
+  "progress": 100,
+  "quality_score": 86,
+  "created_at": "2026-09-24T02:43:01.052870+00:00",
+  "updated_at": "2026-09-24T12:13:38.898434+00:00",
+  "stages": [
+    {
+      "id": "discovery",
+      "label": "Discovery",
+      "status": "done",
+      "started_at": "2026-09-24T02:43:30.631174+00:00",
+      "finished_at": "2026-09-24T02:43:30.631174+00:00"
+    },
+    {
+      "id": "architecture",
+      "label": "Arquitetura",
+      "status": "done",
+      "started_at": "2026-09-24T02:43:30.631174+00:00",
+      "finished_at": "2026-09-24T02:43:30.631174+00:00"
+    },
+    {
+      "id": "technical_qa",
+      "label": "QA técnico",
+      "status": "done",
+      "started_at": "2026-09-24T02:43:30.631174+00:00",
+      "finished_at": "2026-09-24T02:43:30.631174+00:00"
+    },
+    {
+      "id": "writing",
+      "label": "Redação",
+      "status": "done",
+      "started_at": "2026-09-24T02:43:30.631174+00:00",
+      "finished_at": "2026-09-24T02:43:30.631174+00:00"
+    },
+    {
+      "id": "commercial_qa",
+      "label": "QA comercial",
+      "status": "done",
+      "started_at": "2026-09-24T02:43:30.631174+00:00",
+      "finished_at": "2026-09-24T02:43:30.631174+00:00"
+    },
+    {
+      "id": "repair",
+      "label": "Reparo",
+      "status": "done",
+      "started_at": "2026-09-24T02:43:30.631174+00:00",
+      "finished_at": "2026-09-24T02:43:30.631174+00:00"
+    },
+    {
+      "id": "document",
+      "label": "Documento",
+      "status": "done",
+      "started_at": "2026-09-24T02:43:30.631174+00:00",
+      "finished_at": "2026-09-24T02:43:30.631174+00:00"
+    }
+  ],
+  "discovery": {
+    "business_goals": [
+      "OBJ-01 · REQ-01 e REQ-03 — preservar disponibilidade e capacidade de resposta nos picos de Black Friday e Pix Day",
+      "OBJ-02 · REQ-02 e REQ-05 — reduzir abuso nas jornadas de cadastro, login e pagamento sem ampliar exposição de dados",
+      "OBJ-03 · REQ-04 e REQ-06 — melhorar a experiência regional e acelerar detecção e investigação operacional"
+    ],
+    "pain_points": [
+      "Gargalos no gateway de pagamento e quedas parciais de API devido a tráfego malicioso e credential stuffing",
+      "Atrasos superiores a dois segundos no checkout resultando em abandono de carrinho",
+      "Processo de failover de DNS atual manual e demorado em ambiente multi-cloud",
+      "Ataques de bots raspadores copiando tabelas de taxas e roubando dados de novos lojistas"
+    ],
+    "requirements": [
+      {
+        "id": "REQ-01",
+        "text": "Garantir alta disponibilidade e failover automatizado entre ambientes multi-cloud",
+        "priority": "must",
+        "source": "Transcrição / Requisitos"
+      },
+      {
+        "id": "REQ-02",
+        "text": "Proteger APIs de pagamento e portais de cadastro contra ataques de bot e fraudes automatizadas",
+        "priority": "must",
+        "source": "Transcrição / Requisitos"
+      },
+      {
+        "id": "REQ-03",
+        "text": "Mitigar ataques de negação de serviço (DDoS) volumétricos e direcionados à aplicação",
+        "priority": "must",
+        "source": "Transcrição / Requisitos"
+      },
+      {
+        "id": "REQ-04",
+        "text": "Reduzir a latência do checkout para melhorar a conversão de vendas",
+        "priority": "must",
+        "source": "Transcrição / Requisitos"
+      },
+      {
+        "id": "REQ-05",
+        "text": "Assegurar conformidade com requisitos regulatórios de proteção de dados (LGPD e PCI-DSS)",
+        "priority": "must",
+        "source": "Transcrição / Requisitos"
+      },
+      {
+        "id": "REQ-06",
+        "text": "Oferecer visibilidade em tempo real do tráfego legítimo versus malicioso para o time de SOC",
+        "priority": "should",
+        "source": "Transcrição / Requisitos"
+      }
+    ],
+    "constraints": [
+      "Manter total conformidade com a LGPD e normas do PCI-DSS sem expor dados sensíveis em logs",
+      "Qualquer atraso superior a dois segundos no checkout resulta em abandono de carrinho"
+    ],
+    "confidence": 0.8
+  },
+  "architecture": {
+    "summary": "A arquitetura proposta protege e acelera as jornadas de checkout e cadastro na borda, automatiza a continuidade entre três ambientes de origem e separa claramente a defesa de aplicação da proteção DDoS de infraestrutura.",
+    "flow": [
+      "Clientes e lojistas",
+      "Ion e controles de segurança",
+      "Edge DNS e GTM",
+      "Origens multi-cloud"
+    ],
+    "implementation_waves": [
+      {
+        "name": "Assessment",
+        "duration": "1 a 2 semanas"
+      },
+      {
+        "name": "Design",
+        "duration": "1 a 2 semanas"
+      },
+      {
+        "name": "Implementação e homologação",
+        "duration": "4 a 6 semanas"
+      },
+      {
+        "name": "Produção e estabilização",
+        "duration": "2 semanas"
+      }
+    ]
+  },
+  "solution_decisions": [
+    {
+      "product_id": "edge_dns",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-01"
+      ],
+      "rationale": "Mantém a camada DNS autoritativa distribuída e resiliente para os domínios críticos.",
+      "confidence": 0.92,
+      "capabilities": [
+        "DNS autoritativo",
+        "Anycast",
+        "DNSSEC",
+        "API de gestão"
+      ]
+    },
+    {
+      "product_id": "gtm",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-01",
+        "REQ-04"
+      ],
+      "rationale": "Executa decisão DNS dinâmica entre as origens multi-cloud com testes de saúde, políticas de prioridade e roteamento por desempenho.",
+      "confidence": 0.92,
+      "capabilities": [
+        "liveness tests",
+        "failover entre provedores",
+        "balanceamento ponderado",
+        "roteamento por desempenho"
+      ]
+    },
+    {
+      "product_id": "alb",
+      "status": "optional",
+      "requirement_ids": [
+        "REQ-01",
+        "REQ-04"
+      ],
+      "rationale": "Complementa o GTM quando a decisão precisa ocorrer por requisição HTTP na borda, com stickiness e roteamento entre origens da propriedade.",
+      "confidence": 0.78,
+      "capabilities": [
+        "liveness tests",
+        "roteamento HTTP",
+        "session stickiness",
+        "origens condicionais"
+      ]
+    },
+    {
+      "product_id": "ion",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-04"
+      ],
+      "rationale": "Atua sobre a jornada web de checkout com aceleração dinâmica, otimizações de protocolo e offload de origem, medidos contra a linha de base.",
+      "confidence": 0.84,
+      "capabilities": [
+        "aceleração dinâmica",
+        "otimização de protocolo",
+        "offload de origem",
+        "HTTP/3"
+      ]
+    },
+    {
+      "product_id": "app_api_protector",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-02",
+        "REQ-03",
+        "REQ-05",
+        "REQ-06"
+      ],
+      "rationale": "Protege aplicações e APIs contra ameaças OWASP, abuso de APIs e DDoS de camada 7, com descoberta de APIs, rate controls e integração ao SIEM.",
+      "confidence": 0.94,
+      "capabilities": [
+        "WAF adaptativo",
+        "API discovery",
+        "proteção de dados sensíveis",
+        "DDoS L7",
+        "rate controls",
+        "integração SIEM"
+      ]
+    },
+    {
+      "product_id": "prolexic",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-03"
+      ],
+      "rationale": "Fecha a cobertura de DDoS de infraestrutura e tráfego L3/L4 que não é atendida apenas pela proteção de aplicação na borda.",
+      "implementation_status": "modality_pending",
+      "implementation_condition": "Definir Routed GRE, IP Protect ou outro modelo aprovado após validar blocos IP, ASN, roteamento e operação.",
+      "confidence": 0.78,
+      "capabilities": [
+        "mitigação DDoS L3/L4",
+        "scrubbing distribuído",
+        "runbooks",
+        "proteção de origens"
+      ]
+    },
+    {
+      "product_id": "bot_manager",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-02"
+      ],
+      "rationale": "Classifica automações em cadastro e login e aplica respostas graduais para credential stuffing e raspagem de dados.",
+      "confidence": 0.91,
+      "capabilities": [
+        "detecção de bots",
+        "resposta adaptativa",
+        "segmentação por jornada",
+        "telemetria"
+      ]
+    },
+    {
+      "product_id": "account_protector",
+      "status": "optional",
+      "requirement_ids": [
+        "REQ-02"
+      ],
+      "rationale": "Adiciona risco por identidade para criação, login, recuperação e atividade pós-login; deve ser ativado após validar identificadores e eventos disponíveis.",
+      "confidence": 0.76,
+      "capabilities": [
+        "risco de criação de conta",
+        "perfil comportamental",
+        "sinais de confiança",
+        "proteção pós-login"
+      ]
+    },
+    {
+      "product_id": "malware_protection",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não foi identificado fluxo de upload de arquivos nesta etapa.",
+      "confidence": 0.95,
+      "capabilities": []
+    },
+    {
+      "product_id": "ip_accelerator",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "As jornadas priorizadas utilizam HTTP e HTTPS; não foi registrado requisito de aceleração TCP ou UDP fora da entrega web.",
+      "confidence": 0.95,
+      "capabilities": []
+    }
+  ],
+  "traceability": [
+    {
+      "requirement_id": "REQ-01",
+      "requirement": "Alta disponibilidade e failover multi-cloud",
+      "solution": "Edge DNS + GTM; ALB opcional",
+      "evidence": "Teste controlado de indisponibilidade e relatório de decisão de tráfego."
+    },
+    {
+      "requirement_id": "REQ-02",
+      "requirement": "Proteção de APIs, cadastro e login contra abuso",
+      "solution": "AAP + Bot Manager; Account Protector opcional",
+      "evidence": "Suíte de ataques e automações com registros de ação por jornada."
+    },
+    {
+      "requirement_id": "REQ-03",
+      "requirement": "DDoS de aplicação e infraestrutura",
+      "solution": "AAP + Prolexic",
+      "evidence": "Teste L7, revisão do runbook e exercício de prontidão L3/L4."
+    },
+    {
+      "requirement_id": "REQ-04",
+      "requirement": "Latência de checkout e experiência regional",
+      "solution": "Ion + GTM",
+      "evidence": "Comparativo de linha de base e teste da jornada sob carga acordada."
+    },
+    {
+      "requirement_id": "REQ-05",
+      "requirement": "Proteção de dados e apoio à conformidade",
+      "solution": "AAP",
+      "evidence": "Inventário de APIs, regras de dados sensíveis e relatório de configuração."
+    },
+    {
+      "requirement_id": "REQ-06",
+      "requirement": "Visibilidade para o SOC",
+      "solution": "AAP + Bot Manager",
+      "evidence": "Eventos recebidos e pesquisáveis no SIEM com campos acordados."
+    }
+  ],
+  "sections": [
+    {
+      "title": "Resumo executivo",
+      "paragraphs": [
+        "A NexusPay precisa eliminar o failover manual, proteger as APIs de pagamento e conter automações maliciosas nas jornadas de cadastro e autenticação. A indisponibilidade em períodos de pico interrompe receita e conversão; o abuso de contas amplia chargebacks e investigação; e lacunas de evidência aumentam o esforço de conformidade.",
+        "A POPULOS propõe uma arquitetura Akamai em três frentes: continuidade e desempenho multi-cloud; proteção de aplicações, APIs e infraestrutura; e controle de bots e abuso de contas. A implantação está estimada entre oito e doze semanas, com passagem por homologação, produção controlada e estabilização assistida."
+      ]
+    }
+  ],
+  "scope": {
+    "included": [
+      "Levantamento de zonas, aplicações, APIs, origens, fluxos e integrações de observabilidade",
+      "Desenho de Edge DNS, GTM e opção de ALB para continuidade multi-cloud",
+      "Configuração de propriedades Ion para checkout e portal de lojistas",
+      "Onboarding de aplicações e APIs no App & API Protector, incluindo descoberta, WAF, rate controls e proteção de dados sensíveis",
+      "Políticas de Bot Manager para cadastro, login, credential stuffing e raspagem",
+      "Desenho e prontidão operacional do Prolexic, condicionados à validação de blocos IP, BGP/GRE ou alternativa IP Protect",
+      "Integração de eventos de segurança e automação com o SIEM da NexusPay",
+      "Preparação para Black Friday e Pix Day com teste de carga, revisão de capacidade, congelamento de mudanças, runbook e war room liderado pela POPULOS",
+      "Disponibilização da atestação PCI DSS vigente da Akamai e da matriz de responsabilidades dos serviços em escopo, como evidência de apoio à conformidade da NexusPay"
+    ],
+    "deliverables": [
+      "HLD, runbooks, matriz de rastreabilidade e plano de testes",
+      "As-built, evidências de homologação e plano de reversão"
+    ],
+    "excluded": [
+      "Alterações no código-fonte do gateway e das aplicações",
+      "Operação continuada, NOC 24x7 e equipe residente",
+      "Homologação jurídica ou certificação formal de LGPD e PCI DSS"
+    ]
+  },
+  "delivery": {
+    "phases": [
+      {
+        "name": "Assessment",
+        "objective": "Inventariar jornadas, ativos, linha de base e dependências.",
+        "duration": "1 a 2 sem.",
+        "dependency": "Acessos e documentação",
+        "outputs": [
+          "inventário",
+          "linha de base"
+        ]
+      },
+      {
+        "name": "Design",
+        "objective": "Fechar arquitetura, políticas, testes e plano de reversão.",
+        "duration": "1 a 2 sem.",
+        "dependency": "Assessment aprovado",
+        "outputs": [
+          "HLD",
+          "plano de testes"
+        ]
+      },
+      {
+        "name": "Implementação e homologação",
+        "objective": "Configurar, integrar e validar as frentes em ambiente controlado.",
+        "duration": "4 a 6 sem.",
+        "dependency": "Licenças e acessos",
+        "outputs": [
+          "homologação",
+          "evidências"
+        ]
+      },
+      {
+        "name": "Produção e estabilização",
+        "objective": "Executar mudança, acompanhar a operação e concluir o aceite.",
+        "duration": "2 sem.",
+        "dependency": "Janela aprovada",
+        "outputs": [
+          "as-built",
+          "aceite"
+        ]
+      }
+    ],
+    "responsibilities": [
+      {
+        "party": "Infraestrutura NexusPay",
+        "responsibility": "Disponibilizar DNS, origens, conectividade, blocos IP e janelas de mudança."
+      },
+      {
+        "party": "Segurança e SOC NexusPay",
+        "responsibility": "Aprovar políticas, dados sensíveis, casos de teste e integração SIEM."
+      },
+      {
+        "party": "Aplicações NexusPay",
+        "responsibility": "Validar jornadas, APIs, comportamento funcional e métricas de experiência."
+      }
+    ]
+  },
+  "assumptions": [
+    "A NexusPay disponibilizará acessos administrativos e documentação no início de cada fase",
+    "As licenças e subscrições necessárias estarão ativas antes da configuração",
+    "Haverá ambiente de homologação e janela de produção aprovada",
+    "Os times de infraestrutura, segurança, aplicações e SOC participarão dos testes e aceites"
+  ],
+  "risks": [
+    {
+      "risk": "Inventário incompleto de APIs e origens",
+      "impact": "Cobertura parcial ou retrabalho",
+      "mitigation": "Descoberta de APIs, validação por responsáveis e congelamento do inventário por onda."
+    },
+    {
+      "risk": "Acesso tardio a DNS, SIEM ou clouds",
+      "impact": "Deslocamento do cronograma",
+      "mitigation": "Checklist de prontidão e gate de entrada em cada fase."
+    },
+    {
+      "risk": "Mudança sem janela ou plano de reversão",
+      "impact": "Risco operacional em produção",
+      "mitigation": "Ensaio em homologação, aprovação CAB e reversão testada."
+    },
+    {
+      "risk": "Origem exposta fora da borda",
+      "impact": "Bypass dos controles e DDoS direto",
+      "mitigation": "Restrição de origem e validação do desenho Prolexic."
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "requirement_id": "REQ-01",
+      "criterion": "Failover entre origens concluído em até 90 segundos após a confirmação de falha pelos testes de saúde, respeitando TTL e cache DNS configurados.",
+      "evidence": "Relatório do teste controlado com linha do tempo e destino selecionado.",
+      "owner": "Infraestrutura NexusPay"
+    },
+    {
+      "requirement_id": "REQ-02",
+      "criterion": "Cem por cento das rotas prioritárias de cadastro, login e APIs de pagamento cadastradas nas políticas aprovadas, com casos benignos e maliciosos executados.",
+      "evidence": "Plano de testes, logs de ação e aprovação funcional.",
+      "owner": "Segurança e Aplicações"
+    },
+    {
+      "requirement_id": "REQ-03",
+      "criterion": "Proteção L7 validada por teste controlado e prontidão L3/L4 validada por runbook, conectividade e exercício de mesa do fluxo de mitigação.",
+      "evidence": "Relatório de segurança e ata do exercício operacional.",
+      "owner": "SOC e Infraestrutura"
+    },
+    {
+      "requirement_id": "REQ-04",
+      "criterion": "A linha de base será decomposta entre DNS, conexão e TLS, processamento de borda, tempo de origem e jornada fim a fim sob a mesma carga e geografia. A meta de melhoria será aprovada até o gate de saída do Assessment; sem aprovação, o aceite desta frente será a entrega do relatório decomposto, desde que nenhuma meta comercial anterior tenha sido prometida.",
+      "evidence": "Relatório comparativo, critérios do gate de Assessment e registro da decisão sobre a meta.",
+      "owner": "Aplicações NexusPay e POPULOS"
+    },
+    {
+      "requirement_id": "REQ-06",
+      "criterion": "Eventos de WAF, API e bots disponíveis no SIEM em até cinco minutos, contendo identificador da política, ação, endpoint e correlação temporal.",
+      "evidence": "Consulta salva no SIEM e amostra de eventos correlacionados.",
+      "owner": "SOC NexusPay"
+    }
+  ],
+  "qa": {
+    "technical": [
+      {
+        "severity": "warning",
+        "message": "Existem perguntas abertas não resolvidas sobre os volumes de requisições por segundo (RPS)."
+      }
+    ],
+    "commercial": []
+  },
+  "open_questions": [
+    "Confirmar RPS médio e de pico por jornada",
+    "Confirmar inventário de APIs e domínios por onda",
+    "Confirmar blocos IP, capacidade BGP/GRE e modelo operacional do Prolexic",
+    "Confirmar identificadores de conta disponíveis para avaliar Account Protector"
+  ],
+  "events": [
+    {
+      "at": "2026-09-24T02:43:01.052870+00:00",
+      "type": "created",
+      "message": "Proposta criada"
+    },
+    {
+      "at": "2026-09-24T02:43:30.631174+00:00",
+      "type": "ai_demo",
+      "message": "Cenário, solução, crítica e manifesto gerados integralmente por gemini-3.5-flash-lite"
+    },
+    {
+      "at": "2026-09-24T02:44:02.975453+00:00",
+      "type": "document",
+      "message": "DOCX modular gerado a partir do manifesto da proposta"
+    },
+    {
+      "at": "2026-09-24T02:46:12.254811+00:00",
+      "type": "document",
+      "message": "DOCX modular gerado a partir do manifesto da proposta"
+    },
+    {
+      "at": "2026-09-24T12:13:38.898434+00:00",
+      "type": "internal_decision",
+      "message": "Garantia de 90 dias e licenças via revenda POPULOS aprovadas para esta oportunidade"
+    }
+  ],
+  "document": {
+    "status": "generated",
+    "generated_at": "2026-09-24T12:13:38.898434+00:00",
+    "filename": "POPULOS-Proposta-Tecnica-NexusPay-Competitiva-v3.docx"
+  },
+  "document_manifest": {
+    "schema_version": "3.0",
+    "template_profile": "populos-neutral-technical-proposal-v1",
+    "title": "Proposta técnica",
+    "subtitle": "Resiliência e proteção da plataforma de pagamentos",
+    "client": "NexusPay Brasil",
+    "proposal_code": "PT-2609-NXP2",
+    "version": "1.0",
+    "status": "Para revisão",
+    "blocks": [
+      {
+        "id": "executive_summary",
+        "type": "narrative",
+        "title": "Resumo executivo",
+        "paragraphs": [
+          "A NexusPay precisa eliminar o failover manual, proteger as APIs de pagamento e conter automações maliciosas nas jornadas de cadastro e autenticação. A indisponibilidade em períodos de pico interrompe receita e conversão; o abuso de contas amplia chargebacks e investigação; e lacunas de evidência aumentam o esforço de conformidade.",
+          "A POPULOS propõe uma arquitetura Akamai em três frentes: continuidade e desempenho multi-cloud; proteção de aplicações, APIs e infraestrutura; e controle de bots e abuso de contas. A implantação está estimada entre oito e doze semanas, com passagem por homologação, produção controlada e estabilização assistida."
+        ]
+      },
+      {
+        "id": "discovery",
+        "type": "discovery",
+        "title": "Contexto e objetivos",
+        "business_goals": [
+          "OBJ-01 · REQ-01 e REQ-03 — preservar disponibilidade e capacidade de resposta nos picos de Black Friday e Pix Day",
+          "OBJ-02 · REQ-02 e REQ-05 — reduzir abuso nas jornadas de cadastro, login e pagamento sem ampliar exposição de dados",
+          "OBJ-03 · REQ-04 e REQ-06 — melhorar a experiência regional e acelerar detecção e investigação operacional"
+        ],
+        "pain_points": [
+          "Gargalos no gateway de pagamento e quedas parciais de API devido a tráfego malicioso e credential stuffing",
+          "Atrasos superiores a dois segundos no checkout resultando em abandono de carrinho",
+          "Processo de failover de DNS atual manual e demorado em ambiente multi-cloud",
+          "Ataques de bots raspadores copiando tabelas de taxas e roubando dados de novos lojistas"
+        ],
+        "constraints": [
+          "Manter total conformidade com a LGPD e normas do PCI-DSS sem expor dados sensíveis em logs",
+          "Qualquer atraso superior a dois segundos no checkout resulta em abandono de carrinho"
+        ]
+      },
+      {
+        "id": "solution",
+        "type": "solution",
+        "title": "Solução recomendada",
+        "summary": "A arquitetura proposta protege e acelera as jornadas de checkout e cadastro na borda, automatiza a continuidade entre três ambientes de origem e separa claramente a defesa de aplicação da proteção DDoS de infraestrutura.",
+        "flow": [
+          "Clientes e lojistas",
+          "Ion e controles de segurança",
+          "Edge DNS e GTM",
+          "Origens multi-cloud"
+        ],
+        "products": [
+          "edge_dns",
+          "gtm",
+          "ion",
+          "app_api_protector",
+          "prolexic",
+          "bot_manager"
+        ],
+        "decisions": [
+          {
+            "product_id": "edge_dns",
+            "status": "recommended",
+            "requirement_ids": [
+              "REQ-01"
+            ],
+            "rationale": "Mantém a camada DNS autoritativa distribuída e resiliente para os domínios críticos.",
+            "confidence": 0.92,
+            "capabilities": [
+              "DNS autoritativo",
+              "Anycast",
+              "DNSSEC",
+              "API de gestão"
+            ]
+          },
+          {
+            "product_id": "gtm",
+            "status": "recommended",
+            "requirement_ids": [
+              "REQ-01",
+              "REQ-04"
+            ],
+            "rationale": "Executa decisão DNS dinâmica entre as origens multi-cloud com testes de saúde, políticas de prioridade e roteamento por desempenho.",
+            "confidence": 0.92,
+            "capabilities": [
+              "liveness tests",
+              "failover entre provedores",
+              "balanceamento ponderado",
+              "roteamento por desempenho"
+            ]
+          },
+          {
+            "product_id": "ion",
+            "status": "recommended",
+            "requirement_ids": [
+              "REQ-04"
+            ],
+            "rationale": "Atua sobre a jornada web de checkout com aceleração dinâmica, otimizações de protocolo e offload de origem, medidos contra a linha de base.",
+            "confidence": 0.84,
+            "capabilities": [
+              "aceleração dinâmica",
+              "otimização de protocolo",
+              "offload de origem",
+              "HTTP/3"
+            ]
+          },
+          {
+            "product_id": "app_api_protector",
+            "status": "recommended",
+            "requirement_ids": [
+              "REQ-02",
+              "REQ-03",
+              "REQ-05",
+              "REQ-06"
+            ],
+            "rationale": "Protege aplicações e APIs contra ameaças OWASP, abuso de APIs e DDoS de camada 7, com descoberta de APIs, rate controls e integração ao SIEM.",
+            "confidence": 0.94,
+            "capabilities": [
+              "WAF adaptativo",
+              "API discovery",
+              "proteção de dados sensíveis",
+              "DDoS L7",
+              "rate controls",
+              "integração SIEM"
+            ]
+          },
+          {
+            "product_id": "prolexic",
+            "status": "recommended",
+            "requirement_ids": [
+              "REQ-03"
+            ],
+            "rationale": "Fecha a cobertura de DDoS de infraestrutura e tráfego L3/L4 que não é atendida apenas pela proteção de aplicação na borda.",
+            "implementation_status": "modality_pending",
+            "implementation_condition": "Definir Routed GRE, IP Protect ou outro modelo aprovado após validar blocos IP, ASN, roteamento e operação.",
+            "confidence": 0.78,
+            "capabilities": [
+              "mitigação DDoS L3/L4",
+              "scrubbing distribuído",
+              "runbooks",
+              "proteção de origens"
+            ]
+          },
+          {
+            "product_id": "bot_manager",
+            "status": "recommended",
+            "requirement_ids": [
+              "REQ-02"
+            ],
+            "rationale": "Classifica automações em cadastro e login e aplica respostas graduais para credential stuffing e raspagem de dados.",
+            "confidence": 0.91,
+            "capabilities": [
+              "detecção de bots",
+              "resposta adaptativa",
+              "segmentação por jornada",
+              "telemetria"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "options",
+        "type": "options",
+        "title": "Opções condicionais",
+        "decisions": [
+          {
+            "product_id": "alb",
+            "status": "optional",
+            "requirement_ids": [
+              "REQ-01",
+              "REQ-04"
+            ],
+            "rationale": "Complementa o GTM quando a decisão precisa ocorrer por requisição HTTP na borda, com stickiness e roteamento entre origens da propriedade.",
+            "confidence": 0.78,
+            "capabilities": [
+              "liveness tests",
+              "roteamento HTTP",
+              "session stickiness",
+              "origens condicionais"
+            ]
+          },
+          {
+            "product_id": "account_protector",
+            "status": "optional",
+            "requirement_ids": [
+              "REQ-02"
+            ],
+            "rationale": "Adiciona risco por identidade para criação, login, recuperação e atividade pós-login; deve ser ativado após validar identificadores e eventos disponíveis.",
+            "confidence": 0.76,
+            "capabilities": [
+              "risco de criação de conta",
+              "perfil comportamental",
+              "sinais de confiança",
+              "proteção pós-login"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "traceability",
+        "type": "traceability",
+        "title": "Rastreabilidade dos requisitos",
+        "requirements": [
+          {
+            "id": "REQ-01",
+            "text": "Garantir alta disponibilidade e failover automatizado entre ambientes multi-cloud",
+            "priority": "must",
+            "source": "Transcrição / Requisitos"
+          },
+          {
+            "id": "REQ-02",
+            "text": "Proteger APIs de pagamento e portais de cadastro contra ataques de bot e fraudes automatizadas",
+            "priority": "must",
+            "source": "Transcrição / Requisitos"
+          },
+          {
+            "id": "REQ-03",
+            "text": "Mitigar ataques de negação de serviço (DDoS) volumétricos e direcionados à aplicação",
+            "priority": "must",
+            "source": "Transcrição / Requisitos"
+          },
+          {
+            "id": "REQ-04",
+            "text": "Reduzir a latência do checkout para melhorar a conversão de vendas",
+            "priority": "must",
+            "source": "Transcrição / Requisitos"
+          },
+          {
+            "id": "REQ-05",
+            "text": "Assegurar conformidade com requisitos regulatórios de proteção de dados (LGPD e PCI-DSS)",
+            "priority": "must",
+            "source": "Transcrição / Requisitos"
+          },
+          {
+            "id": "REQ-06",
+            "text": "Oferecer visibilidade em tempo real do tráfego legítimo versus malicioso para o time de SOC",
+            "priority": "should",
+            "source": "Transcrição / Requisitos"
+          }
+        ],
+        "rows": [
+          {
+            "requirement_id": "REQ-01",
+            "requirement": "Alta disponibilidade e failover multi-cloud",
+            "solution": "Edge DNS + GTM; ALB opcional",
+            "evidence": "Teste controlado de indisponibilidade e relatório de decisão de tráfego."
+          },
+          {
+            "requirement_id": "REQ-02",
+            "requirement": "Proteção de APIs, cadastro e login contra abuso",
+            "solution": "AAP + Bot Manager; Account Protector opcional",
+            "evidence": "Suíte de ataques e automações com registros de ação por jornada."
+          },
+          {
+            "requirement_id": "REQ-03",
+            "requirement": "DDoS de aplicação e infraestrutura",
+            "solution": "AAP + Prolexic",
+            "evidence": "Teste L7, revisão do runbook e exercício de prontidão L3/L4."
+          },
+          {
+            "requirement_id": "REQ-04",
+            "requirement": "Latência de checkout e experiência regional",
+            "solution": "Ion + GTM",
+            "evidence": "Comparativo de linha de base e teste da jornada sob carga acordada."
+          },
+          {
+            "requirement_id": "REQ-05",
+            "requirement": "Proteção de dados e apoio à conformidade",
+            "solution": "AAP",
+            "evidence": "Inventário de APIs, regras de dados sensíveis e relatório de configuração."
+          },
+          {
+            "requirement_id": "REQ-06",
+            "requirement": "Visibilidade para o SOC",
+            "solution": "AAP + Bot Manager",
+            "evidence": "Eventos recebidos e pesquisáveis no SIEM com campos acordados."
+          }
+        ]
+      },
+      {
+        "id": "scope",
+        "type": "scope",
+        "title": "Escopo técnico",
+        "included": [
+          "Levantamento de zonas, aplicações, APIs, origens, fluxos e integrações de observabilidade",
+          "Desenho de Edge DNS, GTM e opção de ALB para continuidade multi-cloud",
+          "Configuração de propriedades Ion para checkout e portal de lojistas",
+          "Onboarding de aplicações e APIs no App & API Protector, incluindo descoberta, WAF, rate controls e proteção de dados sensíveis",
+          "Políticas de Bot Manager para cadastro, login, credential stuffing e raspagem",
+          "Desenho e prontidão operacional do Prolexic, condicionados à validação de blocos IP, BGP/GRE ou alternativa IP Protect",
+          "Integração de eventos de segurança e automação com o SIEM da NexusPay",
+          "Preparação para Black Friday e Pix Day com teste de carga, revisão de capacidade, congelamento de mudanças, runbook e war room liderado pela POPULOS",
+          "Disponibilização da atestação PCI DSS vigente da Akamai e da matriz de responsabilidades dos serviços em escopo, como evidência de apoio à conformidade da NexusPay"
+        ],
+        "deliverables": [
+          "HLD, runbooks, matriz de rastreabilidade e plano de testes",
+          "As-built, evidências de homologação e plano de reversão"
+        ],
+        "excluded": [
+          "Alterações no código-fonte do gateway e das aplicações",
+          "Operação continuada, NOC 24x7 e equipe residente",
+          "Homologação jurídica ou certificação formal de LGPD e PCI DSS"
+        ]
+      },
+      {
+        "id": "delivery",
+        "type": "delivery",
+        "title": "Abordagem de entrega",
+        "phases": [
+          {
+            "name": "Assessment",
+            "objective": "Inventariar jornadas, ativos, linha de base e dependências.",
+            "duration": "1 a 2 sem.",
+            "dependency": "Acessos e documentação",
+            "outputs": [
+              "inventário",
+              "linha de base"
+            ]
+          },
+          {
+            "name": "Design",
+            "objective": "Fechar arquitetura, políticas, testes e plano de reversão.",
+            "duration": "1 a 2 sem.",
+            "dependency": "Assessment aprovado",
+            "outputs": [
+              "HLD",
+              "plano de testes"
+            ]
+          },
+          {
+            "name": "Implementação e homologação",
+            "objective": "Configurar, integrar e validar as frentes em ambiente controlado.",
+            "duration": "4 a 6 sem.",
+            "dependency": "Licenças e acessos",
+            "outputs": [
+              "homologação",
+              "evidências"
+            ]
+          },
+          {
+            "name": "Produção e estabilização",
+            "objective": "Executar mudança, acompanhar a operação e concluir o aceite.",
+            "duration": "2 sem.",
+            "dependency": "Janela aprovada",
+            "outputs": [
+              "as-built",
+              "aceite"
+            ]
+          }
+        ],
+        "responsibilities": [
+          {
+            "party": "Infraestrutura NexusPay",
+            "responsibility": "Disponibilizar DNS, origens, conectividade, blocos IP e janelas de mudança."
+          },
+          {
+            "party": "Segurança e SOC NexusPay",
+            "responsibility": "Aprovar políticas, dados sensíveis, casos de teste e integração SIEM."
+          },
+          {
+            "party": "Aplicações NexusPay",
+            "responsibility": "Validar jornadas, APIs, comportamento funcional e métricas de experiência."
+          }
+        ]
+      },
+      {
+        "id": "assumptions_risks",
+        "type": "risk",
+        "title": "Premissas riscos e pendências",
+        "assumptions": [
+          "A NexusPay disponibilizará acessos administrativos e documentação no início de cada fase",
+          "As licenças e subscrições necessárias estarão ativas antes da configuração",
+          "Haverá ambiente de homologação e janela de produção aprovada",
+          "Os times de infraestrutura, segurança, aplicações e SOC participarão dos testes e aceites"
+        ],
+        "risks": [
+          {
+            "risk": "Inventário incompleto de APIs e origens",
+            "impact": "Cobertura parcial ou retrabalho",
+            "mitigation": "Descoberta de APIs, validação por responsáveis e congelamento do inventário por onda."
+          },
+          {
+            "risk": "Acesso tardio a DNS, SIEM ou clouds",
+            "impact": "Deslocamento do cronograma",
+            "mitigation": "Checklist de prontidão e gate de entrada em cada fase."
+          },
+          {
+            "risk": "Mudança sem janela ou plano de reversão",
+            "impact": "Risco operacional em produção",
+            "mitigation": "Ensaio em homologação, aprovação CAB e reversão testada."
+          },
+          {
+            "risk": "Origem exposta fora da borda",
+            "impact": "Bypass dos controles e DDoS direto",
+            "mitigation": "Restrição de origem e validação do desenho Prolexic."
+          }
+        ],
+        "open_questions": [
+          "Confirmar RPS médio e de pico por jornada",
+          "Confirmar inventário de APIs e domínios por onda",
+          "Confirmar blocos IP, capacidade BGP/GRE e modelo operacional do Prolexic",
+          "Confirmar identificadores de conta disponíveis para avaliar Account Protector"
+        ]
+      },
+      {
+        "id": "acceptance",
+        "type": "acceptance",
+        "title": "Critérios de aceite",
+        "criteria": [
+          {
+            "requirement_id": "REQ-01",
+            "criterion": "Failover entre origens concluído em até 90 segundos após a confirmação de falha pelos testes de saúde, respeitando TTL e cache DNS configurados.",
+            "evidence": "Relatório do teste controlado com linha do tempo e destino selecionado.",
+            "owner": "Infraestrutura NexusPay"
+          },
+          {
+            "requirement_id": "REQ-02",
+            "criterion": "Cem por cento das rotas prioritárias de cadastro, login e APIs de pagamento cadastradas nas políticas aprovadas, com casos benignos e maliciosos executados.",
+            "evidence": "Plano de testes, logs de ação e aprovação funcional.",
+            "owner": "Segurança e Aplicações"
+          },
+          {
+            "requirement_id": "REQ-03",
+            "criterion": "Proteção L7 validada por teste controlado e prontidão L3/L4 validada por runbook, conectividade e exercício de mesa do fluxo de mitigação.",
+            "evidence": "Relatório de segurança e ata do exercício operacional.",
+            "owner": "SOC e Infraestrutura"
+          },
+          {
+            "requirement_id": "REQ-04",
+            "criterion": "A linha de base será decomposta entre DNS, conexão e TLS, processamento de borda, tempo de origem e jornada fim a fim sob a mesma carga e geografia. A meta de melhoria será aprovada até o gate de saída do Assessment; sem aprovação, o aceite desta frente será a entrega do relatório decomposto, desde que nenhuma meta comercial anterior tenha sido prometida.",
+            "evidence": "Relatório comparativo, critérios do gate de Assessment e registro da decisão sobre a meta.",
+            "owner": "Aplicações NexusPay e POPULOS"
+          },
+          {
+            "requirement_id": "REQ-06",
+            "criterion": "Eventos de WAF, API e bots disponíveis no SIEM em até cinco minutos, contendo identificador da política, ação, endpoint e correlação temporal.",
+            "evidence": "Consulta salva no SIEM e amostra de eventos correlacionados.",
+            "owner": "SOC NexusPay"
+          }
+        ]
+      }
+    ],
+    "assets": []
+  },
+  "ai_used": true,
+  "ai_generation": {
+    "model": "gemini-3.5-flash-lite",
+    "scenario_generated_by_ai": true,
+    "proposal_generated_by_ai": true,
+    "critic_generated_by_ai": true,
+    "human_content_edits": 0,
+    "generated_at": "2026-09-24T02:43:30.631174+00:00"
+  },
+  "source_policy": {
+    "client_fact": [
+      "reunião simulada",
+      "requisitos registrados"
+    ],
+    "populos_standard": [
+      "template neutro POPULOS",
+      "tabela institucional de SLA"
+    ],
+    "bounded_estimate": [
+      "cronograma de 8 a 12 semanas",
+      "faixas iniciais de dimensionamento"
+    ],
+    "pending": [
+      "RPS de pico",
+      "inventário final de APIs",
+      "blocos IP e modelo de roteamento Prolexic"
+    ]
+  },
+  "governance": {
+    "warranty": {
+      "state": "commitment",
+      "value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final.",
+      "source": "decisão interna aprovada para a oportunidade NexusPay"
+    },
+    "license_supply": {
+      "state": "commitment",
+      "value": "As licenças e subscrições Akamai serão fornecidas pela POPULOS por meio de revenda autorizada e deverão estar ativas antes da configuração.",
+      "source": "decisão interna aprovada para a oportunidade NexusPay"
+    },
+    "sla": {
+      "state": "commitment",
+      "value": "tabela institucional do template POPULOS",
+      "source": "populos_standard"
+    }
+  },
+  "dimensioning": [
+    [
+      "Zonas DNS e domínios críticos",
+      "3 a 8",
+      "Faixa para planejamento; validar inventário",
+      "Estimativa"
+    ],
+    [
+      "Aplicações e APIs prioritárias",
+      "5 a 15",
+      "Checkout, cadastro, login e APIs associadas",
+      "Estimativa"
+    ],
+    [
+      "Origens multi-cloud",
+      "3",
+      "Duas nuvens públicas e um datacenter",
+      "Confirmado"
+    ]
+  ],
+  "event_readiness": [
+    "Executar teste de carga pré-evento com cenários aprovados e decomposição das métricas de borda, origem e jornada",
+    "Revisar capacidade, alarmes, contatos e caminhos de escalonamento antes do congelamento de mudanças",
+    "Aplicar change freeze e registrar exceções por aprovação executiva",
+    "Manter runbook de degradação controlada, reversão e comunicação",
+    "Conduzir war room liderado pela POPULOS; participação da Akamai somente conforme suporte contratado e plano de escalonamento"
+  ]
+}

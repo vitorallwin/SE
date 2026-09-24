@@ -1,0 +1,4 @@
+interface:
+  display_name: "Akamai Proposal Authoring"
+  short_description: "Cria propostas Akamai modulares e rastreáveis"
+  default_prompt: "Use $akamai-proposal-authoring para criar uma proposta técnica Akamai personalizada a partir do discovery."

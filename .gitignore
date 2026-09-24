@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+data/proposals/*.json
+data/generated/*.docx
+!data/proposals/.gitkeep
+!data/generated/.gitkeep
+
+!data/proposals/20260923-e54ccb6.json
+~$*

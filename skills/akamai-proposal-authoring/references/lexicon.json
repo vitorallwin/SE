@@ -1,0 +1,38 @@
+{
+  "version": "2026.09.24-v5",
+  "forbidden_internal": [
+    "ia",
+    "inferido",
+    "demonstrativo",
+    "discovery",
+    "placeholder",
+    "preenchimento",
+    "item requisito",
+    "requisito correspondente",
+    "fonte: discovery",
+    "tbd"
+  ],
+  "forbidden_internal_strict": [
+    "oportunidade",
+    "aprovado para esta",
+    "aprovada para esta",
+    "demais componentes",
+    "decisão interna",
+    "estado da proposta"
+  ],
+  "untranslated": {
+    "liveness tests": "testes de saúde",
+    "offload": "redução de carga na origem",
+    "change freeze": "congelamento de mudanças",
+    "rate controls": "controle de taxa de requisições",
+    "stickiness": "afinidade de sessão",
+    "war room": "sala de crise",
+    "scrubbing": "limpeza de tráfego",
+    "api discovery": "descoberta de APIs"
+  },
+  "allowed_terms": [
+    "WAF", "DNS", "DNSSEC", "Anycast", "API", "SIEM", "SOC", "TLS", "DDoS", "HLD",
+    "as-built", "credential stuffing", "runbook", "PII", "PCI DSS", "Assessment",
+    "checkout", "failover", "Black Friday", "Pix Day"
+  ]
+}
