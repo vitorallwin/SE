@@ -140,6 +140,7 @@ ENGINE_FILES = [
     "authoring/AUTHOR_BRIEF.md",
     "assets/proposal_neutral_template.docx",
     "assets/institutional_whitelist.json",
+    "assets/case_residue.json",
     "scripts/validate_attempt.py",
     "scripts/author_with_gemini.py",
     *(f"sales_engineer/{name}.py" for name in (

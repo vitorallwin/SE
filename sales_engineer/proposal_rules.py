@@ -48,6 +48,9 @@ def _client_visible_texts(proposal: dict[str, Any]) -> Iterable[str]:
 
 def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
     """Return every violation of the v5 fidelity and integrity rules (empty list = compliant)."""
+    gate = _pre_proposal_gate(proposal)
+    if gate is not None:
+        return gate
     errors: list[str] = []
     governance = proposal.get("governance", {})
 
@@ -161,10 +164,12 @@ def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
         errors.extend(_validate_rules_v6(proposal))
     if int(proposal.get("rules_version", 0) or 0) >= 7:
         errors.extend(_validate_rules_v7(proposal))
+    if int(proposal.get("rules_version", 0) or 0) >= 8:
+        errors.extend(_validate_rules_v8(proposal))
     return errors
 
 
-LATEST_RULES_VERSION = 7
+LATEST_RULES_VERSION = 8
 DATA_MODES = {"test", "production"}
 # Prefixos normalizados (sem acento, minúsculos): aceitam "Arquiteto", "arquiteta", "Engenheira de redes"...
 _TECHNICAL_ROLE_PREFIXES = ("arquitet", "engenh", "delivery", "pre-vendas tecnic", "pre vendas tecnic", "presales tecnic")
@@ -310,7 +315,7 @@ def _validate_rules_v6(proposal: dict[str, Any]) -> list[str]:
         if key != "engagement_type" and decision.get("engagement_ref") != engagement:
             errors.append(f"decisão tomada para outro engajamento ({decision.get('engagement_ref')} ≠ {engagement}): {key}")
     sla = governance.get("sla", {})
-    if engagement not in sla.get("applies_to", []):
+    if int(proposal.get("rules_version", 0) or 0) < 8 and engagement not in sla.get("applies_to", []):
         errors.append(f"bloco institucional de SLA não declarado aplicável ao engajamento {engagement}")
 
     # Provenance per speaker: vendor-only statements are hypotheses.
@@ -374,6 +379,114 @@ def _validate_rules_v6(proposal: dict[str, Any]) -> list[str]:
                 errors.append(f"trilha rápida com produto não recomendado: {product}")
         if "prolexic" in track.get("components", []):
             errors.append("trilha rápida não pode prometer Prolexic antes da validação de rede")
+    return errors
+
+
+PRODUCT_STATUSES = {"recommended", "optional", "needs_information", "excluded", "already_contracted"}
+INPUT_STATUSES = {"sufficient", "insufficient"}
+CATALOG_FIT = {"fits", "no_catalog"}
+MAX_QUALIFICATION_QUESTIONS = 8
+
+# Slots do template cujo texto depende do caso. Na v8 o compositor não tem texto padrão para eles:
+# ou o estado traz o texto, ou a emissão bloqueia (o texto padrão antigo carregava um caso anterior).
+REQUIRED_DOCUMENT_TEXT = (
+    "about_solution", "coverage", "dimensioning_intro", "methodology_intro", "tests",
+    "schedule_intro", "schedule_sequence", "closing", "callout_migration", "callout_milestones",
+    "diagram_users", "diagram_users_detail", "diagram_origins_title", "diagram_origins",
+)
+REQUIRED_LISTS = {"assessment_items": (3, 3), "restrictions": (4, 4), "client_roles": (1, 4), "dimensioning": (1, 3)}
+
+
+def _rules_version(proposal: dict[str, Any]) -> int:
+    return int(proposal.get("rules_version", 0) or 0)
+
+
+def _pre_proposal_gate(proposal: dict[str, Any]) -> list[str] | None:
+    """v8: before any proposal rule, decide whether a proposal may be written at all.
+
+    An insufficient input returns qualification questions; a request outside the catalog returns
+    the missing vendor package. Both block emission for their own reason, whatever else is missing.
+    """
+    if _rules_version(proposal) < 8:
+        return None
+    errors: list[str] = []
+    assessment = proposal.get("input_assessment") or {}
+    status = assessment.get("status")
+    if status not in INPUT_STATUSES:
+        return ["input_assessment.status ausente ou inválido (sufficient | insufficient)"]
+    if status == "insufficient":
+        questions = [q for q in proposal.get("open_questions", []) if str(q).strip()]
+        if not assessment.get("missing"):
+            errors.append("insumo insuficiente sem a lista do que falta (input_assessment.missing)")
+        if not 1 <= len(questions) <= MAX_QUALIFICATION_QUESTIONS:
+            errors.append(f"insumo insuficiente: devolva de 1 a {MAX_QUALIFICATION_QUESTIONS} perguntas essenciais (open_questions tem {len(questions)})")
+        errors.append("GATE insumo_insuficiente: não gerar proposta; devolver as perguntas de qualificação")
+        return errors
+    client_requirements = [
+        item for item in proposal.get("traceability", [])
+        if not item.get("hypothesis") and set(item.get("speakers", [])) & {"client", "input_document"}
+    ]
+    if not _text_value(proposal.get("client_name")) or not client_requirements:
+        return ["insumo declarado suficiente sem cliente identificado ou sem requisito do cliente: use input_assessment.status 'insufficient'"]
+    fit = proposal.get("catalog_fit") or {}
+    if fit.get("status") not in CATALOG_FIT:
+        return ["catalog_fit.status ausente ou inválido (fits | no_catalog)"]
+    if fit.get("status") == "no_catalog":
+        if not fit.get("requested") or not fit.get("reason"):
+            errors.append("catalog_fit no_catalog sem o que foi pedido (requested) e o motivo (reason)")
+        errors.append(f"GATE sem_catalogo: pedido fora do catálogo disponível ({fit.get('requested')}); requer pacote do fabricante")
+        return errors
+    return None
+
+
+def _text_value(value: Any) -> str:
+    return " ".join(str(value or "").split())
+
+
+def sla_applicable_engagements() -> list[str]:
+    return list(json.loads(_WHITELIST.read_text(encoding="utf-8")).get("sla_applies_to", []))
+
+
+def _validate_rules_v8(proposal: dict[str, Any]) -> list[str]:
+    """Issues from the diverse-case round: no inherited template text, explicit product states for
+    the existing contract, SLA applicability decided by the institution (not by the author)."""
+    errors: list[str] = []
+    decisions = proposal.get("solution_decisions", [])
+    for decision in decisions:
+        if decision.get("status") not in PRODUCT_STATUSES:
+            errors.append(f"status de produto inválido: {decision.get('product_id')} = {decision.get('status')}")
+        if decision.get("status") == "already_contracted" and not decision.get("contract_ref"):
+            errors.append(f"produto já contratado sem referência ao contrato vigente (contract_ref): {decision.get('product_id')}")
+    if not any(d.get("status") in {"recommended", "optional", "needs_information"} for d in decisions):
+        errors.append("nenhum produto do catálogo em avaliação: se o pedido está fora do catálogo, use catalog_fit 'no_catalog'")
+    contracted = {d.get("product_id") for d in decisions if d.get("status") == "already_contracted"}
+    offered = set(proposal.get("products", []))
+    for wave in (proposal.get("optional_phase") or {}).get("waves", []):
+        offered |= set(wave.get("components", []))
+    for product in sorted(contracted & offered):
+        errors.append(f"produto já contratado oferecido de novo: {product}")
+
+    # Texto do documento: todo slot dependente do caso vem do estado.
+    document_text = proposal.get("document_text") or {}
+    for key in REQUIRED_DOCUMENT_TEXT:
+        if not _text_value(document_text.get(key)):
+            errors.append(f"document_text.{key} ausente: o compositor não usa texto padrão para este slot")
+    for key, (low, high) in REQUIRED_LISTS.items():
+        items = [item for item in proposal.get(key) or [] if item]
+        if not low <= len(items) <= high:
+            errors.append(f"{key} deve ter de {low} a {high} itens (tem {len(items)})")
+    if not any(str(s.get("title", "")).casefold() == "resumo executivo" and s.get("paragraphs") for s in proposal.get("sections", [])):
+        errors.append("sections sem 'Resumo executivo'")
+
+    # SLA institucional: a aplicabilidade é da instituição (whitelist) ou de uma decisão aprovada do caso.
+    engagement = proposal.get("governance", {}).get("engagement_type", {}).get("value")
+    applicability = proposal.get("governance", {}).get("sla_applicability") or {}
+    if engagement not in sla_applicable_engagements() and not (
+        applicability.get("state") == "commitment" and engagement in (applicability.get("value") or [])
+    ):
+        errors.append(
+            f"decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para '{engagement}')"
+        )
     return errors
 
 

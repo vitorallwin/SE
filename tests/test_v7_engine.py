@@ -14,6 +14,13 @@ from sales_engineer.case_runner import read_source_material, record_attempt, ski
 from sales_engineer.proposal_rules import validate_proposal_rules
 from tests.test_v6_rules import resolved_v6
 
+FIXTURES = Path(__file__).resolve().parent / "fixtures"
+
+
+def vertice_v8() -> dict:
+    """A real v8 authoring output (diverse-case round, case 01), used as the clean latest-contract state."""
+    return json.loads((FIXTURES / "vertice_v8.json").read_text(encoding="utf-8"))
+
 
 def resolved_v7() -> dict:
     """The closed NexusPay V6 state upgraded to the v7 contract (regression fixture only, never an authoring example)."""
@@ -150,26 +157,26 @@ class CaseRunnerTests(unittest.TestCase):
         return record_attempt(self.run_dir, path)
 
     def test_clean_attempt_is_composed(self) -> None:
-        result = self._submit(resolved_v7())
+        result = self._submit(vertice_v8())
         self.assertEqual(result["status"], "ok")
-        self.assertEqual(result["composition"]["status"], "emitted")
+        self.assertEqual(result["composition"]["status"], "emitted", result["composition"])
         text = " ".join(p.text for p in Document(result["composition"]["docx"]).paragraphs)
-        self.assertIn("Critérios de aceite — Trilha rápida opcional", text)
+        self.assertIn("Vértice Educação", text)
         self.assertTrue((self.run_dir / "final" / "relatorio-cobertura.md").exists())
 
     def test_iteration_limit_is_enforced(self) -> None:
         with mock.patch.object(case_runner, "engine_config", return_value={"max_iterations": 2}):
             self.assertEqual(self._submit("{").get("status"), "violations")
-            self.assertEqual(self._submit({"rules_version": 7}).get("status"), "violations")
-            self.assertEqual(self._submit(resolved_v7())["status"], "limit_reached")
+            self.assertEqual(self._submit({"rules_version": 8}).get("status"), "violations")
+            self.assertEqual(self._submit(vertice_v8())["status"], "limit_reached")
         log = json.loads((self.run_dir / "attempts.json").read_text(encoding="utf-8"))
         self.assertEqual([a["attempt"] for a in log["attempts"]], [1, 2])
         self.assertTrue((self.run_dir / "pass1.json").exists())
 
     def test_malformed_and_old_states_come_back_as_feedback(self) -> None:
         self.assertIn("não é um objeto JSON", validate_state([])[0])
-        self.assertIn("rules_version deve ser 7", validate_state({"rules_version": 6})[0])
-        self.assertTrue(validate_state({"rules_version": 7, "governance": "x"})[0].startswith("estado malformado"))
+        self.assertIn("rules_version deve ser 8", validate_state({"rules_version": 7})[0])
+        self.assertTrue(validate_state({"rules_version": 8, "input_assessment": "x"})[0].startswith("estado malformado"))
 
     def test_source_extraction_reads_text_and_docx(self) -> None:
         source = Path(self.tmp.name) / "insumo"
@@ -198,7 +205,7 @@ class CaseRunnerTests(unittest.TestCase):
         self.assertEqual(request["template_version"], "2026.09.24-1")
         self.assertEqual(request["skill_sha256"], case_runner.skill_hash())
         state = Path(self.tmp.name) / "estado.json"
-        state.write_text(json.dumps(resolved_v7(), ensure_ascii=False), encoding="utf-8")
+        state.write_text(json.dumps(vertice_v8(), ensure_ascii=False), encoding="utf-8")
         result = subprocess.run([sys.executable, "scripts/validate_attempt.py", "execucao", str(state)],
                                 cwd=workspace, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)

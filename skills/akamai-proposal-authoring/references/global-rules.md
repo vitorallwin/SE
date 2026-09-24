@@ -36,7 +36,7 @@ The global state separates client facts, requirements, decisions, scope, commerc
 ## Decisions, provenance and feasibility (rules v6 and v7)
 
 - A decision is committed only with an explicit approval: approver, ISO date, and a record of where the approval happened. Moving on without objecting is not approval. The approved text is kept verbatim; context goes outside it.
-- A decision is bound to the engagement type it was made for. When the engagement changes, dependent decisions reopen. An institutional block (such as the SLA table) is emitted only when declared applicable to the current engagement.
+- A decision is bound to the engagement type it was made for. When the engagement changes, dependent decisions reopen. An institutional block (such as the SLA table) is emitted only where the institution declares it applicable, or where an approved case decision extends it.
 - `data_mode: test` marks the origin of the data. It never disables a check.
 - An institutional standard is versioned with the approved template and is not approved per case.
 - An effort estimate has a technical owner (architect, engineering, delivery, or technical presales).
@@ -44,6 +44,13 @@ The global state separates client facts, requirements, decisions, scope, commerc
 - Committed deliverables and acceptance criteria never require an action that the scope boundary forbids.
 - For a critical event with a known date, feasibility is computed in the proposal from the proposal date, including the license lead time, and stated in the executive summary. An unknown lead time is an open question, never an estimate, and rules out a `fits` classification. A dateless event becomes an open question.
 - Every option that touches production (a wave, a fast track) declares it, has its own window, rollback, approval, and acceptance criteria, and must fit before the change freeze, not only before the event.
+
+## Before writing a proposal (rules v8)
+
+- First decide whether a proposal can be written. When the material does not identify the client or a concrete need, the outcome is a short list of qualification questions, not a proposal.
+- When the request is for a technology the supplied catalog does not cover, the outcome is the declared gap. Catalog products are never stretched to fit an unrelated request.
+- Products the client already has belong to the current environment. They are not offered again and are not treated as exclusions.
+- Every case-dependent paragraph comes from the state. The compositor holds no text from any previous case.
 
 ## Client-facing language
 

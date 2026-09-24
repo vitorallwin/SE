@@ -540,7 +540,21 @@ python .\scripts\author_with_gemini.py <pasta-da-execução>          # configur
 
 Resultado por execução: `pass1..3.json`, `attempts.json` (violações da primeira passada e da final), `notes.md` e, quando emitido, `final/` com o DOCX e o relatório de cobertura.
 
-## 18. Arquivos de trabalho fora da aplicação
+## 18. Motor v8: correções da rodada de casos diversos
+
+A rodada v7 (config B, casos 01 a 06, 3 execuções cada) acertou 18/18 decisões de emitir ou bloquear. Ela revelou cinco lacunas do núcleo, corrigidas na v8 (`_pre_proposal_gate` e `_validate_rules_v8`):
+
+| Achado | Correção |
+|---|---|
+| O compositor tinha texto fixo de um caso anterior ("nuvens", "SOC", "Assessment", "lojistas") | Os slots dependentes do caso não têm mais texto padrão: `document_text` obrigatório, além de `client_roles`, `restrictions`, `assessment_items` e `dimensioning`. `assets/case_residue.json` bloqueia termos de casos anteriores que cheguem ao DOCX sem estar no estado. |
+| Insumo insuficiente e pedido fora do catálogo bloqueavam só por falta de decisões | Gates `insumo_insuficiente` (`input_assessment`) e `sem_catalogo` (`catalog_fit`), avaliados antes de qualquer outra regra. |
+| Produto já contratado aparecia como excluído | Status `already_contracted`, com `contract_ref`. Aparece como ambiente atual e não pode ser oferecido de novo. |
+| Cada autor declarava a aplicabilidade do SLA de um jeito | A instituição declara (`sla_applies_to` na whitelist). Outros engajamentos exigem a decisão aprovada `sla_applicability`. |
+| Autor podia rodar o validador fora do contador | O brief proíbe. É uma limitação conhecida: dentro do workspace, isso não pode ser impedido por código. |
+
+O fixture `tests/fixtures/vertice_v8.json` é uma saída real da rodada (caso 01), usada como estado limpo do contrato v8. Os testes estão em `tests/test_v8_engine.py`.
+
+## 19. Arquivos de trabalho fora da aplicação
 
 Estes arquivos ajudaram na geração e auditoria, mas não são necessários para executar a aplicação:
 

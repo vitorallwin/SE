@@ -7,5 +7,9 @@
     "about_populos": "68c203484136c009cb5842018383cdf372f1a98a0e6d170566dffeb8a5ba82c3",
     "sla": "cdd6c5cc352509acfa39563db5896e6780d0c79233f54e7869aa8ccce93fe496",
     "confidentiality": "17d46e1f6c3dd83ba26bcb74f7eb52594430fa84673eaa4fb78ff2c23a66ddd1"
-  }
+  },
+  "sla_applies_to": [
+    "implementation"
+  ],
+  "sla_applies_to_note": "Engajamentos em que a tabela institucional de SLA vale sem decisão do caso. Outros tipos exigem governance.sla_applicability aprovada."
 }

@@ -119,3 +119,31 @@ def validate_state_against_docx(proposal: dict[str, Any], path: Path) -> None:
         preview = "; ".join(missing[:8])
         suffix = f"; +{len(missing) - 8} item(ns)" if len(missing) > 8 else ""
         raise ValueError(f"Divergência estado × DOCX: {preview}{suffix}")
+
+
+CASE_RESIDUE_PATH = Path(__file__).resolve().parents[1] / "assets" / "case_residue.json"
+
+
+def _state_values_text(value: Any) -> str:
+    """Every string value of the state (keys excluded), for provenance checks."""
+    if isinstance(value, dict):
+        return " ".join(_state_values_text(item) for item in value.values())
+    if isinstance(value, (list, tuple)):
+        return " ".join(_state_values_text(item) for item in value)
+    return str(value) if value is not None else ""
+
+
+def find_case_residue(text: str, proposal: dict[str, Any], path: Path = CASE_RESIDUE_PATH) -> list[str]:
+    """Terms known from earlier cases that reach the document without appearing anywhere in this state.
+
+    Such a term can only come from fixed composer text, so it is residue of another case.
+    """
+    terms = json.loads(path.read_text(encoding="utf-8")).get("terms", [])
+    rendered = normalize_document_text(text)
+    state_text = normalize_document_text(_state_values_text(proposal))
+    found = []
+    for term in terms:
+        pattern = re.compile(rf"(?<!\w){re.escape(normalize_document_text(term))}(?!\w)")
+        if pattern.search(rendered) and not pattern.search(state_text):
+            found.append(term)
+    return found

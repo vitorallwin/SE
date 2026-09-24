@@ -17,7 +17,7 @@ from docx.shared import Inches, Pt, RGBColor
 from PIL import Image, ImageDraw, ImageFont
 
 from .catalog import PRODUCTS
-from .document_validation import detect_skill_leakage, find_vocabulary_violations, validate_state_against_docx
+from .document_validation import detect_skill_leakage, find_case_residue, find_vocabulary_violations, validate_state_against_docx
 from .institutional_policy import validate_institutional_whitelist
 from .proposal_rules import assert_proposal_rules
 
@@ -161,6 +161,29 @@ def _strict(proposal: dict[str, Any]) -> bool:
     return int(proposal.get("rules_version", 0) or 0) >= 5
 
 
+def _v8(proposal: dict[str, Any]) -> bool:
+    return int(proposal.get("rules_version", 0) or 0) >= 8
+
+
+def _slot(proposal: dict[str, Any], key: str, legacy_default: str) -> str:
+    """Case-dependent slot. From v8 on there is no default: the old defaults carried a previous case."""
+    value = _text(proposal.get("document_text", {}).get(key))
+    if value:
+        return value
+    if _v8(proposal):
+        raise ValueError(f"Slot do documento sem texto do caso: document_text.{key}")
+    return legacy_default
+
+
+def _state_list(proposal: dict[str, Any], key: str, legacy_default: list) -> list:
+    value = proposal.get(key)
+    if value:
+        return list(value)
+    if _v8(proposal):
+        raise ValueError(f"Lista do documento sem conteúdo do caso: {key}")
+    return legacy_default
+
+
 _DIAGRAM_LABELS = {
     "ion": "Ion", "app_api_protector": "AAP", "bot_manager": "Bot Manager",
     "account_protector": "Account", "edge_dns": "Edge DNS", "gtm": "GTM", "alb": "ALB",
@@ -173,10 +196,10 @@ def _diagram_boxes(proposal: dict[str, Any]) -> list[tuple[str, str]]:
     edge = [_DIAGRAM_LABELS[p] for p in ("ion", "app_api_protector", "bot_manager", "account_protector") if p in recommended]
     traffic = [_DIAGRAM_LABELS[p] for p in ("edge_dns", "gtm", "alb") if p in recommended]
     return [
-        ("Clientes e lojistas", "Jornadas web e API"),
+        (_slot(proposal, "diagram_users", "Clientes e lojistas"), _slot(proposal, "diagram_users_detail", "Jornadas web e API")),
         ("Borda Akamai", " · ".join(edge) or "Controles de borda"),
         ("Decisão de tráfego", " · ".join(traffic) or "DNS atual"),
-        (_doc_text(proposal, "diagram_origins_title", "Origens do cliente"), _doc_text(proposal, "diagram_origins", "Cloud A · Cloud B · DC")),
+        (_slot(proposal, "diagram_origins_title", "Origens do cliente"), _slot(proposal, "diagram_origins", "Cloud A · Cloud B · DC")),
     ]
 
 
@@ -383,7 +406,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
 
     _replace_paragraph(p[19], "Sobre a Akamai")
     _replace_paragraph(p[20], _doc_text(proposal, "about_akamai", f"A Akamai oferece serviços distribuídos de entrega, desempenho, proteção e observabilidade para aplicações, APIs e infraestrutura exposta à internet. A arquitetura desta proposta combina apenas as capacidades ligadas às jornadas e riscos priorizados por {client}."))
-    _replace_paragraph(p[21], _doc_text(proposal, "about_solution", f"Para {client}, a solução integra continuidade multi-cloud, proteção de aplicações e APIs, defesa contra abuso automatizado e otimização das jornadas de checkout e cadastro. Cada frente possui escopo de configuração, evidência de teste e responsável definidos."))
+    _replace_paragraph(p[21], _slot(proposal, "about_solution", f"Para {client}, a solução integra continuidade multi-cloud, proteção de aplicações e APIs, defesa contra abuso automatizado e otimização das jornadas de checkout e cadastro. Cada frente possui escopo de configuração, evidência de teste e responsável definidos."))
     _replace_paragraph(p[22], "Parceria POPULOS e Akamai")
     _replace_paragraph(p[23], _doc_text(proposal, "partnership", "A POPULOS responde pela arquitetura, implantação, testes e documentação do projeto, com profissionais qualificados nas tecnologias previstas. As credenciais nominais da equipe serão apresentadas na mobilização, conforme os requisitos formais da contratação."))
     _set_rows(p, range(24, 28), ["Arquitetura e segurança de aplicações Akamai;", "DNS, gestão global de tráfego e entrega de aplicações;", "Gestão de projeto, testes e documentação técnica."])
@@ -394,13 +417,15 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
         _replace_paragraph(p[32], summary[1] if len(summary) > 1 else "A solução proposta atende às seguintes frentes:")
         for extra in summary[2:]:
             _insert_paragraph_like(p[33], p[32], extra, copy_run_format=True)
+    elif _v8(proposal):
+        raise ValueError("Resumo executivo ausente do estado")
     else:
         _replace_paragraph(p[31], f"Esta proposta técnica apresenta a abordagem recomendada para {client}.")
         _replace_paragraph(p[32], "O escopo foi construído a partir dos requisitos e jornadas críticas apresentados pela NexusPay.")
     front_lines = [f"{front['title']} — {', '.join(front['products'])}." for front in fronts]
     p[30].paragraph_format.keep_with_next = True
     _set_rows(p, range(33, 38), front_lines)
-    _replace_paragraph(p[38], _doc_text(proposal, "coverage", "Abrangência: checkout, APIs de pagamento, cadastro e autenticação de lojistas, zonas DNS e origens distribuídas entre duas nuvens públicas e o datacenter corporativo."))
+    _replace_paragraph(p[38], _slot(proposal, "coverage", "Abrangência: checkout, APIs de pagamento, cadastro e autenticação de lojistas, zonas DNS e origens distribuídas entre duas nuvens públicas e o datacenter corporativo."))
     _set_rows_dynamic(p, range(41, 48), goals, p[48])
 
     _replace_paragraph(p[51], proposal.get("architecture", {}).get("summary", ""))
@@ -419,12 +444,18 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
         for ix in bullet_indexes: _remove_paragraph(p[ix])
 
     _replace_paragraph(p[61], "4. Dimensionamento e Abrangência")
-    _replace_paragraph(p[62], _doc_text(proposal, "dimensioning_intro", "Para esta versão, o planejamento considera as jornadas críticas já identificadas e uma implantação em ondas. A quantidade contratual de zonas, propriedades, APIs, usuários e capacidade de proteção será fechada no levantamento inicial, sem interromper o desenho e a preparação técnica."))
+    _replace_paragraph(p[62], _slot(proposal, "dimensioning_intro", "Para esta versão, o planejamento considera as jornadas críticas já identificadas e uma implantação em ondas. A quantidade contratual de zonas, propriedades, APIs, usuários e capacidade de proteção será fechada no levantamento inicial, sem interromper o desenho e a preparação técnica."))
     _replace_paragraph(p[63], "4.1 Itens de dimensionamento")
-    _replace_paragraph(p[65], "Observação: a linha de base será levantada e validada durante o Assessment.")
+    dimensioning_note = _text(proposal.get("document_text", {}).get("dimensioning_note"))
+    if dimensioning_note:
+        _replace_paragraph(p[65], dimensioning_note)
+    elif _v8(proposal):
+        _remove_paragraph(p[65])
+    else:
+        _replace_paragraph(p[65], "Observação: a linha de base será levantada e validada durante o Assessment.")
     _replace_paragraph(p[66], "4.2 Componentes centralizados e serviços de borda")
     p[66].paragraph_format.page_break_before = False
-    dims = proposal.get("dimensioning", [
+    dims = _state_list(proposal, "dimensioning", [
         ("Zonas DNS e domínios críticos", "Faixa inicial: 3 a 8", "Validar inventário", "Premissa"),
         ("Aplicações e APIs prioritárias", "Faixa inicial: 5 a 15", "Validar catálogo", "Premissa"),
         ("Origens multi-cloud", "3 ambientes", "Duas nuvens e um datacenter", "Confirmado"),
@@ -439,9 +470,9 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
         for c, value in zip(row.cells, values): _replace_cell(c, value)
     component_rows = []
     for decision in proposal.get("solution_decisions", []):
-        if decision.get("status") not in {"recommended", "optional"}:
+        if decision.get("status") not in {"recommended", "optional", "already_contracted"}:
             continue
-        status = "Recomendado" if decision.get("status") == "recommended" else "Opção condicionada"
+        status = {"recommended": "Recomendado", "optional": "Opção condicionada", "already_contracted": "Já contratado — ambiente atual"}[decision["status"]]
         if decision.get("implementation_status") == "modality_pending":
             status += " — modalidade de implantação a definir"
         component_rows.append((_product_name(str(decision.get("product_id"))), status))
@@ -474,15 +505,15 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     _repeat_table_header(trace_table.rows[0])
 
     _replace_paragraph(p[68], "Como primeira etapa, a POPULOS realizará o levantamento detalhado do ambiente atual, contemplando no mínimo:")
-    _set_rows(p, range(69, 72), proposal.get("assessment_items") or [
+    _set_rows(p, range(69, 72), _state_list(proposal, "assessment_items", [
         "Inventário de domínios, aplicações, APIs e origens;",
         "Métricas de tráfego, latência, disponibilidade e eventos de segurança;",
         "Dependências de integração, acesso, observabilidade e conformidade.",
-    ])
+    ]))
     included = proposal.get("scope", {}).get("included", [])
     if proposal.get("document_text", {}).get("heading_6"):
         _replace_paragraph(p[73], proposal["document_text"]["heading_6"])
-    _replace_paragraph(p[74], _doc_text(proposal, "methodology_intro", "A POPULOS disponibilizará equipe técnica e gestão de projeto para conduzir Assessment, Design, Implementação, Homologação, Produção e Estabilização. A execução seguirá o plano aprovado, com controles de mudança e evidências de cada marco."))
+    _replace_paragraph(p[74], _slot(proposal, "methodology_intro", "A POPULOS disponibilizará equipe técnica e gestão de projeto para conduzir Assessment, Design, Implementação, Homologação, Produção e Estabilização. A execução seguirá o plano aprovado, com controles de mudança e evidências de cada marco."))
     _set_rows_dynamic(p, range(76, 85), included + proposal.get("scope", {}).get("deliverables", []), p[85])
     phases = proposal.get("delivery", {}).get("phases", [])
     optional_phase = proposal.get("optional_phase") or {}
@@ -523,28 +554,28 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     _replace_paragraph(p[93], "A POPULOS conduzirá o planejamento, a gestão de riscos e dependências e os reportes periódicos, em alinhamento com o ponto focal do cliente.")
 
     _replace_paragraph(p[96], _doc_text(proposal, "knowledge_transfer", "A passagem de conhecimento abrangerá a arquitetura implantada, as configurações aprovadas, os procedimentos operacionais e a documentação final prevista no escopo."))
-    _replace_paragraph(p[98], _doc_text(proposal, "tests", "Os testes validarão decisão de tráfego, failover, políticas de segurança, classificação de automações, risco de conta, desempenho das jornadas e envio de eventos ao SIEM, conforme critérios da seção 10."))
+    _replace_paragraph(p[98], _slot(proposal, "tests", "Os testes validarão decisão de tráfego, failover, políticas de segurança, classificação de automações, risco de conta, desempenho das jornadas e envio de eventos ao SIEM, conforme critérios da seção 10."))
     _set_rows_dynamic(p, range(101, 106), proposal.get("scope", {}).get("excluded", []), p[106])
     _set_rows_dynamic(p, range(110, 118), proposal.get("assumptions", []), p[118])
     _replace_paragraph(p[118], f"8.2 Requisitos — Pessoas ({client})")
     p[108].paragraph_format.page_break_before = False
-    client_roles = [
+    client_roles = _state_list(proposal, "client_roles", [
         "Ponto focal executivo: decisões e escalonamentos;",
         "Infraestrutura: acessos a DNS, nuvens e origens;",
         "Segurança/SOC: políticas, integrações e validação das evidências;",
         "Aplicações: apoio aos testes de APIs e jornadas críticas.",
-    ]
+    ])
     _set_rows(p, range(119, 123), client_roles)
-    restrictions = proposal.get("restrictions") or [
+    restrictions = _state_list(proposal, "restrictions", [
         "O cronograma depende da disponibilização de acessos, dados de dimensionamento e janelas de mudança;",
         "Mudanças em requisitos, volumetria ou integrações poderão exigir revisão de prazo e escopo;",
         "A proposta não constitui homologação jurídica nem certificação de conformidade regulatória;",
         "A faixa de oito a doze semanas pressupõe acessos no início de cada fase, uma janela de produção aprovada e ausência de alteração material de volumetria.",
-    ]
+    ])
     _set_rows(p, range(124, 128), restrictions)
 
-    _replace_paragraph(p[133], _doc_text(proposal, "schedule_intro", "A implantação está estimada entre oito e doze semanas, contadas a partir da reunião de início, condicionada à liberação de acessos, validação do desenho e disponibilidade das janelas de mudança."))
-    _replace_paragraph(p[134], _doc_text(proposal, "schedule_sequence", "A sequência inclui levantamento, desenho, implementação, homologação, entrada em produção e estabilização assistida."))
+    _replace_paragraph(p[133], _slot(proposal, "schedule_intro", "A implantação está estimada entre oito e doze semanas, contadas a partir da reunião de início, condicionada à liberação de acessos, validação do desenho e disponibilidade das janelas de mudança."))
+    _replace_paragraph(p[134], _slot(proposal, "schedule_sequence", "A sequência inclui levantamento, desenho, implementação, homologação, entrada em produção e estabilização assistida."))
     _remove_paragraph(p[136])
     _trim_table_columns(t[7], 5)
     headers = ["Fase", "Atividade", "Dependência", "Duração", "Evidência"]
@@ -592,7 +623,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
         for item in items:
             _insert_paragraph_like(p[144], p[139], item)
     _replace_paragraph(p[146], _doc_text(proposal, "warranty_intro", "A garantia técnica cobre a correção de defeitos diretamente atribuíveis aos serviços executados pela POPULOS. O prazo consta do quadro Garantia e vigência."))
-    _replace_paragraph(p[148], _doc_text(proposal, "closing", "O projeto encerra-se após o aceite e a estabilização assistida. Operação continuada, suporte gerenciado, NOC 24x7 e equipe residente exigem contratação específica."))
+    _replace_paragraph(p[148], _slot(proposal, "closing", "O projeto encerra-se após o aceite e a estabilização assistida. Operação continuada, suporte gerenciado, NOC 24x7 e equipe residente exigem contratação específica."))
     _replace_paragraph(p[149], "Condições de atendimento")
     _replace_paragraph(p[150], "Durante a execução e a garantia, a POPULOS adotará o padrão institucional de atendimento abaixo para falhas atribuíveis aos serviços executados.")
 
@@ -663,9 +694,9 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
             0: ("Aderência e qualificações", "A equipe será mobilizada com competências compatíveis com DNS, entrega, segurança de aplicações e gestão do projeto; as credenciais nominais serão apresentadas na mobilização."),
             1: ("Modelo de fornecimento", " ".join(filter(None, [_doc_text(proposal, "license_prefix", ""), str(license_supply)]))),
             2: ("Limite da frente", _doc_text(proposal, "callout_limits", "A solução cobre configuração e integração dos componentes recomendados. Alterações no código das aplicações e serviços de terceiros permanecem fora do escopo.")),
-            5: ("Estratégia de migração", _doc_text(proposal, "callout_migration", "Implantação em ondas: homologação, produção controlada e estabilização, com janela aprovada, critérios de avanço e plano de reversão.")),
+            5: ("Estratégia de migração", _slot(proposal, "callout_migration", "Implantação em ondas: homologação, produção controlada e estabilização, com janela aprovada, critérios de avanço e plano de reversão.")),
             6: ("Itens que exigem contratação específica", "Operação continuada, NOC 24x7, equipe residente, desenvolvimento de aplicações e serviços gerenciados adicionais não estão incluídos."),
-            8: ("Marcos formais de aceite", _doc_text(proposal, "callout_milestones", "Desenho aprovado, homologação concluída, produção validada e documentação final aceita.")),
+            8: ("Marcos formais de aceite", _slot(proposal, "callout_milestones", "Desenho aprovado, homologação concluída, produção validada e documentação final aceita.")),
             9: ("Garantia e vigência", str(warranty)),
         }[table_index]
         _replace_callout(t[table_index].cell(0, 0), title, body)
@@ -731,6 +762,10 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
     leaked = detect_skill_leakage(client_text)
     if leaked:
         raise ValueError(f"Trechos copiados dos arquivos da skill: {'; '.join(leaked[:5])}")
+    if _v8(proposal):
+        residue = find_case_residue(client_text, proposal)
+        if residue:
+            raise ValueError(f"Texto de outro caso no documento (ausente do estado): {', '.join(residue)}")
 
     for paragraph in doc.paragraphs:
         style_name = str(getattr(paragraph.style, "name", ""))

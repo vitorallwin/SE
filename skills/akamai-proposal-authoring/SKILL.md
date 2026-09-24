@@ -23,12 +23,13 @@ Create the smallest complete proposal that explains the client's problem, the re
 ## Workflow
 
 1. Normalize the meeting into goals, pain points, requirements, constraints, volumes, dependencies, stakeholders, and open questions.
-2. Evaluate each catalog product independently. Do not begin with a preselected bundle.
-3. Apply the product gating criteria in [solution gating](references/solution-gating.md).
-4. Produce solution decisions and a requirement traceability matrix.
-5. Map the decisions onto the sections in [section model](references/section-model.md).
-6. Run a critic pass. Block unsupported products, absolute promises, hidden open questions, unmeasurable acceptance criteria, and unresolved internal POPULOS decisions.
-7. Render through deterministic code over the approved DOCX. The LLM writes structured state and the compositor only maps it into authorized slots.
+2. Decide whether the material supports a proposal (`input_assessment`) and whether the catalog covers the request (`catalog_fit`). If not, stop with the questions or the declared gap.
+3. Evaluate each catalog product independently. Do not begin with a preselected bundle.
+4. Apply the product gating criteria in [solution gating](references/solution-gating.md).
+5. Produce solution decisions and a requirement traceability matrix.
+6. Map the decisions onto the sections in [section model](references/section-model.md).
+7. Run a critic pass. Block unsupported products, absolute promises, hidden open questions, unmeasurable acceptance criteria, and unresolved internal POPULOS decisions.
+8. Render through deterministic code over the approved DOCX. The LLM writes structured state and the compositor only maps it into authorized slots.
 
 ## Output contract
 
