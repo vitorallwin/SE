@@ -1,5 +1,5 @@
 {
-  "engine_version": "motor-v8.1",
+  "engine_version": "motor-v8.2",
   "rules_version": 9,
   "max_iterations": 3,
   "template": "assets/proposal_neutral_template.docx",

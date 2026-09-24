@@ -83,9 +83,11 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None = 
     for phase in phases:
         if not phase.get("weeks"):
             errors.append(f"fase sem faixa numérica de semanas: {phase.get('name')}")
+    # A single phase's own range may be written too; any other range must be the total.
+    allowed_ranges = {(low, high)} | {tuple(phase["weeks"]) for phase in phases if len(phase.get("weeks") or []) == 2}
     for text in _client_visible_texts(proposal):
         for found in week_ranges(str(text)):
-            if found != (low, high):
+            if found not in allowed_ranges:
                 errors.append(f"faixa {found[0]}–{found[1]} semanas diverge da soma das fases ({low}–{high}): {str(text)[:90]}")
 
     # Q-02 / Q-03: waves are contractual units.
@@ -151,9 +153,10 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None = 
     for estimate in proposal.get("estimates", []):
         if not estimate.get("owner"):
             errors.append(f"estimativa sem responsável: {estimate.get('item')}")
+    owned = {normalize_document_text(e.get("item")) for e in proposal.get("estimates", []) if e.get("owner")}
     for row in proposal.get("dimensioning", []):
-        if len(row) > 3 and row[3] == "Estimativa":
-            errors.append(f"dimensionamento estimado sem premissa de responsável: {row[0]}")
+        if len(row) > 3 and row[3] == "Estimativa" and normalize_document_text(row[0]) not in owned:
+            errors.append(f"dimensionamento estimado sem premissa de responsável (estimates.item igual ao item da linha): {row[0]}")
 
     # F-02: exported data carries a sensitive-data control when privacy is required.
     exports_data = any("siem" in str(item).casefold() for item in proposal.get("scope", {}).get("included", []))
@@ -482,6 +485,14 @@ def _validate_rules_v8(proposal: dict[str, Any]) -> list[str]:
             errors.append(f"{key} deve ter de {low} a {high} itens (tem {len(items)})")
     if not any(str(s.get("title", "")).casefold() == "resumo executivo" and s.get("paragraphs") for s in proposal.get("sections", [])):
         errors.append("sections sem 'Resumo executivo'")
+
+    # Formato dos campos que o compositor lê: o validador recusa o que o compositor não consegue montar.
+    for item in proposal.get("delivery", {}).get("responsibilities", []):
+        if not isinstance(item, dict) or not item.get("party") or not item.get("responsibility"):
+            errors.append(f"delivery.responsibilities deve ser lista de {{party, responsibility}}: {str(item)[:60]}")
+    for row in proposal.get("populos_roles", []):
+        if not isinstance(row, (list, tuple)) or len(row) != 3:
+            errors.append(f"populos_roles deve ser lista de [papel, responsabilidade, dedicação]: {str(row)[:60]}")
 
     # SLA institucional: a aplicabilidade é da instituição (whitelist) ou de uma decisão aprovada do caso.
     engagement = proposal.get("governance", {}).get("engagement_type", {}).get("value")

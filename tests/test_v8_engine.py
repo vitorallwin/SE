@@ -217,3 +217,31 @@ class ApprovalQuoteTests(unittest.TestCase):
         self.assertTrue(all("license_supply" in e for e in errors), errors)
         self.assertIn("valor aprovado não aparece na citação do insumo: license_supply", errors)
         self.assertIn("citação da aprovação não nomeia o aprovador (Vitor (dono comercial)): license_supply", errors)
+
+
+class SealedRoundFixesTests(unittest.TestCase):
+    """Rodada v9 em modo selado: a skill dizia uma coisa e o validador fazia outra."""
+
+    def test_estimate_row_with_technical_owner_is_accepted(self) -> None:
+        proposal = vertice_v8()
+        proposal["dimensioning"].append(["Esforço de implantação", "3 a 4 semanas", "Estimativa da arquiteta", "Estimativa"])
+        self.assertIn("dimensionamento estimado sem premissa de responsável", errors_of(proposal))
+        proposal["estimates"].append({"item": "Esforço de implantação", "value": "3 a 4 semanas", "owner": "Ana", "owner_role": "arquiteta"})
+        self.assertNotIn("dimensionamento estimado", errors_of(proposal))
+
+    def test_single_phase_range_is_accepted_other_ranges_are_not(self) -> None:
+        proposal = vertice_v8()
+        phase = next(p for p in proposal["delivery"]["phases"] if p["weeks"][0] != p["weeks"][1])
+        low, high = phase["weeks"]
+        proposal["document_text"]["schedule_sequence"] += f" A fase {phase['name']} leva de {low} a {high} semanas."
+        self.assertNotIn("diverge da soma das fases", errors_of(proposal))
+        proposal["document_text"]["schedule_sequence"] += " A estabilização leva de 9 a 11 semanas."
+        self.assertIn("faixa 9–11 semanas diverge", errors_of(proposal))
+
+    def test_composer_shapes_are_validated(self) -> None:
+        proposal = vertice_v8()
+        proposal["delivery"]["responsibilities"] = ["Cliente: acessos ao registrador"]
+        proposal["populos_roles"] = [["Arquiteto", "Desenho"]]
+        errors = errors_of(proposal)
+        self.assertIn("delivery.responsibilities deve ser lista de {party, responsibility}", errors)
+        self.assertIn("populos_roles deve ser lista de [papel, responsabilidade, dedicação]", errors)

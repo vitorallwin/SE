@@ -45,13 +45,13 @@ Both fields are required and are checked before any other rule.
 
 ## Sizing, scope and delivery
 
-- `dimensioning`: 1 to 3 rows (required) `[item, quantity, planning basis, classification]`; classification `Confirmado`, `Pendente` or `Estimativa` (an estimate needs a technical owner).
+- `dimensioning`: 1 to 3 rows (required) `[item, quantity, planning basis, classification]`; classification `Confirmado`, `Pendente` or `Estimativa`. An `Estimativa` row needs an entry in `estimates` whose `item` is the same text as the row's item, with a technical owner.
 - `estimates`: `[{ "item", "value", "owner", "owner_role": "arquiteto" | "engenharia" | "delivery" | "pré-vendas técnica" }]`.
 - `assessment_items`: exactly 3 strings (section 5).
 - `client_roles`: 1 to 4 strings, the client-side roles this project needs (section 8.2).
 - `scope`: `{ "included": [...], "deliverables": [...], "excluded": [...] }`.
-- `delivery.phases`: committed phases, at most 4: `{ "name", "kind", "weeks": [min, max], "duration", "objective", "dependency", "outputs": [...] }`. Every week range written in client text must equal the sum of these phases.
-- `delivery.responsibilities`: client-side parties; `populos_roles`: optional list of `[role, responsibility, commitment]` rows (table capacity 12 rows in total).
+- `delivery.phases`: committed phases, at most 4: `{ "name", "kind", "weeks": [min, max], "duration", "objective", "dependency", "outputs": [...] }`. A week range written in client text must equal the sum of these phases, or the range of one phase.
+- `delivery.responsibilities`: client-side parties, as `[{ "party", "responsibility" }]`; `populos_roles`: optional list of `[role, responsibility, commitment]` rows (table capacity 12 rows in total).
 - `optional_phase` (optional): `{ "title", "intro", "conditions": [...], "waves": [{ "id", "name", "components": [product ids], "goes_to_production": bool, "activities", "acceptance", "milestone" }] }`. Each recommended product appears in exactly one wave.
 - `fast_track` (optional): `{ "id", "title", "components", "production_change": bool, "controls": ["janela", "reversão", "aprovação"], "deadline_reference": "freeze", "first_question", "paragraphs", "items", "schedule_row", "lead_times": { "licenciamento": { "weeks", "source" } } }`. When the license lead time is unknown, use `{ "weeks": null, "pending_question": <question> }` instead of estimating.
 - `assumptions` (up to 8), `restrictions` (exactly 4, required), `risks`: `[{ "risk", "impact", "mitigation" }]`.
