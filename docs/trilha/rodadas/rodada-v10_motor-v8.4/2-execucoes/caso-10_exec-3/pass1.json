@@ -1,0 +1,241 @@
+{
+  "rules_version": 10,
+  "data_mode": "test",
+  "client_name": "NorteLog Transportes",
+  "opportunity": "Proteção do portal de rastreamento e da API de embarcadores",
+  "code": "POPULOS-NORTELOG-AAP-2026",
+  "opportunity_id": "NORTELOG-2026-AAP",
+  "input_assessment": {"status": "sufficient", "missing": [], "reason": "O material identifica o cliente, os ativos (rastreio.nortelog.com.br e api.nortelog.com.br) e a necessidade concreta de WAF com proteção de API."},
+  "catalog_fit": {"status": "fits", "requested": "WAF com proteção de API para portal web e API pública", "reason": "O App & API Protector do catálogo cobre WAF, proteção de APIs e DDoS de aplicação."},
+  "client_scope": {
+    "type": "implementation",
+    "excludes_implementation": false,
+    "source": "e-mail de 21/09/2026, Sérgio Almeida: \"Queremos implantar um WAF com proteção de API.\"",
+    "forbidden_in_committed": []
+  },
+  "governance": {
+    "engagement_type": {
+      "state": "commitment",
+      "value": "implementation",
+      "approved_value": "implementation",
+      "source": "Aprovações internas POPULOS, e-mail de 24/09/2026 10:12",
+      "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+      "approved_at": "2026-09-24",
+      "approval_record": "e-mail de Vitor, 24/09/2026 10:12",
+      "approval_quote": "Aprovo para a NorteLog Transportes: engajamento de implantação (implementation).",
+      "mode": "test",
+      "engagement_ref": "implementation"
+    },
+    "license_supply": {
+      "state": "commitment",
+      "value": "Revenda autorizada pela POPULOS",
+      "approved_value": "Revenda autorizada pela POPULOS",
+      "source": "Aprovações internas POPULOS, e-mail de 24/09/2026 10:12",
+      "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+      "approved_at": "2026-09-24",
+      "approval_record": "e-mail de Vitor, 24/09/2026 10:12",
+      "approval_quote": "Aprovo que as licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada.",
+      "mode": "test",
+      "engagement_ref": "implementation"
+    },
+    "warranty": {
+      "state": "populos_internal_decision",
+      "value": null,
+      "source": "Conflito: cliente exige 12 meses (e-mail de 21/09/2026); Vitor aprovou 90 dias corridos (24/09/2026 10:12); Renata Campos indicou 60 dias corridos (24/09/2026 16:40).",
+      "approved_by": null,
+      "approved_at": null,
+      "approval_record": null,
+      "approval_quote": null,
+      "mode": "test",
+      "engagement_ref": "implementation"
+    },
+    "effort_estimate": {
+      "state": "commitment",
+      "value": "3 a 4 semanas",
+      "approved_value": "3 a 4 semanas",
+      "source": "Aprovações internas POPULOS, e-mail de 24/09/2026 11:05",
+      "approved_by": "Ana Ribeiro (Arquiteta, POPULOS)",
+      "approved_at": "2026-09-24",
+      "approval_record": "e-mail de Ana Ribeiro, 24/09/2026 11:05",
+      "approval_quote": "Aprovo a estimativa de esforço da NorteLog Transportes: 3 a 4 semanas.",
+      "approver_role": "arquiteto",
+      "mode": "test",
+      "engagement_ref": "implementation"
+    },
+    "sla": {
+      "state": "commitment",
+      "basis": "populos_standard",
+      "value": "Tabela institucional de SLA do template aprovado",
+      "source": "Template neutro POPULOS aprovado",
+      "template_version": "2026.09.24-1"
+    }
+  },
+  "discovery": {
+    "business_goals": [
+      "Proteger o portal de rastreamento e a API dos embarcadores contra injeção de SQL (REQ-01, REQ-02)",
+      "Manter a API disponível diante de picos de requisições maliciosos na camada de aplicação (REQ-03)",
+      "Implantar a proteção em produção com critérios de aceite mensuráveis (REQ-04)"
+    ]
+  },
+  "traceability": [
+    {"requirement_id": "REQ-01", "requirement": "WAF para o portal rastreio.nortelog.com.br contra injeção de SQL", "solution": "App & API Protector", "evidence": "Tentativas de injeção de SQL relatadas pelo cliente", "source": "e-mail de 21/09/2026, parágrafo 1", "speakers": ["client"], "hypothesis": false},
+    {"requirement_id": "REQ-02", "requirement": "Proteção de API para api.nortelog.com.br", "solution": "App & API Protector", "evidence": "Pedido explícito de WAF com proteção de API", "source": "e-mail de 21/09/2026, parágrafo 1", "speakers": ["client"], "hypothesis": false},
+    {"requirement_id": "REQ-03", "requirement": "Mitigação de picos de requisições que indisponibilizaram a API", "solution": "App & API Protector (controle de taxa de requisições e DDoS L7)", "evidence": "Dois episódios de indisponibilidade da API em agosto", "source": "e-mail de 21/09/2026, parágrafo 1", "speakers": ["client"], "hypothesis": false},
+    {"requirement_id": "REQ-04", "requirement": "Implantação da solução no ambiente em nuvem pública única, com cerca de 1,5 milhão de requisições por dia", "solution": "Serviços de implantação POPULOS", "evidence": "Descrição do ambiente e do volume", "source": "e-mail de 21/09/2026, parágrafo 2", "speakers": ["client"], "hypothesis": false},
+    {"requirement_id": "REQ-05", "requirement": "Garantia de 12 meses exigida pelo jurídico do cliente", "solution": "Condição de garantia a definir", "evidence": "Declaração do jurídico do cliente", "source": "e-mail de 21/09/2026, parágrafo 3", "speakers": ["client"], "hypothesis": false},
+    {"requirement_id": "REQ-06", "requirement": "Entrega da proposta de implantação até 10/10/2026", "solution": "Proposta emitida em 24/09/2026", "evidence": "Prazo informado pelo cliente", "source": "e-mail de 21/09/2026, parágrafo 4", "speakers": ["client"], "hypothesis": false}
+  ],
+  "source_coverage": [
+    {"ref": "e-mail de 21/09/2026, parágrafo 1", "statement": "Tentativas de injeção de SQL no portal e na API", "status": "coberto", "targets": ["REQ-01", "REQ-02", "sumário"]},
+    {"ref": "e-mail de 21/09/2026, parágrafo 1", "statement": "Picos de requisições derrubaram a API duas vezes em agosto", "status": "coberto", "targets": ["REQ-03", "sumário"]},
+    {"ref": "e-mail de 21/09/2026, parágrafo 1", "statement": "Implantar WAF com proteção de API", "status": "coberto", "targets": ["REQ-02", "engajamento", "escopo"]},
+    {"ref": "e-mail de 21/09/2026, parágrafo 2", "statement": "Ambiente em uma única nuvem pública", "status": "coberto", "targets": ["REQ-04", "premissas"]},
+    {"ref": "e-mail de 21/09/2026, parágrafo 2", "statement": "Cerca de 1,5 milhão de requisições por dia", "status": "coberto", "targets": ["dimensionamento"]},
+    {"ref": "e-mail de 21/09/2026, parágrafo 3", "statement": "Garantia de 12 meses aprovada pelo jurídico do cliente", "status": "pendente", "targets": ["REQ-05"]},
+    {"ref": "e-mail de 21/09/2026, parágrafo 4", "statement": "Proposta necessária até 10/10/2026", "status": "coberto", "targets": ["REQ-06"]},
+    {"ref": "e-mail de Vitor, 24/09/2026 10:12", "statement": "Engajamento de implantação, revenda autorizada e garantia de 90 dias", "status": "coberto", "targets": ["engajamento", "escopo"]},
+    {"ref": "e-mail de Ana Ribeiro, 24/09/2026 11:05", "statement": "Estimativa de esforço de 3 a 4 semanas", "status": "coberto", "targets": ["dimensionamento"]},
+    {"ref": "e-mail de Renata Campos, 24/09/2026 16:40", "statement": "Garantia de 60 dias corridos", "status": "pendente", "targets": ["REQ-05"]},
+    {"ref": "e-mail de Vitor, 24/09/2026 17:02", "statement": "Provisionamento das licenças em até 2 semanas após o pedido", "status": "coberto", "targets": ["premissas"]}
+  ],
+  "client_numbers": [
+    {"quote": "derrubaram a API duas vezes em agosto", "ref": "e-mail de 21/09/2026, parágrafo 1", "destination": "contexto_de_dor", "summary_marker": "duas vezes em agosto"},
+    {"quote": "cerca de 1,5 milhão de requisições por dia", "ref": "e-mail de 21/09/2026, parágrafo 2", "destination": "dimensionamento"},
+    {"quote": "a garantia deve ser de 12 meses", "ref": "e-mail de 21/09/2026, parágrafo 3", "destination": "descartado_com_motivo", "reason": "Prazo de garantia em conflito com as condições internas; permanece pendente de definição e não é assumido na proposta."},
+    {"quote": "proposta de implantação até 10/10/2026", "ref": "e-mail de 21/09/2026, parágrafo 4", "destination": "descartado_com_motivo", "reason": "Prazo de entrega da proposta, atendido pela emissão em 24/09/2026; não é marco de projeto."}
+  ],
+  "open_questions": [
+    "Qual prazo de garantia será oferecido à NorteLog, considerando a exigência de 12 meses do jurídico do cliente e as indicações internas divergentes (90 dias e 60 dias)?"
+  ],
+  "standard_conflicts": [
+    {"category": "warranty", "requirement_id": "REQ-05", "status": "conflict", "decision_key": "warranty"},
+    {"category": "deadline", "requirement_id": "REQ-06", "status": "compatible", "reason": "A proposta é emitida em 24/09/2026, antes do prazo de 10/10/2026 solicitado pelo cliente."}
+  ],
+  "solution_decisions": [
+    {"product_id": "app_api_protector", "status": "recommended", "requirement_ids": ["REQ-01", "REQ-02", "REQ-03"], "rationale": "Portal e API públicos sofrem injeção de SQL e picos de requisições na camada de aplicação; o cliente pediu WAF com proteção de API.", "client_summary": "Proteção do portal de rastreamento e da API dos embarcadores com WAF adaptativo, proteção de APIs e mitigação de DDoS de aplicação na borda.", "capabilities": ["WAF", "proteção de APIs", "DDoS L7"]},
+    {"product_id": "prolexic", "status": "excluded", "requirement_ids": [], "rationale": "Os ataques relatados são de aplicação (L7); não há evidência de DDoS volumétrico L3/L4."},
+    {"product_id": "bot_manager", "status": "excluded", "requirement_ids": [], "rationale": "Não há caso de automação maliciosa evidenciado, apenas tráfego malicioso genérico."},
+    {"product_id": "account_protector", "status": "excluded", "requirement_ids": [], "rationale": "Não há jornada autenticada nem abuso de conta relatado."},
+    {"product_id": "edge_dns", "status": "excluded", "requirement_ids": [], "rationale": "DNS autoritativo não foi mencionado."},
+    {"product_id": "gtm", "status": "excluded", "requirement_ids": [], "rationale": "Ambiente em uma única nuvem, sem múltiplos provedores."},
+    {"product_id": "alb", "status": "excluded", "requirement_ids": [], "rationale": "Não há requisito de roteamento entre múltiplas origens."},
+    {"product_id": "ion", "status": "excluded", "requirement_ids": [], "rationale": "Não há meta de desempenho ligada a jornada mensurável."},
+    {"product_id": "malware_protection", "status": "excluded", "requirement_ids": [], "rationale": "Não há fluxo de upload de arquivos relatado."},
+    {"product_id": "ip_accelerator", "status": "excluded", "requirement_ids": [], "rationale": "O caso se limita a portal e API HTTPS."}
+  ],
+  "products": ["app_api_protector"],
+  "architecture": {"summary": "O tráfego dos usuários do portal rastreio.nortelog.com.br e dos embarcadores que consomem api.nortelog.com.br passa pela borda Akamai, onde o App & API Protector aplica o WAF, a proteção de APIs e o controle de taxa de requisições antes de encaminhar as requisições legítimas à origem hospedada na nuvem pública da NorteLog."},
+  "sections": [
+    {"title": "Resumo executivo", "paragraphs": [
+      "A NorteLog Transportes enfrenta tentativas de injeção de SQL no portal de rastreamento de cargas (rastreio.nortelog.com.br) e na API usada pelos embarcadores (api.nortelog.com.br), além de picos de requisições que indisponibilizaram a API duas vezes em agosto.",
+      "A POPULOS propõe a implantação do App & API Protector, com WAF adaptativo, proteção de APIs e mitigação de DDoS de aplicação na borda, para os dois domínios, em um ambiente hospedado em uma única nuvem pública com cerca de 1,5 milhão de requisições por dia.",
+      "O projeto de implantação tem duração estimada de 3 a 4 semanas. As licenças Akamai são fornecidas pela POPULOS por revenda autorizada, com provisionamento em até 2 semanas após o pedido."
+    ]}
+  ],
+  "dimensioning": [
+    ["Domínios protegidos", "2 (rastreio.nortelog.com.br e api.nortelog.com.br)", "Informação do cliente", "Confirmado"],
+    ["Volume de requisições", "Cerca de 1,5 milhão por dia", "Informação do cliente", "Confirmado"],
+    ["Esforço de implantação", "3 a 4 semanas", "Estimativa da arquitetura POPULOS", "Estimativa"]
+  ],
+  "estimates": [
+    {"item": "Esforço de implantação", "value": "3 a 4 semanas", "owner": "Ana Ribeiro", "owner_role": "arquiteto"}
+  ],
+  "assessment_items": [
+    "Levantamento dos endpoints e esquemas da API dos embarcadores",
+    "Levantamento do perfil de tráfego do portal e da API, incluindo os picos de requisições",
+    "Levantamento da origem em nuvem pública, certificados TLS e fluxo de DNS dos domínios"
+  ],
+  "client_roles": [
+    "Gerente de TI responsável pelas aprovações de mudança",
+    "Responsável técnico pela API dos embarcadores",
+    "Administrador do DNS e dos certificados dos domínios"
+  ],
+  "team_competencies": [
+    "Arquitetura de segurança de aplicações e APIs na borda Akamai",
+    "Implantação e ajuste de políticas de WAF",
+    "Gestão de mudanças em produção com plano de reversão"
+  ],
+  "scope": {
+    "included": [
+      "Configuração do App & API Protector para rastreio.nortelog.com.br e api.nortelog.com.br",
+      "Registro dos endpoints da API e aplicação das proteções de API",
+      "Configuração de controle de taxa de requisições para a API",
+      "Período de observação em modo de alerta e ajuste das regras antes do bloqueio",
+      "Ativação em produção em janela aprovada pelo cliente, com plano de reversão"
+    ],
+    "deliverables": [
+      "Documento de arquitetura (HLD) da proteção",
+      "Políticas de WAF e de proteção de API configuradas",
+      "Documentação as-built",
+      "Relatório de testes de aceite",
+      "Sessão de transferência de conhecimento"
+    ],
+    "excluded": [
+      "Correção de vulnerabilidades no código do portal ou da API",
+      "Proteção DDoS volumétrica de rede (L3/L4)",
+      "Operação contínua ou monitoramento após o aceite",
+      "Outros domínios além dos dois listados"
+    ]
+  },
+  "delivery": {
+    "phases": [
+      {"name": "Levantamento e desenho", "kind": "assessment", "weeks": [1, 1], "duration": "1 semana", "objective": "Levantar endpoints, tráfego e origem e aprovar o desenho da proteção", "dependency": "Acesso aos responsáveis técnicos da NorteLog", "outputs": ["HLD aprovado"]},
+      {"name": "Implantação e ativação", "kind": "implementation", "weeks": [2, 3], "duration": "2 a 3 semanas", "objective": "Configurar, observar em modo de alerta, ajustar e ativar a proteção em produção", "dependency": "Licenças provisionadas (até 2 semanas após o pedido) e janela de mudança aprovada", "outputs": ["Políticas ativas em produção", "Documentação as-built", "Relatório de testes de aceite"]}
+    ],
+    "responsibilities": [
+      {"party": "NorteLog Transportes", "responsibility": "Disponibilizar acessos, aprovar janelas de mudança, ajustar DNS e certificados e validar os testes de aceite"}
+    ]
+  },
+  "populos_roles": [
+    ["Arquiteto de soluções", "Desenho da proteção e aprovação técnica", "Parcial"],
+    ["Engenheiro de implantação", "Configuração, ajuste de regras e ativação", "Integral durante a implantação"],
+    ["Gerente de projeto", "Cronograma, riscos e comunicação", "Parcial"]
+  ],
+  "assumptions": [
+    "Premissa de dimensionamento: o volume permanece próximo de 1,5 milhão de requisições por dia; validado no levantamento.",
+    "A origem permanece em uma única nuvem pública durante o projeto; validado no levantamento.",
+    "O cliente fornece a documentação dos endpoints da API; validado na primeira semana."
+  ],
+  "restrictions": [
+    "Mudanças em produção ocorrem somente em janelas aprovadas pela NorteLog.",
+    "O escopo cobre apenas rastreio.nortelog.com.br e api.nortelog.com.br.",
+    "A ativação depende do provisionamento das licenças Akamai.",
+    "A POPULOS não altera o código da aplicação ou da API do cliente."
+  ],
+  "risks": [
+    {"risk": "Falsos positivos no bloqueio de requisições legítimas", "impact": "Interrupção de integrações de embarcadores", "mitigation": "Período de observação em modo de alerta e ajuste antes do bloqueio"},
+    {"risk": "Atraso no provisionamento das licenças", "impact": "Deslocamento da ativação", "mitigation": "Pedido das licenças logo após a contratação"}
+  ],
+  "acceptance_criteria": [
+    {"requirement_id": "REQ-01", "phase": "committed", "criterion": "Requisições de teste com padrões de injeção de SQL enviadas a rastreio.nortelog.com.br são bloqueadas e registradas pela política de WAF."},
+    {"requirement_id": "REQ-02", "phase": "committed", "criterion": "Os endpoints da API levantados estão registrados e requisições de teste fora do esquema definido são sinalizadas ou bloqueadas em api.nortelog.com.br."},
+    {"requirement_id": "REQ-03", "phase": "committed", "criterion": "Um teste controlado acima do limite de taxa configurado para api.nortelog.com.br resulta em ação de controle registrada na borda."},
+    {"requirement_id": "REQ-04", "phase": "committed", "criterion": "Os dois domínios estão ativos em produção através da borda Akamai, com documentação as-built entregue."}
+  ],
+  "event_readiness": [],
+  "critical_events": [],
+  "event_feasibility": [],
+  "document_text": {
+    "about_akamai": "A Akamai opera uma plataforma distribuída de borda para entrega e segurança de aplicações e APIs.",
+    "about_solution": "O App & API Protector protege o portal de rastreamento e a API dos embarcadores da NorteLog com WAF adaptativo, proteção de APIs e mitigação de DDoS de aplicação na borda.",
+    "partnership": "A POPULOS é parceira Akamai e fornece as licenças por revenda autorizada, além dos serviços de implantação.",
+    "coverage": "A proteção cobre os domínios rastreio.nortelog.com.br e api.nortelog.com.br.",
+    "dimensioning_intro": "O dimensionamento considera os dois domínios e o volume informado pela NorteLog.",
+    "assessment_outcome": "O levantamento entrega o inventário de endpoints da API, o perfil de tráfego e o desenho aprovado da proteção.",
+    "methodology_intro": "A implantação segue levantamento, desenho, configuração em modo de alerta, ajuste e ativação em produção.",
+    "knowledge_transfer": "A equipe da NorteLog recebe uma sessão de transferência de conhecimento sobre as políticas configuradas e a leitura dos eventos de segurança.",
+    "tests": "Os testes de aceite usam requisições controladas de injeção de SQL, violações de esquema da API e excesso de taxa de requisições.",
+    "schedule_intro": "O cronograma macro prevê de 3 a 4 semanas de implantação.",
+    "schedule_sequence": "Semana 1: levantamento e desenho. Semanas 2 a 4: implantação, observação, ajuste e ativação, condicionadas ao provisionamento das licenças.",
+    "closing": "A POPULOS permanece à disposição para esclarecer esta proposta.",
+    "callout_qualifications": "A equipe POPULOS reúne experiência em segurança de aplicações e APIs na plataforma Akamai.",
+    "callout_limits": "A proposta não inclui correção de código da aplicação nem proteção DDoS volumétrica de rede.",
+    "callout_migration": "A ativação ocorre por mudança de DNS em janela aprovada, com plano de reversão.",
+    "callout_milestones": "Marcos: HLD aprovado, ativação em produção e aceite final.",
+    "diagram_users": "Usuários e embarcadores",
+    "diagram_users_detail": "Acessam o portal de rastreamento e a API pela internet.",
+    "diagram_origins_title": "Origem em nuvem pública",
+    "diagram_origins": "Portal e API da NorteLog hospedados em uma única nuvem pública.",
+    "front_titles": {"protection": "Proteção de aplicações e APIs"}
+  }
+}

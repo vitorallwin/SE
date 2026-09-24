@@ -1,0 +1,17 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:22:53.492505+00:00",
+      "errors_count": 3,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: sla_tr_support",
+        "decisão interna aberta: technical_qualification"
+      ],
+      "codes": [
+        "DECISAO-ABERTA"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:33:46.217082+00:00",
+      "errors_count": 13,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "faixa 4–5 semanas diverge da soma das fases (7–9): O cronograma macro foi dimensionado para ser concluído em 4 a 5 semanas, respeitando o con",
+        "destino de cobertura inexistente: contexto_de_dor (Transcrição Camila Reis)",
+        "destino de cobertura inexistente: contexto_de_dor (Transcrição Camila Reis)",
+        "destino de cobertura inexistente: event_readiness (Transcrição Diego Martins)",
+        "destino de cobertura inexistente: contexto_de_dor (Transcrição Camila Reis)",
+        "dimensionamento estimado sem premissa de responsável: Esforço de Implantação Bot Manager",
+        "janela da Fase 1 declarada diverge do cálculo (05/03–19/03): Lançamento do Novo Seguro Auto",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (05/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (19/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (lançamento do novo seguro auto em 15/01/2027): Lançamento do Novo Seguro Auto",
+        "viabilidade 'fits' com prazo de licenciamento desconhecido: Lançamento do Novo Seguro Auto"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:34:32.921139+00:00",
+      "errors_count": 9,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "faixa 4–5 semanas diverge da soma das fases (7–9): O cronograma macro foi dimensionado para ser concluído em 4 a 5 semanas, somando as fases ",
+        "faixa 4–5 semanas diverge da soma das fases (7–9): 1. O modelo de licenciamento permanece como decisão interna pendente (populos_internal_dec",
+        "dimensionamento estimado sem premissa de responsável: Esforço de Implantação Bot Manager",
+        "janela da Fase 1 declarada diverge do cálculo (05/03–19/03): Lançamento do Novo Seguro Auto",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (05/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (19/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (lançamento do novo seguro auto em 15/01/2027): Lançamento do Novo Seguro Auto"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T16:35:09.323190+00:00",
+      "errors_count": 9,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "faixa 4–5 semanas diverge da soma das fases (7–9): O cronograma macro foi dimensionado para ser concluído em 4 a 5 semanas, somando as fases ",
+        "faixa 4–5 semanas diverge da soma das fases (7–9): 1. Pendência de licenciamento: O modelo de fornecimento da licença do Bot Manager Premier ",
+        "dimensionamento estimado sem premissa de responsável: Esforço de Implantação Bot Manager",
+        "janela da Fase 1 declarada diverge do cálculo (05/03–19/03): Lançamento do Novo Seguro Auto",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (05/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (19/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (lançamento do novo seguro auto em 15/01/2027): Lançamento do Novo Seguro Auto"
+      ]
+    }
+  ]
+}

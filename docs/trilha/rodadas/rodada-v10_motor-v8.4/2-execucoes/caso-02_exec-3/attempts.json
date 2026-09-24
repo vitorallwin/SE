@@ -1,0 +1,15 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:02:18.916664+00:00",
+      "errors_count": 4,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: sla_tr_alignment",
+        "decisão interna aberta: qualification",
+        "decisão interna aberta: delivery_deadline"
+      ]
+    }
+  ]
+}

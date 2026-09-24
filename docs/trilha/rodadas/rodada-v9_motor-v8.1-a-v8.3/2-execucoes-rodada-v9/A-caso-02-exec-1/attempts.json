@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:31:39.446180+00:00",
+      "errors_count": 5,
+      "errors": [
+        "número de dor ausente do sumário: 7 incidentes de indisponibilidade",
+        "destino de cobertura inexistente: contexto_de_dor (TR item 2.1)",
+        "integração SIEM sem controle de dados sensíveis",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor): warranty"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:32:20.530479+00:00",
+      "errors_count": 3,
+      "errors": [
+        "número do cliente sem destino: 7 incidentes de indisponibilidade",
+        "integração SIEM sem controle de dados sensíveis",
+        "aprovação citada não existe no insumo (approval_quote): warranty"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T16:33:09.287922+00:00",
+      "errors_count": 3,
+      "errors": [
+        "integração SIEM sem controle de dados sensíveis",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor): warranty"
+      ]
+    }
+  ]
+}

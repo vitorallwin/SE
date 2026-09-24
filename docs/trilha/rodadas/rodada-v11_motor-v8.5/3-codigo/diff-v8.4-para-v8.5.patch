@@ -1,0 +1,2120 @@
+diff --git a/GUIA_TECNICO_E_RELATORIO_V4.md b/GUIA_TECNICO_E_RELATORIO_V4.md
+index 3ff76f9..30ba1bc 100644
+--- a/GUIA_TECNICO_E_RELATORIO_V4.md
++++ b/GUIA_TECNICO_E_RELATORIO_V4.md
+@@ -579,6 +579,20 @@ O `make_workspace --sealed` cria um workspace sem o código do motor: só brief,
+ 
+ Também: a citação de aprovação tolera marcadores de e-mail (`>`) e quebras de linha; o QA visual (`scripts/render_pdf.py`) encontrou e corrigiu colunas estreitas no cronograma, texto ilegível no diagrama fora do Windows e texto justificado em tabelas.
+ 
++### Motor v8.5 (regras v11), após a auditoria da rodada v10
++
++| Item | Correção |
++|---|---|
++| A1 | Valores da tabela institucional de SLA publicados na skill (`institutional-standards.json`), gerados do template por `scripts/export_institutional_standards.py` e conferidos por teste. |
++| A2, N3 | `sla_applicability.applies_to_phases` e `event_readiness[].phase`: SLA e prontidão declaram a fase ou opção; o documento diz a que se aplicam. |
++| N1, A4 | `sales_engineer/feasibility.py`: o autor declara o caminho (fases, ondas, prazos como licenciamento); o motor calcula janelas, datas limite e classificação e escreve o parágrafo de viabilidade. Data no texto do cliente sem origem no insumo nem no cálculo bloqueia. |
++| N2 | Congelamento (`kind: freeze`) e folga de estabilização aprovada (`stabilization_buffer`, sem valor padrão) entram na data limite; ausentes, viram ressalva explícita. |
++| A3 | Faixas de ondas opcionais aceitas no texto. |
++| A5 | `global-rules.md` alinhado ao cálculo do motor. |
++| N4 | `standard_conflicts.status = client_clarification`, com pergunta obrigatória em `open_questions`. |
++| V1 | Rótulos do diagrama quebram em até 3 linhas; tamanho limitado no schema. |
++| N5 | Código estável por violação (`attempts.json`, campo `codes`), para agregar por rodada. |
++
+ ## 19. Arquivos de trabalho fora da aplicação
+ 
+ Estes arquivos ajudaram na geração e auditoria, mas não são necessários para executar a aplicação:
+diff --git a/authoring/AUTHOR_BRIEF.md b/authoring/AUTHOR_BRIEF.md
+index 716061f..2433e95 100644
+--- a/authoring/AUTHOR_BRIEF.md
++++ b/authoring/AUTHOR_BRIEF.md
+@@ -5,7 +5,7 @@ Você é o autor da proposta técnica. Transforme o material do cliente em um es
+ ## Entradas
+ 
+ - `insumo.md`: o material do cliente, já extraído em texto. É a única fonte sobre o cliente.
+-- A skill de autoria: `skills/akamai-proposal-authoring/SKILL.md` e os arquivos em `skills/akamai-proposal-authoring/references/` (`global-rules.md`, `solution-gating.md`, `section-model.md`, `state-schema.md`, `state.schema.json`, `lexicon.json`).
++- A skill de autoria: `skills/akamai-proposal-authoring/SKILL.md` e os arquivos em `skills/akamai-proposal-authoring/references/` (`global-rules.md`, `solution-gating.md`, `section-model.md`, `state-schema.md`, `state.schema.json`, `institutional-standards.json`, `lexicon.json`).
+ - O catálogo de produtos permitidos: `catalog.json` (ids, nomes e capacidades).
+ - O pedido (`request.json`): data da proposta, modo dos dados e versão vigente do template.
+ 
+@@ -13,7 +13,7 @@ Não consulte nenhum arquivo fora desta pasta de trabalho.
+ 
+ ## Saída
+ 
+-Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 10` e o `data_mode` informado no pedido.
++Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 11` e o `data_mode` informado no pedido.
+ 
+ Antes de escrever a proposta, avalie o insumo (`input_assessment`) e o encaixe no catálogo (`catalog_fit`). Quando o insumo não basta ou o pedido está fora do catálogo, o resultado correto é o bloqueio, com as perguntas ou a lacuna declaradas, e não uma proposta.
+ 
+diff --git a/engine_config.json b/engine_config.json
+index f7318af..0f77d45 100644
+--- a/engine_config.json
++++ b/engine_config.json
+@@ -1,6 +1,6 @@
+ {
+-  "engine_version": "motor-v8.4",
+-  "rules_version": 10,
++  "engine_version": "motor-v8.5",
++  "rules_version": 11,
+   "max_iterations": 3,
+   "template": "assets/proposal_neutral_template.docx",
+   "template_version": "2026.09.24-1",
+diff --git a/sales_engineer/case_runner.py b/sales_engineer/case_runner.py
+index 379024d..752bbae 100644
+--- a/sales_engineer/case_runner.py
++++ b/sales_engineer/case_runner.py
+@@ -9,6 +9,7 @@ from typing import Any
+ 
+ from .neutral_template_builder import build_neutral_template_docx
+ from .proposal_rules import LATEST_RULES_VERSION, approved_template_version, validate_proposal_rules
++from .violation_codes import code_of
+ 
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+@@ -68,7 +69,8 @@ def record_attempt(run_dir: Path, state_path: Path) -> dict[str, Any]:
+         errors = validate_state(state, source.read_text(encoding="utf-8") if source.exists() else None)
+         if not source.exists():
+             errors.append("insumo.md ausente na pasta da execução: aprovações não podem ser conferidas")
+-    entry = {"attempt": number, "at": datetime.now(timezone.utc).isoformat(), "errors_count": len(errors), "errors": errors}
++    entry = {"attempt": number, "at": datetime.now(timezone.utc).isoformat(), "errors_count": len(errors), "errors": errors,
++             "codes": sorted({code_of(error) for error in errors})}
+     if not errors and state is not None:
+         entry["composition"] = compose(state, run_dir / "final")
+     log["attempts"].append(entry)
+@@ -148,7 +150,7 @@ ENGINE_FILES = [
+     "scripts/author_with_gemini.py",
+     *(f"sales_engineer/{name}.py" for name in (
+         "__init__", "ai", "case_runner", "catalog", "document_validation",
+-        "institutional_policy", "neutral_template_builder", "proposal_rules",
++        "feasibility", "institutional_policy", "neutral_template_builder", "proposal_rules", "violation_codes",
+     )),
+ ]
+ 
+diff --git a/sales_engineer/document_validation.py b/sales_engineer/document_validation.py
+index 5149d02..2f9f195 100644
+--- a/sales_engineer/document_validation.py
++++ b/sales_engineer/document_validation.py
+@@ -53,8 +53,9 @@ def _client_visible_items(proposal: dict[str, Any]) -> Iterable[tuple[str, str]]
+         if str(value).strip():
+             yield "acceptance_criteria", str(value)
+     for item in proposal.get("event_readiness", []):
+-        if str(item).strip():
+-            yield "event_readiness", str(item)
++        text = item.get("text", "") if isinstance(item, dict) else item
++        if str(text).strip():
++            yield "event_readiness", str(text)
+     for wave in (proposal.get("optional_phase") or {}).get("waves", []):
+         for field in ("name", "activities", "acceptance"):
+             if str(wave.get(field, "")).strip():
+diff --git a/sales_engineer/feasibility.py b/sales_engineer/feasibility.py
+new file mode 100644
+index 0000000..8925ac3
+--- /dev/null
++++ b/sales_engineer/feasibility.py
+@@ -0,0 +1,210 @@
++"""Feasibility against critical events, computed by the engine (auditoria v10: N1, N2, A4).
++
++The author declares only inputs: the proposal date, the event and freeze dates, the ordered path of steps that
++must happen before the event (committed phases, optional waves, lead times such as licensing) and, when approved,
++a stabilization buffer. The engine computes every date and classification, so three authors reading the same
++source material produce the same dates, and no date in the proposal comes from mental arithmetic.
++"""
++from __future__ import annotations
++
++import math
++import re
++import unicodedata
++from dataclasses import dataclass, field
++from datetime import date, timedelta
++from typing import Any
++
++MONTHS = {"janeiro": 1, "fevereiro": 2, "marco": 3, "abril": 4, "maio": 5, "junho": 6, "julho": 7,
++          "agosto": 8, "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12}
++
++
++@dataclass
++class Step:
++    ref: str
++    label: str
++    weeks: tuple[int, int] | None  # None: unknown duration (a lead time without a source)
++    pending_question: str = ""
++
++
++@dataclass
++class Feasibility:
++    event: str
++    event_date: date
++    target: date                     # latest completion date: event or freeze start, minus stabilization
++    target_reason: str
++    classification: str              # fits | partially_fits | does_not_fit | conditional
++    end_earliest: date | None
++    end_latest: date | None
++    start_deadline: date | None      # latest date to start the first step
++    step_deadlines: dict[str, date] = field(default_factory=dict)  # unknown steps: latest date they must be done
++    caveats: list[str] = field(default_factory=list)
++    errors: list[str] = field(default_factory=list)
++    start: date | None = None
++    steps: list[str] = field(default_factory=list)
++    after_unknown: tuple[int, int] | None = None  # semanas conhecidas depois do último passo sem prazo
++
++    def dates(self) -> list[date]:
++        values = [self.event_date, self.target, self.end_earliest, self.end_latest, self.start_deadline, *self.step_deadlines.values()]
++        return [value for value in values if value]
++
++
++def _iso(value: Any) -> date | None:
++    try:
++        return date.fromisoformat(str(value))
++    except ValueError:
++        return None
++
++
++def _weeks(value: Any) -> tuple[int, int] | None:
++    if isinstance(value, int):
++        return (value, value)
++    if isinstance(value, (list, tuple)) and len(value) == 2 and all(isinstance(v, int) for v in value):
++        return (value[0], value[1])
++    return None
++
++
++def stabilization_days(proposal: dict[str, Any]) -> int | None:
++    """Calendar days of the approved stabilization buffer, or None when no buffer was approved.
++
++    There is no institutional default: the buffer exists only as an approved decision of the case.
++    """
++    decision = proposal.get("governance", {}).get("stabilization_buffer") or {}
++    if decision.get("state") != "commitment":
++        return None
++    match = re.search(r"(\d+)\s*dias?\s*(úteis|uteis|corridos)?", str(decision.get("value", "")), re.IGNORECASE)
++    if not match:
++        return None
++    days = int(match.group(1))
++    business = (match.group(2) or "").casefold().startswith(("út", "ut"))
++    return math.ceil(days * 7 / 5) if business else days
++
++
++def _steps(proposal: dict[str, Any], item: dict[str, Any]) -> tuple[list[Step], list[str]]:
++    phases = {p.get("name"): p for p in proposal.get("delivery", {}).get("phases", [])}
++    waves = {w.get("id"): w for w in (proposal.get("optional_phase") or {}).get("waves", []) if w.get("id")}
++    leads = item.get("lead_times") or {}
++    steps, errors = [], []
++    for ref in item.get("path", []):
++        if ref in phases:
++            steps.append(Step(ref, str(ref), _weeks(phases[ref].get("weeks"))))
++        elif ref in waves:
++            weeks = _weeks(waves[ref].get("weeks"))
++            if weeks is None:
++                errors.append(f"onda opcional no caminho sem faixa de semanas (weeks): {ref}")
++            steps.append(Step(ref, f"{waves[ref].get('name', ref)} (opcional)", weeks))
++        elif ref in leads:
++            lead = leads[ref] or {}
++            weeks = _weeks(lead.get("weeks"))
++            if weeks is None and not lead.get("pending_question"):
++                errors.append(f"prazo desconhecido sem pergunta aberta (lead_times.{ref}.pending_question): {item.get('event')}")
++            if weeks is not None and not lead.get("source"):
++                errors.append(f"prazo sem origem (lead_times.{ref}.source): {item.get('event')}")
++            steps.append(Step(ref, str(lead.get("label") or ref), weeks, str(lead.get("pending_question") or "")))
++        else:
++            errors.append(f"passo do caminho não é fase, onda nem prazo declarado: {ref} ({item.get('event')})")
++    for ref in leads:
++        if ref not in item.get("path", []):
++            errors.append(f"prazo declarado fora do caminho até o evento: {ref} ({item.get('event')})")
++    return steps, errors
++
++
++def compute(proposal: dict[str, Any]) -> list[Feasibility]:
++    start = _iso(proposal.get("proposal_date"))
++    events = {e.get("name"): e for e in proposal.get("critical_events", [])}
++    buffer = stabilization_days(proposal)
++    results = []
++    for item in proposal.get("event_feasibility", []):
++        event = events.get(item.get("event")) or {}
++        event_date = _iso(event.get("date"))
++        if not start or not event_date:
++            continue
++        steps, errors = _steps(proposal, item)
++        caveats: list[str] = []
++        target, reason = event_date, f"{item.get('event')} em {event_date:%d/%m/%Y}"
++        freeze_ref = item.get("freeze")
++        if freeze_ref:
++            freeze = events.get(freeze_ref) or {}
++            freeze_date = _iso(freeze.get("date"))
++            if freeze_date is None:
++                caveats.append(f"a data do congelamento de mudanças ({freeze_ref}) não foi informada; o prazo considera o evento, sem congelamento")
++            elif freeze_date < target:
++                target, reason = freeze_date, f"início de {freeze_ref} em {freeze_date:%d/%m/%Y}"
++        if buffer is None:
++            caveats.append("não há folga de estabilização aprovada: a conclusão pode coincidir com a data limite")
++        else:
++            target -= timedelta(days=buffer)
++            reason += f", menos {buffer} dias corridos de estabilização"
++        unknown = [s for s in steps if s.weeks is None]
++        low = sum(s.weeks[0] for s in steps if s.weeks)
++        high = sum(s.weeks[1] for s in steps if s.weeks)
++        step_deadlines: dict[str, date] = {}
++        for index, step in enumerate(steps):
++            if step.weeks is None:
++                after = sum(s.weeks[1] for s in steps[index + 1:] if s.weeks)
++                step_deadlines[step.label] = target - timedelta(weeks=after)
++                caveats.append(f"{step.label}: prazo desconhecido ({step.pending_question or 'pergunta aberta'})")
++        start_deadline = target - timedelta(weeks=high) if not unknown else None
++        end_earliest = start + timedelta(weeks=low) if not unknown else None
++        end_latest = start + timedelta(weeks=high) if not unknown else None
++        if unknown or (freeze_ref and _iso((events.get(freeze_ref) or {}).get("date")) is None):
++            classification = "conditional"
++        elif end_latest <= target:
++            classification = "fits"
++        elif end_earliest > target:
++            classification = "does_not_fit"
++        else:
++            classification = "partially_fits"
++        results.append(Feasibility(str(item.get("event")), event_date, target, reason, classification,
++                                   end_earliest, end_latest, start_deadline, step_deadlines, caveats, errors,
++                                   start, [s.label for s in steps], _after_unknown(steps)))
++    return results
++
++
++def _after_unknown(steps: list[Step]) -> tuple[int, int] | None:
++    unknown = [i for i, s in enumerate(steps) if s.weeks is None]
++    if not unknown:
++        return None
++    rest = [s.weeks for s in steps[unknown[-1] + 1:] if s.weeks]
++    return (sum(w[0] for w in rest), sum(w[1] for w in rest)) if rest else None
++
++
++CLASSIFICATION_TEXT = {
++    "fits": "cabe no prazo",
++    "partially_fits": "cabe apenas no cenário mais rápido",
++    "does_not_fit": "não cabe no prazo",
++    "conditional": "depende de informações pendentes",
++}
++
++
++def paragraph(result: Feasibility) -> str:
++    """Client-facing feasibility paragraph, written by the engine (never by the author)."""
++    parts = [f"Viabilidade frente a {result.event} ({result.event_date:%d/%m/%Y}): {CLASSIFICATION_TEXT[result.classification]}."]
++    if result.target != result.event_date or "," in result.target_reason:
++        parts.append(f"A data limite considerada é {result.target:%d/%m/%Y} ({result.target_reason}).")
++    if result.end_earliest and result.end_latest:
++        parts.append(f"Com início em {result.start:%d/%m/%Y} e a sequência {' → '.join(result.steps)}, a conclusão fica entre "
++                     f"{result.end_earliest:%d/%m/%Y} e {result.end_latest:%d/%m/%Y}.")
++    if result.start_deadline:
++        parts.append(f"Para cumprir a data limite, o início deve ocorrer até {result.start_deadline:%d/%m/%Y}.")
++    for label, deadline in result.step_deadlines.items():
++        parts.append(f"Prazo limite para a etapa \"{label}\": {deadline:%d/%m/%Y}.")
++    if result.after_unknown:
++        low, high = result.after_unknown
++        parts.append(f"Depois das pendências, a execução leva de {low} a {high} semanas.")
++    if result.caveats:
++        parts.append("Ressalvas: " + "; ".join(result.caveats) + ".")
++    return " ".join(parts)
++
++
++_DATE = re.compile(r"(?<!\d)(\d{1,2})/(\d{1,2})(?:/(\d{2,4}))?(?!\d)")
++_ISO = re.compile(r"(?<!\d)(\d{4})-(\d{2})-(\d{2})(?!\d)")
++_WRITTEN = re.compile(r"(?<!\d)(\d{1,2})(?:o|º)?\s+de\s+([a-z]+)", re.IGNORECASE)
++
++
++def day_months(text: str) -> set[tuple[int, int]]:
++    """Every (day, month) written in a text: 11/01, 11/01/2027, 2027-01-11 or 11 de janeiro."""
++    plain = unicodedata.normalize("NFKD", str(text)).encode("ascii", "ignore").decode().casefold()
++    found = {(int(d), int(m)) for d, m, _ in _DATE.findall(plain)}
++    found |= {(int(d), int(m)) for _, m, d in _ISO.findall(plain)}
++    found |= {(int(d), MONTHS[m]) for d, m in _WRITTEN.findall(plain) if m in MONTHS}
++    return {(d, m) for d, m in found if 1 <= d <= 31 and 1 <= m <= 12}
+diff --git a/sales_engineer/neutral_template_builder.py b/sales_engineer/neutral_template_builder.py
+index 25bffc8..d005406 100644
+--- a/sales_engineer/neutral_template_builder.py
++++ b/sales_engineer/neutral_template_builder.py
+@@ -19,7 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
+ from .catalog import PRODUCTS
+ from .document_validation import detect_skill_leakage, find_case_residue, find_vocabulary_violations, validate_state_against_docx
+ from .institutional_policy import validate_institutional_whitelist
+-from .proposal_rules import FRONT_GROUPS, assert_proposal_rules
++from .proposal_rules import FRONT_GROUPS, assert_proposal_rules, feasibility_paragraphs, option_refs
+ 
+ 
+ def _text(value: Any) -> str:
+@@ -231,6 +231,36 @@ def _fit(draw, text: str, paths: Iterable[str], size: int, max_width: int):
+     return _font(paths, 16)
+ 
+ 
++def _wrap(draw, text: str, font, max_width: int) -> list[str]:
++    lines: list[str] = []
++    for word in text.split():
++        candidate = f"{lines[-1]} {word}" if lines else word
++        if lines and draw.textbbox((0, 0), candidate, font=font)[2] <= max_width:
++            lines[-1] = candidate
++        else:
++            lines.append(word)
++    return lines
++
++
++def _draw_block(draw, text: str, paths: Iterable[str], size: int, x: int, band: tuple[int, int], fill: str) -> None:
++    """Center `text` in the box column and vertical band: wrap first (up to 3 lines), shrink only if still too big.
++
++    V1 (auditoria v10): long labels used to shrink to an illegible size and overflow the box.
++    """
++    top, bottom = band
++    for candidate in range(size, 19, -1):
++        font = _font(paths, candidate)
++        lines = _wrap(draw, text, font, 330)
++        height = candidate + 6
++        if len(lines) <= 3 and all(draw.textbbox((0, 0), line, font=font)[2] <= 330 for line in lines) and len(lines) * height <= bottom - top:
++            break
++    y = top + ((bottom - top) - len(lines) * height) / 2
++    for line in lines:
++        width = draw.textbbox((0, 0), line, font=font)[2]
++        draw.text((x + (360 - width) / 2, y), line, font=font, fill=fill)
++        y += height
++
++
+ def _architecture_diagram(proposal: dict[str, Any]) -> BytesIO:
+     width, height = 1800, 560
+     image = Image.new("RGB", (width, height), "white")
+@@ -241,12 +271,8 @@ def _architecture_diagram(proposal: dict[str, Any]) -> BytesIO:
+     x_positions = [40, 480, 930, 1380]
+     for index, ((title, sub), x) in enumerate(zip(boxes, x_positions)):
+         draw.rounded_rectangle((x, 125, x + 360, 405), radius=24, fill="#F3F4F6", outline="#6B46C1", width=4)
+-        title_font = _fit(draw, title, BOLD_FONTS, 32, 330)
+-        tb = draw.textbbox((0, 0), title, font=title_font)
+-        draw.text((x + (360 - (tb[2] - tb[0])) / 2, 205), title, font=title_font, fill="#1F2A5E")
+-        sub_font = _fit(draw, sub, REGULAR_FONTS, 30, 330)
+-        sb = draw.textbbox((0, 0), sub, font=sub_font)
+-        draw.text((x + (360 - (sb[2] - sb[0])) / 2, 285), sub, font=sub_font, fill="#3F4A6B")
++        _draw_block(draw, title, BOLD_FONTS, 32, x, (140, 250), "#1F2A5E")
++        _draw_block(draw, sub, REGULAR_FONTS, 28, x, (255, 395), "#3F4A6B")
+         if index < len(boxes) - 1:
+             draw.line((x + 370, 265, x_positions[index + 1] - 10, 265), fill="#6B46C1", width=7)
+             draw.polygon([(x_positions[index + 1] - 10, 265), (x_positions[index + 1] - 34, 251), (x_positions[index + 1] - 34, 279)], fill="#6B46C1")
+@@ -324,6 +350,10 @@ def _v10(proposal: dict[str, Any]) -> bool:
+     return int(proposal.get("rules_version", 0) or 0) >= 10
+ 
+ 
++def _v11(proposal: dict[str, Any]) -> bool:
++    return int(proposal.get("rules_version", 0) or 0) >= 11
++
++
+ _FRONT_SENTENCES = {
+     "edge_dns": "Edge DNS mantém a camada autoritativa distribuída.",
+     "gtm": "Global Traffic Management decide o destino entre as origens com base em saúde e política.",
+@@ -432,6 +462,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+     decisions = [d for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended"]
+     product_names = [_product_name(str(d.get("product_id"))) for d in decisions]
+     summary = next((s.get("paragraphs", []) for s in proposal.get("sections", []) if s.get("title", "").casefold() == "resumo executivo"), [])
++    summary = list(summary) + feasibility_paragraphs(proposal)  # v11: datas e viabilidade escritas pelo motor
+     month = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"][datetime.now().month - 1]
+ 
+     _replace_paragraph(p[11], f"{opportunity} · {client} · {proposal.get('code', '')}")
+@@ -676,7 +707,12 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+     _replace_paragraph(p[146], _doc_text(proposal, "warranty_intro", "A garantia técnica cobre a correção de defeitos diretamente atribuíveis aos serviços executados pela POPULOS. O prazo consta do quadro Garantia e vigência."))
+     _replace_paragraph(p[148], _slot(proposal, "closing", "O projeto encerra-se após o aceite e a estabilização assistida. Operação continuada, suporte gerenciado, NOC 24x7 e equipe residente exigem contratação específica."))
+     _replace_paragraph(p[149], "Condições de atendimento")
+-    _replace_paragraph(p[150], "Durante a execução e a garantia, a POPULOS adotará o padrão institucional de atendimento abaixo para falhas atribuíveis aos serviços executados.")
++    sla_scope = (proposal.get("governance", {}).get("sla_applicability") or {}).get("applies_to_phases") or []
++    if sla_scope and _v11(proposal):
++        labels = ", ".join(option_refs(proposal).get(ref, ref) for ref in sla_scope)
++        _replace_paragraph(p[150], f"O padrão institucional de atendimento abaixo aplica-se somente a: {labels}, para falhas atribuíveis aos serviços executados. Nas demais fases, não há compromisso de tempo de atendimento.")
++    else:
++        _replace_paragraph(p[150], "Durante a execução e a garantia, a POPULOS adotará o padrão institucional de atendimento abaixo para falhas atribuíveis aos serviços executados.")
+ 
+     responsibilities = proposal.get("delivery", {}).get("responsibilities", [])
+     p[154].paragraph_format.keep_with_next = True
+@@ -728,7 +764,10 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+         readiness_intro = _doc_text(proposal, "readiness_intro", "")
+         if readiness_intro:
+             body_like(trace_heading, readiness_intro)
++        refs = option_refs(proposal)
+         for item in readiness:
++            if isinstance(item, dict):  # v11: todo item declara a fase ou opção a que pertence
++                item = f"{refs.get(item.get('phase'), item.get('phase'))}: {item.get('text', '')}"
+             _insert_paragraph_like(trace_heading, p[110], item)
+         options_anchor = readiness_heading
+     if optional_decisions:
+diff --git a/sales_engineer/proposal_rules.py b/sales_engineer/proposal_rules.py
+index 0789fc6..6d7e1fe 100644
+--- a/sales_engineer/proposal_rules.py
++++ b/sales_engineer/proposal_rules.py
+@@ -88,6 +88,12 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None =
+             errors.append(f"fase sem faixa numérica de semanas: {phase.get('name')}")
+     # A single phase's own range may be written too; any other range must be the total.
+     allowed_ranges = {(low, high)} | {tuple(phase["weeks"]) for phase in phases if len(phase.get("weeks") or []) == 2}
++    if int(proposal.get("rules_version", 0) or 0) >= 11:
++        # A3: faixas de ondas opcionais declaradas (cada uma e a soma) também podem aparecer no texto.
++        waves = [tuple(w["weeks"]) for w in (proposal.get("optional_phase") or {}).get("waves", []) if len(w.get("weeks") or []) == 2]
++        allowed_ranges |= set(waves)
++        if waves:
++            allowed_ranges.add((sum(w[0] for w in waves), sum(w[1] for w in waves)))
+     for text in _client_visible_texts(proposal):
+         for found in week_ranges(str(text)):
+             if found not in allowed_ranges:
+@@ -179,10 +185,12 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None =
+         errors.extend(_validate_approval_quotes(proposal, source_text))
+     if int(proposal.get("rules_version", 0) or 0) >= 10:
+         errors.extend(_validate_rules_v10(proposal))
++    if int(proposal.get("rules_version", 0) or 0) >= 11:
++        errors.extend(_validate_rules_v11(proposal, source_text))
+     return errors
+ 
+ 
+-LATEST_RULES_VERSION = 10
++LATEST_RULES_VERSION = 11
+ STATE_SCHEMA = Path(__file__).resolve().parents[1] / "skills" / "akamai-proposal-authoring" / "references" / "state.schema.json"
+ 
+ 
+@@ -378,9 +386,13 @@ def _validate_rules_v6(proposal: dict[str, Any]) -> list[str]:
+                 errors.append(f"evento sem data e sem pergunta pendente: {event.get('name')}")
+             continue
+         item = feasibility.get(event.get("name"))
++        if event.get("kind") == "freeze":
++            continue  # congelamento entra como restrição de um evento, não como evento próprio
+         if not item:
+             errors.append(f"evento com data conhecida sem viabilidade declarada: {event.get('name')}")
+             continue
++        if _rules_version(proposal) >= 11:
++            continue  # v11: janelas, datas limite e classificação são calculadas pelo motor (feasibility.py)
+         earliest, latest = phase_window(_date(item["reference_date"]), phases)
+         if (item.get("phase1_end_earliest"), item.get("phase1_end_latest")) != (earliest.isoformat(), latest.isoformat()):
+             errors.append(f"janela da Fase 1 declarada diverge do cálculo ({earliest:%d/%m}–{latest:%d/%m}): {event.get('name')}")
+@@ -524,7 +536,7 @@ def _validate_rules_v8(proposal: dict[str, Any]) -> list[str]:
+     # SLA institucional: a aplicabilidade é da instituição (whitelist) ou de uma decisão aprovada do caso.
+     engagement = proposal.get("governance", {}).get("engagement_type", {}).get("value")
+     applicability = proposal.get("governance", {}).get("sla_applicability") or {}
+-    if engagement not in sla_applicable_engagements() and not (
++    if _rules_version(proposal) < 11 and engagement not in sla_applicable_engagements() and not (
+         applicability.get("state") == "commitment" and engagement in (applicability.get("value") or [])
+     ):
+         errors.append(
+@@ -621,7 +633,7 @@ def _client_texts_v10(proposal: dict[str, Any]) -> Iterable[tuple[str, str]]:
+         yield f"traceability.{item.get('requirement_id')}", f"{item.get('requirement', '')} {item.get('solution', '')}"
+     for field in ("assumptions", "restrictions", "event_readiness", "client_roles", "team_competencies", "assessment_items"):
+         for text in proposal.get(field) or []:
+-            yield field, str(text)
++            yield field, _readiness_text(text)
+     for field, items in (proposal.get("scope") or {}).items():
+         for text in items or []:
+             yield f"scope.{field}", str(text)
+@@ -659,15 +671,15 @@ def _validate_rules_v10(proposal: dict[str, Any]) -> list[str]:
+     # Plano de evento proporcional ao escopo.
+     if not recommended & TRAFFIC_PATH_PRODUCTS:
+         for item in proposal.get("event_readiness", []):
+-            if _HEAVY_READINESS.search(str(item)):
+-                errors.append(f"plano de evento desproporcional ao escopo (nenhum produto no caminho do tráfego): {str(item)[:70]}")
++            if _HEAVY_READINESS.search(_readiness_text(item)):
++                errors.append(f"plano de evento desproporcional ao escopo (nenhum produto no caminho do tráfego): {_readiness_text(item)[:70]}")
+ 
+     # Prazo de licença desconhecido vira data limite, não rebaixamento.
+     phases = proposal.get("delivery", {}).get("phases", [])
+     high = sum((phase.get("weeks") or [0, 0])[1] for phase in phases)
+     events = {e.get("name"): e for e in proposal.get("critical_events", [])}
+     summary = normalize_document_text(" ".join(p for s in proposal.get("sections", []) for p in s.get("paragraphs", [])))
+-    for item in proposal.get("event_feasibility", []):
++    for item in proposal.get("event_feasibility", []) if _rules_version(proposal) < 11 else []:
+         if not _license_lead_unknown(item.get("lead_times")) or item.get("classification") == "does_not_fit":
+             continue
+         event_date = (events.get(item.get("event")) or {}).get("date")
+@@ -695,9 +707,76 @@ def _validate_rules_v10(proposal: dict[str, Any]) -> list[str]:
+                 errors.append(f"conflito com padrão POPULOS sem decisão de governança (decision_key): {item.get('requirement_id')} {category}")
+             elif entry.get("status") == "compatible" and not entry.get("reason"):
+                 errors.append(f"exigência declarada compatível com padrão POPULOS sem motivo: {item.get('requirement_id')} {category}")
++            elif entry.get("status") == "client_clarification" and entry.get("clarification_question") not in proposal.get("open_questions", []):
++                errors.append(f"contradição do cliente sem pedido de esclarecimento em open_questions: {item.get('requirement_id')} {category}")
+     return errors
+ 
+ 
++def _readiness_text(item: Any) -> str:
++    return str(item.get("text", "")) if isinstance(item, dict) else str(item)
++
++
++def option_refs(proposal: dict[str, Any]) -> dict[str, str]:
++    """Every committed phase, optional wave and fast track a scoped item may point to, with its client label."""
++    refs = {str(p.get("name")): str(p.get("name")) for p in proposal.get("delivery", {}).get("phases", []) if p.get("name")}
++    for wave in (proposal.get("optional_phase") or {}).get("waves", []):
++        if wave.get("id"):
++            refs[str(wave["id"])] = f"{wave.get('name', wave['id'])} (opcional)"
++    track = proposal.get("fast_track") or {}
++    if track.get("id"):
++        refs[str(track["id"])] = f"{track.get('title', track['id'])} (opcional)"
++    return refs
++
++
++def _validate_rules_v11(proposal: dict[str, Any], source_text: str | None) -> list[str]:
++    """Issues from the v10 audit: dates computed by the engine (N1, N2, A4), per-phase scope of the SLA and of
++    readiness items (A2, N3), and no date in client text that neither the source nor the engine produced."""
++    from .feasibility import compute, day_months
++
++    errors: list[str] = []
++    try:
++        date.fromisoformat(str(proposal.get("proposal_date", "")))
++    except ValueError:
++        errors.append("proposal_date ausente ou inválida (AAAA-MM-DD, a data do pedido)")
++    results = compute(proposal)
++    for result in results:
++        errors.extend(result.errors)
++
++    refs = option_refs(proposal)
++    for item in proposal.get("event_readiness", []):
++        if not isinstance(item, dict) or item.get("phase") not in refs:
++            errors.append(f"item de prontidão sem fase ou opção válida (phase ∈ {sorted(refs)}): {_readiness_text(item)[:60]}")
++
++    engagement = proposal.get("governance", {}).get("engagement_type", {}).get("value")
++    applicability = proposal.get("governance", {}).get("sla_applicability") or {}
++    if engagement not in sla_applicable_engagements():
++        scope = applicability.get("applies_to_phases") or []
++        if applicability.get("state") != "commitment":
++            errors.append(f"decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para '{engagement}')")
++        elif not scope or any(ref not in refs for ref in scope):
++            errors.append(f"sla_applicability aprovada sem as fases ou opções a que se aplica (applies_to_phases ⊆ {sorted(refs)})")
++
++    if source_text is not None:
++        allowed = day_months(source_text)
++        for result in results:
++            allowed |= {(d.day, d.month) for d in result.dates()}
++        try:
++            proposal_date = date.fromisoformat(str(proposal.get("proposal_date", "")))
++            allowed.add((proposal_date.day, proposal_date.month))
++        except ValueError:
++            pass
++        for field, text in _client_texts_v10(proposal):
++            for day, month in sorted(day_months(text) - allowed):
++                errors.append(f"data {day:02d}/{month:02d} em texto do cliente sem origem no insumo nem no cálculo do motor: {field}")
++    return errors
++
++
++def feasibility_paragraphs(proposal: dict[str, Any]) -> list[str]:
++    from .feasibility import compute, paragraph
++
++    return [paragraph(result) for result in compute(proposal)] if _rules_version(proposal) >= 11 else []
++
++
+ def assert_proposal_rules(proposal: dict[str, Any]) -> None:
+     errors = validate_proposal_rules(proposal)
+     if errors:
+diff --git a/sales_engineer/violation_codes.py b/sales_engineer/violation_codes.py
+new file mode 100644
+index 0000000..3272dbc
+--- /dev/null
++++ b/sales_engineer/violation_codes.py
+@@ -0,0 +1,36 @@
++"""Stable codes for validator messages (auditoria v10, N5).
++
++A code that repeats across executions of different cases points to a limit of the engine; a code that shows
++up once points to the author. The report of a round aggregates attempts by code.
++"""
++from __future__ import annotations
++
++import re
++
++CODES = [
++    ("GATE-INSUMO", r"^GATE insumo_insuficiente"),
++    ("GATE-CATALOGO", r"^GATE sem_catalogo"),
++    ("FORMATO", r"^formato \("),
++    ("DECISAO-ABERTA", r"^decisão interna aberta"),
++    ("APROVACAO-CITACAO", r"citação|approval_quote|valor aprovado não aparece"),
++    ("APROVACAO-CAMPOS", r"aprovação|aprovador|approved_|mode|modo de dado|padrão institucional"),
++    ("SLA-APLICACAO", r"sla_applicability|tabela institucional de SLA"),
++    ("DATA-SEM-ORIGEM", r"^data \d{2}/\d{2} em texto do cliente"),
++    ("VIABILIDADE", r"viabilidade|caminho até o evento|passo do caminho|lead_times|prazo desconhecido|prazo sem origem|congelamento"),
++    ("SEMANAS", r"semanas diverge|faixa numérica de semanas|faixa de semanas"),
++    ("PRONTIDAO", r"prontidão|plano de evento"),
++    ("CONFLITO-PADRAO", r"padrão POPULOS|standard_conflicts|esclarecimento"),
++    ("TEXTO-SLOT", r"^document_text\.|front_titles|team_competencies|client_roles|restrictions deve|assessment_items deve|dimensioning deve|Resumo executivo"),
++    ("ID-INTERNO", r"identificador interno"),
++    ("PRODUTO", r"produto|catálogo|onda"),
++    ("COBERTURA", r"cobertura|trecho do insumo|número|requisito"),
++    ("ESCOPO", r"escopo|entrega contratada|opcional|critério"),
++]
++_COMPILED = [(code, re.compile(pattern, re.IGNORECASE)) for code, pattern in CODES]
++
++
++def code_of(message: str) -> str:
++    for code, pattern in _COMPILED:
++        if pattern.search(message):
++            return code
++    return "OUTRO"
+diff --git a/scripts/__init__.py b/scripts/__init__.py
+new file mode 100644
+index 0000000..e69de29
+diff --git a/scripts/export_institutional_standards.py b/scripts/export_institutional_standards.py
+new file mode 100644
+index 0000000..e840b4b
+--- /dev/null
++++ b/scripts/export_institutional_standards.py
+@@ -0,0 +1,44 @@
++"""Export the institutional standards of the approved template to the skill (A1, auditoria v10).
++
++The author compares client demands with these values; without them it cannot declare a demand compatible.
++Usage: python scripts/export_institutional_standards.py   (rerun whenever the template version changes)
++"""
++from __future__ import annotations
++
++import json
++import sys
++from pathlib import Path
++
++from docx import Document
++
++ROOT = Path(__file__).resolve().parents[1]
++if str(ROOT) not in sys.path:
++    sys.path.insert(0, str(ROOT))
++
++TEMPLATE = ROOT / "assets" / "proposal_neutral_template.docx"
++TARGET = ROOT / "skills" / "akamai-proposal-authoring" / "references" / "institutional-standards.json"
++
++
++def institutional_standards() -> dict:
++    whitelist = json.loads((ROOT / "assets" / "institutional_whitelist.json").read_text(encoding="utf-8"))
++    table = Document(TEMPLATE).tables[10]
++    rows = [[cell.text.strip() for cell in row.cells] for row in table.rows[1:]]
++    return {
++        "template_version": whitelist["template_version"],
++        "sla": {
++            "scope": "Atuação da equipe POPULOS sobre falhas ou defeitos decorrentes exclusivamente dos serviços executados, durante a execução e a garantia técnica. Não é sustentação nem suporte gerenciado.",
++            "support_window": "Não definida na tabela institucional (a tabela não fixa horário de atendimento).",
++            "severities": [
++                {"severity": severity, "response": response, "resolution": resolution, "description": description}
++                for severity, response, resolution, description in rows
++            ],
++        },
++        "decisions_without_standard": [
++            "warranty", "license_supply", "engagement_type", "stabilization_buffer", "sla_applicability (fora de implementation)",
++        ],
++    }
++
++
++if __name__ == "__main__":
++    TARGET.write_text(json.dumps(institutional_standards(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
++    print(TARGET)
+diff --git a/skills/akamai-proposal-authoring/references/global-rules.md b/skills/akamai-proposal-authoring/references/global-rules.md
+index cead372..a913a4c 100644
+--- a/skills/akamai-proposal-authoring/references/global-rules.md
++++ b/skills/akamai-proposal-authoring/references/global-rules.md
+@@ -42,7 +42,7 @@ The global state separates client facts, requirements, decisions, scope, commerc
+ - An effort estimate has a technical owner (architect, engineering, delivery, or technical presales).
+ - Provenance records who said it: client, vendor, or input document. A requirement supported only by the vendor is a hypothesis to validate.
+ - Committed deliverables and acceptance criteria never require an action that the scope boundary forbids.
+-- For a critical event with a known date, feasibility is computed in the proposal from the proposal date, including the license lead time, and stated in the executive summary. An unknown lead time is an open question, never an estimate, and rules out a `fits` classification. A dateless event becomes an open question.
++- For a critical event with a known date, feasibility is computed by the engine from the declared path (phases, optional waves and lead times, including licensing), the change freeze and any approved stabilization buffer. An unknown lead time is an open question, never an estimate; the engine states the date by which that step must be done instead of downgrading the classification. A dateless event or freeze becomes an open question.
+ - Every option that touches production (a wave, a fast track) declares it, has its own window, rollback, approval, and acceptance criteria, and must fit before the change freeze, not only before the event.
+ 
+ ## Before writing a proposal (rules v8)
+diff --git a/skills/akamai-proposal-authoring/references/institutional-standards.json b/skills/akamai-proposal-authoring/references/institutional-standards.json
+new file mode 100644
+index 0000000..b812e79
+--- /dev/null
++++ b/skills/akamai-proposal-authoring/references/institutional-standards.json
+@@ -0,0 +1,34 @@
++{
++  "template_version": "2026.09.24-1",
++  "sla": {
++    "scope": "Atuação da equipe POPULOS sobre falhas ou defeitos decorrentes exclusivamente dos serviços executados, durante a execução e a garantia técnica. Não é sustentação nem suporte gerenciado.",
++    "support_window": "Não definida na tabela institucional (a tabela não fixa horário de atendimento).",
++    "severities": [
++      {
++        "severity": "ALTA",
++        "response": "Até 1 hora",
++        "resolution": "Até 4 horas",
++        "description": "Situação de alto impacto que possivelmente coloque em risco o ambiente de produção. A apresentação de uma solução de contorno (workaround) também é considerada tempo de solução."
++      },
++      {
++        "severity": "MÉDIA",
++        "response": "Até 2 horas",
++        "resolution": "Até 8 horas",
++        "description": "Situação de baixo impacto, podendo a maioria das funções do software ser usada; entretanto, alguma intervenção pode ser necessária. A apresentação de workaround também é considerada tempo de solução."
++      },
++      {
++        "severity": "BAIXA",
++        "response": "Até 16 horas",
++        "resolution": "Até 24 horas",
++        "description": "Solicitações de mudança, atualizações, gerenciamento de usuários, dúvidas, novas instalações ou publicações de aplicativos e outras ações planejadas."
++      }
++    ]
++  },
++  "decisions_without_standard": [
++    "warranty",
++    "license_supply",
++    "engagement_type",
++    "stabilization_buffer",
++    "sla_applicability (fora de implementation)"
++  ]
++}
+diff --git a/skills/akamai-proposal-authoring/references/state-schema.md b/skills/akamai-proposal-authoring/references/state-schema.md
+index 18707ac..ec771fd 100644
+--- a/skills/akamai-proposal-authoring/references/state-schema.md
++++ b/skills/akamai-proposal-authoring/references/state-schema.md
+@@ -1,4 +1,4 @@
+-# Proposal state schema (rules v10)
++# Proposal state schema (rules v11)
+ 
+ The author produces one JSON object. The validator (`scripts/validate_attempt.py`) checks the rules; the compositor maps the fields below into fixed slots of the approved template. Text fields are client-facing Portuguese unless noted. Values in angle brackets are placeholders, not examples to copy.
+ 
+@@ -6,7 +6,8 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
+ 
+ | Field | Type | Notes |
+ |---|---|---|
+-| `rules_version` | int | Must be `10`. |
++| `rules_version` | int | Must be `11`. |
++| `proposal_date` | YYYY-MM-DD | The proposal date given in `request.json`. |
+ | `data_mode` | `"test"` or `"production"` | Marks where the data comes from. It never relaxes a check. |
+ | `client_name`, `opportunity`, `code`, `opportunity_id` | string | `code` names the output file. |
+ 
+@@ -29,7 +30,7 @@ Both fields are required and are checked before any other rule.
+   - A decision is `commitment` only when the source material contains an explicit approval: who, when, and where it is recorded (`approval_record`). Otherwise keep `populos_internal_decision` with `value: null`; emission then blocks, which is the correct outcome.
+   - `approved_value` equals `value`. `engagement_ref` equals the current `engagement_type` value.
+   - `approval_quote` is a verbatim excerpt of the source material that records the approval: it names the decision, the approver and the approved value (for a table, the whole row). The validator looks for it in the source material; an approval that is not written there does not exist.
+-  - An institutional standard is not approved per case. Only `sla` is an institutional decision; every other decision belongs to the case, even when it repeats an existing contract. For `sla`: use `{ "state": "commitment", "basis": "populos_standard", "value", "source", "template_version": <current template version> }`, without approver fields.
++  - An institutional standard is not approved per case. Only `sla` is an institutional decision; every other decision belongs to the case, even when it repeats an existing contract. For `sla`: use `{ "state": "commitment", "basis": "populos_standard", "value", "source", "template_version": <current template version> }`, without approver fields. The values of the institutional SLA table are in `institutional-standards.json`; compare client demands with them before classifying a conflict.
+   - The engine decides where the institutional SLA table applies. For an engagement type outside that list, the case needs an approved decision `sla_applicability` (a commitment whose `value` lists the engagement types). Without it, emission blocks as an internal decision; do not create it without an explicit approval in the source material.
+ 
+ ## Discovery and provenance
+@@ -39,7 +40,7 @@ Both fields are required and are checked before any other rule.
+ - `source_coverage`: every relevant statement of the source material: `{ "ref", "statement", "status": "coberto" | "pendente" | "descartado", "targets": [REQ ids or "sumário", "escopo", "exclusões", "premissas", "dimensionamento", "engajamento"], "reason" (when discarded) }`.
+ - `client_numbers`: every number the client said: `{ "quote", "ref", "destination": "meta" | "contexto_de_dor" | "dimensionamento" | "descartado_com_motivo", "summary_marker" (pain context: a phrase that appears in the executive summary), "reason" }`.
+ - `open_questions`: list of strings.
+-- `standard_conflicts`: `[{ "category": "sla" | "warranty" | "qualification" | "deadline", "requirement_id", "status": "conflict" | "compatible", "decision_key" (conflict), "reason" (compatible) }]`. Every client requirement about service levels, warranty, qualification or certification, or delivery deadlines is classified here. A `conflict` with a POPULOS standard points to a governance decision (`decision_key`), which stays `populos_internal_decision` unless the source material approves it. The code only detects these four categories; recognizing any other conflict with a POPULOS standard remains the author's responsibility.
++- `standard_conflicts`: `[{ "category": "sla" | "warranty" | "qualification" | "deadline", "requirement_id", "status": "conflict" | "compatible" | "client_clarification", "decision_key" (conflict), "reason" (compatible), "clarification_question" (client_clarification) }]`. When the client's own documents contradict each other (e.g. two different deadlines in the same TR), the status is `client_clarification`: it is not a POPULOS decision, and the clarification question also goes to `open_questions`. Every client requirement about service levels, warranty, qualification or certification, or delivery deadlines is classified here. A `conflict` with a POPULOS standard points to a governance decision (`decision_key`), which stays `populos_internal_decision` unless the source material approves it. The code only detects these four categories; recognizing any other conflict with a POPULOS standard remains the author's responsibility.
+ 
+ ## Solution
+ 
+@@ -58,16 +59,21 @@ Both fields are required and are checked before any other rule.
+ - `scope`: `{ "included": [...], "deliverables": [...], "excluded": [...] }`.
+ - `delivery.phases`: committed phases, at most 4: `{ "name", "kind", "weeks": [min, max], "duration", "objective", "dependency", "outputs": [...] }`. A week range written in client text must equal the sum of these phases, or the range of one phase.
+ - `delivery.responsibilities`: client-side parties, as `[{ "party", "responsibility" }]`; `populos_roles`: optional list of `[role, responsibility, commitment]` rows (table capacity 12 rows in total).
+-- `optional_phase` (optional): `{ "title", "intro", "conditions": [...], "waves": [{ "id", "name", "components": [product ids], "goes_to_production": bool, "activities", "acceptance", "milestone" }] }`. Each recommended product appears in exactly one wave.
++- `optional_phase` (optional): `{ "title", "intro", "conditions": [...], "waves": [{ "id", "name", "components": [product ids], "weeks": [min, max], "goes_to_production": bool, "activities", "acceptance", "milestone" }] }`. A wave's range (and the sum of the waves) may be written in client text exactly as approved. Each recommended product appears in exactly one wave.
+ - `fast_track` (optional): `{ "id", "title", "components", "production_change": bool, "controls": ["janela", "reversão", "aprovação"], "deadline_reference": "freeze", "first_question", "paragraphs", "items", "schedule_row", "lead_times": { "licenciamento": { "weeks", "source" } } }`. When the license lead time is unknown, use `{ "weeks": null, "pending_question": <question> }` instead of estimating.
+ - `assumptions` (up to 8), `restrictions` (exactly 4, required), `risks`: `[{ "risk", "impact", "mitigation" }]`.
+ - `acceptance_criteria`: `[{ "requirement_id", "phase": "committed" | "optional", "option_id" (for optional: the id of the wave or fast track), "criterion" }]`. Every option that touches production has at least one criterion of its own.
+ 
+-## Critical events
++## Critical events and dates
+ 
+-- `event_readiness`: list of strings, proportional to the scope. Heavy items (war room, load test, capacity review) only when a recommended product sits in the application traffic path; a DNS-only project uses change window, rollback and monitoring.
+-- `critical_events`: `[{ "name", "date" (YYYY-MM-DD or null), "source", "pending_question" (when date is null) }]`.
+-- `event_feasibility`: for each event with a date: `{ "event", "reference_date", "phase1_end_earliest", "phase1_end_latest", "classification": "fits" | "partially_fits" | "does_not_fit", "path", "reason", "summary_marker", "lead_times": { "licenciamento": { "weeks", "source" } or { "weeks": null, "pending_question" } } }`. With an unknown license lead time, do not downgrade the classification: state `license_deadline` (YYYY-MM-DD), the date by which licenses must be active, equal to the event date minus the maximum committed weeks, and write that date (DD/MM) in the executive summary. The end dates are the reference date plus the sum of committed phase weeks, and the summary states them.
++Do not compute dates. You declare the inputs; the engine computes every window, deadline and classification and writes the feasibility paragraph into the executive summary.
++
++- `critical_events`: `[{ "name", "kind": "event" | "freeze", "date" (YYYY-MM-DD or null), "source", "pending_question" (when date is null) }]`. A change freeze is its own entry with `kind: "freeze"`.
++- `event_feasibility`: for each dated event: `{ "event", "freeze": <freeze name or null>, "path": [ordered steps before the event], "lead_times": { "<key>": { "label", "weeks": [min, max] or null, "source", "pending_question" } } }`. Each step of `path` is a committed phase name, an optional wave id or a key of `lead_times` (for example `licenciamento`). Every declared lead time is on the path. An unknown lead time has `weeks: null` and a pending question; the engine turns it into the date by which that step must be done.
++- Stabilization before an event exists only as an approved case decision `governance.stabilization_buffer` (e.g. value "5 dias úteis"). There is no default: without it, the engine states that no buffer was considered.
++- `event_readiness`: `[{ "text", "phase" }]`, where `phase` is a committed phase name, an optional wave id or the fast-track id. Proportional to the scope: war room, load test and capacity review only when a recommended product sits in the application traffic path.
++- Any date written in client text must appear in the source material or come from the engine's calculation; a date computed by hand blocks.
++- For an engagement type outside the institutional SLA scope, the approved `sla_applicability` lists the phases or options it covers in `applies_to_phases`; the document then states that the table applies only to them.
+ 
+ ## Client text
+ 
+diff --git a/skills/akamai-proposal-authoring/references/state.schema.json b/skills/akamai-proposal-authoring/references/state.schema.json
+index caa49dd..27b1798 100644
+--- a/skills/akamai-proposal-authoring/references/state.schema.json
++++ b/skills/akamai-proposal-authoring/references/state.schema.json
+@@ -1,104 +1,394 @@
+ {
+   "$schema": "https://json-schema.org/draft/2020-12/schema",
+-  "$id": "populos/proposal-state/v10",
+-  "title": "Estado da proposta (regras v10)",
++  "$id": "populos/proposal-state/v11",
++  "title": "Estado da proposta (regras v11)",
+   "description": "Formato que o validador confere antes das regras. Um erro de formato volta como violação legível; o compositor só lê estados que passaram aqui.",
+   "type": "object",
+   "$defs": {
+-    "text": {"type": "string"},
+-    "texts": {"type": "array", "items": {"type": "string"}},
++    "text": {
++      "type": "string"
++    },
++    "texts": {
++      "type": "array",
++      "items": {
++        "type": "string"
++      }
++    },
+     "decision": {
+       "type": "object",
+-      "required": ["state"],
++      "required": [
++        "state"
++      ],
+       "properties": {
+-        "state": {"enum": ["commitment", "populos_internal_decision"]},
+-        "basis": {"type": "string"},
+-        "source": {"type": "string"},
+-        "approved_by": {"type": ["string", "null"]},
+-        "approved_at": {"type": ["string", "null"]},
+-        "approval_record": {"type": ["string", "null"]},
+-        "approval_quote": {"type": ["string", "null"]},
+-        "mode": {"type": ["string", "null"]},
+-        "engagement_ref": {"type": ["string", "null"]},
+-        "approver_role": {"type": ["string", "null"]},
+-        "template_version": {"type": "string"}
++        "state": {
++          "enum": [
++            "commitment",
++            "populos_internal_decision"
++          ]
++        },
++        "basis": {
++          "type": "string"
++        },
++        "source": {
++          "type": "string"
++        },
++        "approved_by": {
++          "type": [
++            "string",
++            "null"
++          ]
++        },
++        "approved_at": {
++          "type": [
++            "string",
++            "null"
++          ]
++        },
++        "approval_record": {
++          "type": [
++            "string",
++            "null"
++          ]
++        },
++        "approval_quote": {
++          "type": [
++            "string",
++            "null"
++          ]
++        },
++        "mode": {
++          "type": [
++            "string",
++            "null"
++          ]
++        },
++        "engagement_ref": {
++          "type": [
++            "string",
++            "null"
++          ]
++        },
++        "approver_role": {
++          "type": [
++            "string",
++            "null"
++          ]
++        },
++        "template_version": {
++          "type": "string"
++        },
++        "applies_to_phases": {
++          "type": "array",
++          "items": {
++            "type": "string"
++          }
++        }
+       }
+     }
+   },
+-  "required": ["rules_version", "input_assessment"],
++  "required": [
++    "rules_version",
++    "input_assessment"
++  ],
+   "properties": {
+-    "rules_version": {"type": "integer"},
+-    "data_mode": {"enum": ["test", "production"]},
+-    "client_name": {"type": "string"},
+-    "opportunity": {"type": "string"},
+-    "code": {"type": "string"},
+-    "opportunity_id": {"type": "string"},
++    "rules_version": {
++      "type": "integer"
++    },
++    "data_mode": {
++      "enum": [
++        "test",
++        "production"
++      ]
++    },
++    "client_name": {
++      "type": "string"
++    },
++    "opportunity": {
++      "type": "string"
++    },
++    "code": {
++      "type": "string"
++    },
++    "opportunity_id": {
++      "type": "string"
++    },
+     "input_assessment": {
+       "type": "object",
+-      "required": ["status"],
+-      "properties": {"status": {"enum": ["sufficient", "insufficient"]}, "missing": {"$ref": "#/$defs/texts"}, "reason": {"type": "string"}}
++      "required": [
++        "status"
++      ],
++      "properties": {
++        "status": {
++          "enum": [
++            "sufficient",
++            "insufficient"
++          ]
++        },
++        "missing": {
++          "$ref": "#/$defs/texts"
++        },
++        "reason": {
++          "type": "string"
++        }
++      }
+     },
+     "catalog_fit": {
+       "type": "object",
+-      "required": ["status"],
+-      "properties": {"status": {"enum": ["fits", "no_catalog"]}, "requested": {"type": "string"}, "reason": {"type": "string"}}
++      "required": [
++        "status"
++      ],
++      "properties": {
++        "status": {
++          "enum": [
++            "fits",
++            "no_catalog"
++          ]
++        },
++        "requested": {
++          "type": "string"
++        },
++        "reason": {
++          "type": "string"
++        }
++      }
++    },
++    "open_questions": {
++      "$ref": "#/$defs/texts"
+     },
+-    "open_questions": {"$ref": "#/$defs/texts"},
+     "client_scope": {
+       "type": "object",
+-      "properties": {"type": {"type": ["string", "null"]}, "excludes_implementation": {"type": "boolean"}, "source": {"type": "string"}, "forbidden_in_committed": {"$ref": "#/$defs/texts"}}
++      "properties": {
++        "type": {
++          "type": [
++            "string",
++            "null"
++          ]
++        },
++        "excludes_implementation": {
++          "type": "boolean"
++        },
++        "source": {
++          "type": "string"
++        },
++        "forbidden_in_committed": {
++          "$ref": "#/$defs/texts"
++        }
++      }
++    },
++    "governance": {
++      "type": "object",
++      "additionalProperties": {
++        "$ref": "#/$defs/decision"
++      }
++    },
++    "discovery": {
++      "type": "object",
++      "properties": {
++        "business_goals": {
++          "$ref": "#/$defs/texts"
++        }
++      }
+     },
+-    "governance": {"type": "object", "additionalProperties": {"$ref": "#/$defs/decision"}},
+-    "discovery": {"type": "object", "properties": {"business_goals": {"$ref": "#/$defs/texts"}}},
+     "traceability": {
+       "type": "array",
+       "items": {
+         "type": "object",
+-        "required": ["requirement_id", "requirement", "solution"],
++        "required": [
++          "requirement_id",
++          "requirement",
++          "solution"
++        ],
+         "properties": {
+-          "requirement_id": {"type": "string"}, "requirement": {"type": "string"}, "solution": {"type": "string"},
+-          "evidence": {"type": "string"}, "source": {"type": "string"},
+-          "speakers": {"type": "array", "items": {"enum": ["client", "vendor", "input_document"]}},
+-          "hypothesis": {"type": "boolean"}
++          "requirement_id": {
++            "type": "string"
++          },
++          "requirement": {
++            "type": "string"
++          },
++          "solution": {
++            "type": "string"
++          },
++          "evidence": {
++            "type": "string"
++          },
++          "source": {
++            "type": "string"
++          },
++          "speakers": {
++            "type": "array",
++            "items": {
++              "enum": [
++                "client",
++                "vendor",
++                "input_document"
++              ]
++            }
++          },
++          "hypothesis": {
++            "type": "boolean"
++          }
+         }
+       }
+     },
+     "source_coverage": {
+       "type": "array",
+-      "items": {"type": "object", "required": ["ref", "statement", "status"], "properties": {"targets": {"$ref": "#/$defs/texts"}}}
++      "items": {
++        "type": "object",
++        "required": [
++          "ref",
++          "statement",
++          "status"
++        ],
++        "properties": {
++          "targets": {
++            "$ref": "#/$defs/texts"
++          }
++        }
++      }
++    },
++    "client_numbers": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "required": [
++          "quote",
++          "destination"
++        ]
++      }
+     },
+-    "client_numbers": {"type": "array", "items": {"type": "object", "required": ["quote", "destination"]}},
+     "solution_decisions": {
+       "type": "array",
+       "items": {
+         "type": "object",
+-        "required": ["product_id", "status"],
++        "required": [
++          "product_id",
++          "status"
++        ],
+         "properties": {
+-          "product_id": {"type": "string"},
+-          "status": {"enum": ["recommended", "optional", "needs_information", "excluded", "already_contracted"]},
+-          "requirement_ids": {"$ref": "#/$defs/texts"}, "rationale": {"type": "string"}, "client_summary": {"type": "string"},
+-          "capabilities": {"$ref": "#/$defs/texts"}, "implementation_status": {"type": "string"},
+-          "trigger": {"type": "string"}, "contract_ref": {"type": "string"}
++          "product_id": {
++            "type": "string"
++          },
++          "status": {
++            "enum": [
++              "recommended",
++              "optional",
++              "needs_information",
++              "excluded",
++              "already_contracted"
++            ]
++          },
++          "requirement_ids": {
++            "$ref": "#/$defs/texts"
++          },
++          "rationale": {
++            "type": "string"
++          },
++          "client_summary": {
++            "type": "string"
++          },
++          "capabilities": {
++            "$ref": "#/$defs/texts"
++          },
++          "implementation_status": {
++            "type": "string"
++          },
++          "trigger": {
++            "type": "string"
++          },
++          "contract_ref": {
++            "type": "string"
++          }
++        }
++      }
++    },
++    "products": {
++      "$ref": "#/$defs/texts"
++    },
++    "architecture": {
++      "type": "object",
++      "properties": {
++        "summary": {
++          "type": "string"
+         }
+       }
+     },
+-    "products": {"$ref": "#/$defs/texts"},
+-    "architecture": {"type": "object", "properties": {"summary": {"type": "string"}}},
+     "sections": {
+       "type": "array",
+-      "items": {"type": "object", "required": ["title", "paragraphs"], "properties": {"title": {"type": "string"}, "paragraphs": {"$ref": "#/$defs/texts"}}}
++      "items": {
++        "type": "object",
++        "required": [
++          "title",
++          "paragraphs"
++        ],
++        "properties": {
++          "title": {
++            "type": "string"
++          },
++          "paragraphs": {
++            "$ref": "#/$defs/texts"
++          }
++        }
++      }
++    },
++    "dimensioning": {
++      "type": "array",
++      "items": {
++        "type": "array",
++        "minItems": 4,
++        "maxItems": 4,
++        "items": {
++          "type": "string"
++        }
++      }
+     },
+-    "dimensioning": {"type": "array", "items": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "string"}}},
+     "estimates": {
+       "type": "array",
+-      "items": {"type": "object", "required": ["item", "value", "owner", "owner_role"], "properties": {"item": {"type": "string"}, "value": {"type": "string"}, "owner": {"type": "string"}, "owner_role": {"type": "string"}}}
++      "items": {
++        "type": "object",
++        "required": [
++          "item",
++          "value",
++          "owner",
++          "owner_role"
++        ],
++        "properties": {
++          "item": {
++            "type": "string"
++          },
++          "value": {
++            "type": "string"
++          },
++          "owner": {
++            "type": "string"
++          },
++          "owner_role": {
++            "type": "string"
++          }
++        }
++      }
++    },
++    "assessment_items": {
++      "$ref": "#/$defs/texts"
++    },
++    "client_roles": {
++      "$ref": "#/$defs/texts"
++    },
++    "team_competencies": {
++      "$ref": "#/$defs/texts"
+     },
+-    "assessment_items": {"$ref": "#/$defs/texts"},
+-    "client_roles": {"$ref": "#/$defs/texts"},
+-    "team_competencies": {"$ref": "#/$defs/texts"},
+     "scope": {
+       "type": "object",
+-      "properties": {"included": {"$ref": "#/$defs/texts"}, "deliverables": {"$ref": "#/$defs/texts"}, "excluded": {"$ref": "#/$defs/texts"}}
++      "properties": {
++        "included": {
++          "$ref": "#/$defs/texts"
++        },
++        "deliverables": {
++          "$ref": "#/$defs/texts"
++        },
++        "excluded": {
++          "$ref": "#/$defs/texts"
++        }
++      }
+     },
+     "delivery": {
+       "type": "object",
+@@ -107,71 +397,421 @@
+           "type": "array",
+           "items": {
+             "type": "object",
+-            "required": ["name", "weeks", "objective"],
++            "required": [
++              "name",
++              "weeks",
++              "objective"
++            ],
+             "properties": {
+-              "name": {"type": "string"}, "kind": {"type": "string"},
+-              "weeks": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 0}},
+-              "duration": {"type": "string"}, "objective": {"type": "string"}, "dependency": {"type": "string"}, "outputs": {"$ref": "#/$defs/texts"}
++              "name": {
++                "type": "string"
++              },
++              "kind": {
++                "type": "string"
++              },
++              "weeks": {
++                "type": "array",
++                "minItems": 2,
++                "maxItems": 2,
++                "items": {
++                  "type": "integer",
++                  "minimum": 0
++                }
++              },
++              "duration": {
++                "type": "string"
++              },
++              "objective": {
++                "type": "string"
++              },
++              "dependency": {
++                "type": "string"
++              },
++              "outputs": {
++                "$ref": "#/$defs/texts"
++              }
+             }
+           }
+         },
+         "responsibilities": {
+           "type": "array",
+-          "items": {"type": "object", "required": ["party", "responsibility"], "properties": {"party": {"type": "string"}, "responsibility": {"type": "string"}}}
++          "items": {
++            "type": "object",
++            "required": [
++              "party",
++              "responsibility"
++            ],
++            "properties": {
++              "party": {
++                "type": "string"
++              },
++              "responsibility": {
++                "type": "string"
++              }
++            }
++          }
++        }
++      }
++    },
++    "populos_roles": {
++      "type": "array",
++      "items": {
++        "type": "array",
++        "minItems": 3,
++        "maxItems": 3,
++        "items": {
++          "type": "string"
+         }
+       }
+     },
+-    "populos_roles": {"type": "array", "items": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "string"}}},
+     "optional_phase": {
+-      "type": ["object", "null"],
++      "type": [
++        "object",
++        "null"
++      ],
+       "properties": {
+-        "title": {"type": "string"}, "intro": {"type": "string"}, "conditions": {"$ref": "#/$defs/texts"},
++        "title": {
++          "type": "string"
++        },
++        "intro": {
++          "type": "string"
++        },
++        "conditions": {
++          "$ref": "#/$defs/texts"
++        },
+         "waves": {
+           "type": "array",
+           "items": {
+-            "type": "object", "required": ["name", "components"],
+-            "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "components": {"$ref": "#/$defs/texts"}, "goes_to_production": {"type": "boolean"},
+-                           "activities": {"type": "string"}, "acceptance": {"type": "string"}, "milestone": {"type": "string"}, "dependency": {"type": "string"}, "duration": {"type": "string"}}
++            "type": "object",
++            "required": [
++              "name",
++              "components"
++            ],
++            "properties": {
++              "id": {
++                "type": "string"
++              },
++              "name": {
++                "type": "string"
++              },
++              "components": {
++                "$ref": "#/$defs/texts"
++              },
++              "goes_to_production": {
++                "type": "boolean"
++              },
++              "activities": {
++                "type": "string"
++              },
++              "acceptance": {
++                "type": "string"
++              },
++              "milestone": {
++                "type": "string"
++              },
++              "dependency": {
++                "type": "string"
++              },
++              "duration": {
++                "type": "string"
++              },
++              "weeks": {
++                "type": "array",
++                "minItems": 2,
++                "maxItems": 2,
++                "items": {
++                  "type": "integer",
++                  "minimum": 0
++                }
++              }
++            }
+           }
+         }
+       }
+     },
+     "fast_track": {
+-      "type": ["object", "null"],
++      "type": [
++        "object",
++        "null"
++      ],
+       "properties": {
+-        "id": {"type": "string"}, "title": {"type": "string"}, "components": {"$ref": "#/$defs/texts"}, "production_change": {"type": "boolean"},
+-        "controls": {"$ref": "#/$defs/texts"}, "paragraphs": {"$ref": "#/$defs/texts"}, "items": {"$ref": "#/$defs/texts"},
+-        "schedule_row": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"type": "string"}}
++        "id": {
++          "type": "string"
++        },
++        "title": {
++          "type": "string"
++        },
++        "components": {
++          "$ref": "#/$defs/texts"
++        },
++        "production_change": {
++          "type": "boolean"
++        },
++        "controls": {
++          "$ref": "#/$defs/texts"
++        },
++        "paragraphs": {
++          "$ref": "#/$defs/texts"
++        },
++        "items": {
++          "$ref": "#/$defs/texts"
++        },
++        "schedule_row": {
++          "type": "array",
++          "minItems": 5,
++          "maxItems": 5,
++          "items": {
++            "type": "string"
++          }
++        }
+       }
+     },
+-    "assumptions": {"$ref": "#/$defs/texts"},
+-    "restrictions": {"$ref": "#/$defs/texts"},
++    "assumptions": {
++      "$ref": "#/$defs/texts"
++    },
++    "restrictions": {
++      "$ref": "#/$defs/texts"
++    },
+     "risks": {
+       "type": "array",
+-      "items": {"type": "object", "required": ["risk", "impact", "mitigation"], "properties": {"risk": {"type": "string"}, "impact": {"type": "string"}, "mitigation": {"type": "string"}}}
++      "items": {
++        "type": "object",
++        "required": [
++          "risk",
++          "impact",
++          "mitigation"
++        ],
++        "properties": {
++          "risk": {
++            "type": "string"
++          },
++          "impact": {
++            "type": "string"
++          },
++          "mitigation": {
++            "type": "string"
++          }
++        }
++      }
+     },
+     "acceptance_criteria": {
+       "type": "array",
+-      "items": {"type": "object", "required": ["requirement_id", "phase", "criterion"], "properties": {"requirement_id": {"type": "string"}, "phase": {"enum": ["committed", "optional"]}, "option_id": {"type": "string"}, "criterion": {"type": "string"}}}
++      "items": {
++        "type": "object",
++        "required": [
++          "requirement_id",
++          "phase",
++          "criterion"
++        ],
++        "properties": {
++          "requirement_id": {
++            "type": "string"
++          },
++          "phase": {
++            "enum": [
++              "committed",
++              "optional"
++            ]
++          },
++          "option_id": {
++            "type": "string"
++          },
++          "criterion": {
++            "type": "string"
++          }
++        }
++      }
++    },
++    "event_readiness": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "required": [
++          "text",
++          "phase"
++        ],
++        "properties": {
++          "text": {
++            "type": "string"
++          },
++          "phase": {
++            "type": "string"
++          }
++        }
++      }
++    },
++    "critical_events": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "required": [
++          "name"
++        ],
++        "properties": {
++          "name": {
++            "type": "string"
++          },
++          "kind": {
++            "enum": [
++              "event",
++              "freeze"
++            ]
++          },
++          "date": {
++            "type": [
++              "string",
++              "null"
++            ]
++          },
++          "end": {
++            "type": [
++              "string",
++              "null"
++            ]
++          },
++          "source": {
++            "type": "string"
++          },
++          "pending_question": {
++            "type": "string"
++          }
++        }
++      }
+     },
+-    "event_readiness": {"$ref": "#/$defs/texts"},
+-    "critical_events": {"type": "array", "items": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}, "date": {"type": ["string", "null"]}}}},
+     "event_feasibility": {
+       "type": "array",
+-      "items": {"type": "object", "required": ["event", "classification"], "properties": {"license_deadline": {"type": ["string", "null"]}}}
++      "items": {
++        "type": "object",
++        "required": [
++          "event",
++          "path"
++        ],
++        "properties": {
++          "event": {
++            "type": "string"
++          },
++          "path": {
++            "type": "array",
++            "minItems": 1,
++            "items": {
++              "type": "string"
++            }
++          },
++          "freeze": {
++            "type": [
++              "string",
++              "null"
++            ]
++          },
++          "lead_times": {
++            "type": "object",
++            "additionalProperties": {
++              "type": "object",
++              "properties": {
++                "label": {
++                  "type": "string"
++                },
++                "weeks": {
++                  "oneOf": [
++                    {
++                      "type": "null"
++                    },
++                    {
++                      "type": "array",
++                      "minItems": 2,
++                      "maxItems": 2,
++                      "items": {
++                        "type": "integer",
++                        "minimum": 0
++                      }
++                    }
++                  ]
++                },
++                "source": {
++                  "type": "string"
++                },
++                "pending_question": {
++                  "type": "string"
++                }
++              }
++            }
++          }
++        }
++      }
+     },
+     "standard_conflicts": {
+       "type": "array",
+       "items": {
+-        "type": "object", "required": ["category", "requirement_id", "status"],
+-        "properties": {"category": {"enum": ["sla", "warranty", "qualification", "deadline"]}, "requirement_id": {"type": "string"},
+-                       "status": {"enum": ["conflict", "compatible"]}, "decision_key": {"type": "string"}, "reason": {"type": "string"}}
++        "type": "object",
++        "required": [
++          "category",
++          "requirement_id",
++          "status"
++        ],
++        "properties": {
++          "category": {
++            "enum": [
++              "sla",
++              "warranty",
++              "qualification",
++              "deadline"
++            ]
++          },
++          "requirement_id": {
++            "type": "string"
++          },
++          "status": {
++            "enum": [
++              "conflict",
++              "compatible",
++              "client_clarification"
++            ]
++          },
++          "decision_key": {
++            "type": "string"
++          },
++          "reason": {
++            "type": "string"
++          },
++          "clarification_question": {
++            "type": "string"
++          }
++        }
+       }
+     },
+     "document_text": {
+       "type": "object",
+-      "properties": {"front_titles": {"type": "object", "additionalProperties": {"type": "string"}}},
+-      "additionalProperties": {"type": "string"}
++      "properties": {
++        "front_titles": {
++          "type": "object",
++          "additionalProperties": {
++            "type": "string"
++          }
++        },
++        "diagram_users": {
++          "type": "string",
++          "maxLength": 80
++        },
++        "diagram_users_detail": {
++          "type": "string",
++          "maxLength": 80
++        },
++        "diagram_origins_title": {
++          "type": "string",
++          "maxLength": 80
++        },
++        "diagram_origins": {
++          "type": "string",
++          "maxLength": 80
++        }
++      },
++      "additionalProperties": {
++        "type": "string"
++      }
++    },
++    "proposal_date": {
++      "type": "string",
++      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+     }
+   }
+ }
+diff --git a/tests/fixtures/vertice_v10.json b/tests/fixtures/vertice_v11.json
+similarity index 93%
+rename from tests/fixtures/vertice_v10.json
+rename to tests/fixtures/vertice_v11.json
+index e586434..ff3d190 100644
+--- a/tests/fixtures/vertice_v10.json
++++ b/tests/fixtures/vertice_v11.json
+@@ -1,5 +1,5 @@
+ {
+- "rules_version": 10,
++ "rules_version": 11,
+  "data_mode": "test",
+  "client_name": "Vértice Educação",
+  "opportunity": "Migração de DNS autoritativo para Edge DNS",
+@@ -294,7 +294,8 @@
+   "Quem na Vértice Educação detém o acesso ao registrador para trocar os servidores de nomes e publicar os registros DS?",
+   "A zona portalaluno.vertice.edu.br é delegada a partir de vertice.edu.br ou gerenciada no mesmo painel do registrador?",
+   "É possível exportar o arquivo completo de cada zona do painel atual?",
+-  "Quais janelas de mudança estão aprovadas para a troca de delegação?"
++  "Quais janelas de mudança estão aprovadas para a troca de delegação?",
++  "Existe congelamento de mudanças no calendário acadêmico antes das matrículas? Se sim, a partir de quando?"
+  ],
+  "solution_decisions": [
+   {
+@@ -382,9 +383,8 @@
+    "title": "Resumo executivo",
+    "paragraphs": [
+     "A Vértice Educação mantém hoje o DNS dos seus domínios no painel do registrador e registrou dois episódios em 2026 em que o painel ficou fora do ar e não foi possível alterar registros. Esta proposta migra as 4 zonas (vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br), com cerca de 380 registros, para o Edge DNS da Akamai, com DNSSEC e sem interrupção da resolução de nomes do portal do aluno.",
+-    "A implantação está estimada entre 3 e 4 semanas a partir da reunião de início. Se o início ocorresse na data desta proposta (24/09/2026), o término ficaria entre 15/10/2026 e 22/10/2026, com margem ampla até o início das matrículas em 11/01/2027. A viabilidade frente às matrículas fica condicionada ao prazo de licenciamento, ainda não informado: as licenças são adquiridas diretamente pela Vértice Educação junto à Akamai, e a data real de início depende dessa ativação e de eventual congelamento de mudanças antes das matrículas.",
+-    "A troca de delegação será feita em janela aprovada, com os registros já publicados e conferidos na Akamai, TTLs reduzidos previamente e plano de reversão para os servidores atuais. A assinatura DNSSEC é ativada somente após a estabilização da nova delegação.",
+-    "Para concluir antes das matrículas de 11/01/2027, as licenças Edge DNS precisam estar ativas até 14/12/2026."
++    "A implantação está estimada entre 3 e 4 semanas a partir da reunião de início. A viabilidade frente às matrículas de 11/01/2027 depende do prazo de ativação das licenças, adquiridas diretamente pela Vértice Educação junto à Akamai, e de eventual congelamento de mudanças antes das matrículas.",
++    "A troca de delegação será feita em janela aprovada, com os registros já publicados e conferidos na Akamai, TTLs reduzidos previamente e plano de reversão para os servidores atuais. A assinatura DNSSEC é ativada somente após a estabilização da nova delegação."
+    ]
+   }
+  ],
+@@ -563,35 +563,55 @@
+   }
+  ],
+  "event_readiness": [
+-  "Concluir a troca de delegação e a ativação do DNSSEC com antecedência ao início das matrículas;",
+-  "Respeitar eventual congelamento de mudanças definido pela Vértice Educação antes das matrículas;",
+-  "Manter procedimento de reversão documentado para a delegação e para o DNSSEC;",
+-  "Monitorar a resolução dos nomes do portal do aluno e do vestibular durante a estabilização assistida."
++  {
++   "text": "Concluir a troca de delegação e a ativação do DNSSEC com antecedência ao início das matrículas;",
++   "phase": "Fase 2 — Implantação e troca de delegação"
++  },
++  {
++   "text": "Respeitar eventual congelamento de mudanças definido pela Vértice Educação antes das matrículas;",
++   "phase": "Fase 2 — Implantação e troca de delegação"
++  },
++  {
++   "text": "Manter procedimento de reversão documentado para a delegação e para o DNSSEC;",
++   "phase": "Fase 3 — DNSSEC, estabilização e aceite"
++  },
++  {
++   "text": "Monitorar a resolução dos nomes do portal do aluno e do vestibular durante a estabilização assistida.",
++   "phase": "Fase 3 — DNSSEC, estabilização e aceite"
++  }
+  ],
+  "critical_events": [
+   {
+    "name": "Início das matrículas",
+    "date": "2027-01-11",
+-   "source": "E-mail de 22/09/2026, parágrafo 4"
++   "source": "E-mail de 22/09/2026, parágrafo 4",
++   "kind": "event"
++  },
++  {
++   "name": "Congelamento de mudanças do calendário acadêmico",
++   "kind": "freeze",
++   "date": null,
++   "source": "Não informado no e-mail de 22/09/2026",
++   "pending_question": "Existe congelamento de mudanças no calendário acadêmico antes das matrículas? Se sim, a partir de quando?"
+   }
+  ],
+  "event_feasibility": [
+   {
+    "event": "Início das matrículas",
+-   "reference_date": "2026-09-24",
+-   "phase1_end_earliest": "2026-10-15",
+-   "phase1_end_latest": "2026-10-22",
+-   "classification": "fits",
+-   "path": "Implantação completa de 3 a 4 semanas a partir do início",
+-   "reason": "O esforço de serviços cabe com ampla margem antes de 11/01/2027, mas o prazo de licenciamento na compra direta junto à Akamai e eventual congelamento de mudanças são desconhecidos, o que impede classificar como cabe.",
+-   "summary_marker": "condicionada ao prazo de licenciamento",
++   "freeze": "Congelamento de mudanças do calendário acadêmico",
++   "path": [
++    "licenciamento",
++    "Fase 1 — Levantamento e desenho",
++    "Fase 2 — Implantação e troca de delegação",
++    "Fase 3 — DNSSEC, estabilização e aceite"
++   ],
+    "lead_times": {
+     "licenciamento": {
++     "label": "Ativação das licenças Edge DNS",
+      "weeks": null,
+      "pending_question": "Qual o prazo de fornecimento e ativação das licenças Edge DNS na compra direta da Vértice Educação junto à Akamai?"
+     }
+-   },
+-   "license_deadline": "2026-12-14"
++   }
+   }
+  ],
+  "document_text": {
+@@ -641,5 +661,6 @@
+  "team_competencies": [
+   "DNS autoritativo, DNSSEC e migração de zonas;",
+   "Gestão de projeto, testes e documentação técnica."
+- ]
++ ],
++ "proposal_date": "2026-09-24"
+ }
+\ No newline at end of file
+diff --git a/tests/test_v10_engine.py b/tests/test_v10_engine.py
+index 93912fc..9380bd3 100644
+--- a/tests/test_v10_engine.py
++++ b/tests/test_v10_engine.py
+@@ -107,7 +107,7 @@ class SchemaFirstTests(unittest.TestCase):
+ 
+     def test_schema_ships_with_the_skill(self) -> None:
+         schema = ROOT / "skills" / "akamai-proposal-authoring" / "references" / "state.schema.json"
+-        self.assertEqual(json.loads(schema.read_text(encoding="utf-8"))["$id"], "populos/proposal-state/v10")
++        self.assertEqual(json.loads(schema.read_text(encoding="utf-8"))["$id"], "populos/proposal-state/v11")
+ 
+ 
+ class ProportionalEventPlanTests(unittest.TestCase):
+@@ -115,36 +115,16 @@ class ProportionalEventPlanTests(unittest.TestCase):
+ 
+     def test_heavy_readiness_without_traffic_path_product_blocks(self) -> None:
+         proposal = vertice_latest()
+-        proposal["event_readiness"].append("Sala de crise no início das matrículas;")
++        proposal["event_readiness"].append({"text": "Sala de crise no início das matrículas;", "phase": proposal["delivery"]["phases"][-1]["name"]})
+         self.assertIn("plano de evento desproporcional ao escopo", errors_of(proposal))
+ 
+     def test_heavy_readiness_is_fine_with_traffic_path_product(self) -> None:
+         proposal = vertice_latest()
+-        proposal["event_readiness"].append("Sala de crise no início das matrículas;")
++        proposal["event_readiness"].append({"text": "Sala de crise no início das matrículas;", "phase": proposal["delivery"]["phases"][-1]["name"]})
+         next(d for d in proposal["solution_decisions"] if d["product_id"] == "app_api_protector")["status"] = "recommended"
+         self.assertNotIn("plano de evento desproporcional", errors_of(proposal))
+ 
+ 
+-class LicenseDeadlineTests(unittest.TestCase):
+-    """Auditoria v8.3, item 6: prazo desconhecido vira data limite."""
+-
+-    def test_unknown_lead_time_can_fit_with_the_right_deadline(self) -> None:
+-        proposal = vertice_latest()
+-        item = proposal["event_feasibility"][0]
+-        self.assertEqual((item["classification"], item["license_deadline"]), ("fits", "2026-12-14"))
+-        self.assertIsNone(item["lead_times"]["licenciamento"]["weeks"])
+-        self.assertEqual(validate_proposal_rules(proposal, vertice_source()), [])
+-
+-    def test_wrong_or_undeclared_deadline_blocks(self) -> None:
+-        proposal = vertice_latest()
+-        proposal["event_feasibility"][0]["license_deadline"] = "2026-12-31"
+-        self.assertIn("sem data limite (license_deadline = 2026-12-14)", errors_of(proposal))
+-        proposal = vertice_latest()
+-        summary = next(s for s in proposal["sections"] if s["title"].casefold() == "resumo executivo")
+-        summary["paragraphs"] = [p for p in summary["paragraphs"] if "14/12" not in p]
+-        self.assertIn("sumário não declara a data limite das licenças (14/12)", errors_of(proposal))
+-
+-
+ class StandardConflictTests(unittest.TestCase):
+     """Auditoria v8.3, item 7: nas categorias conhecidas, o código obriga a classificar."""
+ 
+diff --git a/tests/test_v11_engine.py b/tests/test_v11_engine.py
+new file mode 100644
+index 0000000..eb624b9
+--- /dev/null
++++ b/tests/test_v11_engine.py
+@@ -0,0 +1,196 @@
++from __future__ import annotations
++
++import json
++import tempfile
++import unittest
++from copy import deepcopy
++from pathlib import Path
++
++from PIL import Image, ImageDraw
++
++from sales_engineer.document_validation import extract_docx_text
++from sales_engineer.feasibility import compute, day_months, paragraph, stabilization_days
++from sales_engineer.neutral_template_builder import BOLD_FONTS, REGULAR_FONTS, _font, _wrap, build_neutral_template_docx
++from sales_engineer.proposal_rules import validate_proposal_rules
++from sales_engineer.violation_codes import code_of
++from tests.test_v7_engine import vertice_latest, vertice_source
++
++ROOT = Path(__file__).resolve().parents[1]
++TEMPLATE = ROOT / "assets" / "proposal_neutral_template.docx"
++
++
++def errors_of(proposal: dict) -> str:
++    return " | ".join(validate_proposal_rules(proposal, vertice_source()))
++
++
++def expansion_case() -> dict:
++    """Números do caso 09 da bateria 2: congelamento em 15/12, licença em até 2 semanas, implantação de 4 a 5."""
++    return {
++        "proposal_date": "2026-09-24",
++        "delivery": {"phases": [{"name": "Implantação", "weeks": [4, 5]}]},
++        "critical_events": [{"name": "Lançamento", "kind": "event", "date": "2027-01-15"},
++                            {"name": "Congelamento", "kind": "freeze", "date": "2026-12-15"}],
++        "event_feasibility": [{"event": "Lançamento", "freeze": "Congelamento", "path": ["licenciamento", "Implantação"],
++                               "lead_times": {"licenciamento": {"label": "Liberação da licença", "weeks": [1, 2], "source": "e-mail"}}}],
++    }
++
++
++class EngineDatesTests(unittest.TestCase):
++    """N1, N2 e A4: toda data vem do código, com prazo de licença, congelamento e folga."""
++
++    def test_expansion_deadline_is_the_audited_one(self) -> None:
++        result = compute(expansion_case())[0]
++        self.assertEqual(str(result.start_deadline), "2026-10-27")  # 15/12 − 5 semanas − 2 semanas
++        self.assertEqual(result.classification, "fits")
++        self.assertEqual((str(result.end_earliest), str(result.end_latest)), ("2026-10-29", "2026-11-12"))
++
++    def test_license_lead_time_is_part_of_the_window(self) -> None:
++        without_license = expansion_case()
++        feasibility = without_license["event_feasibility"][0]
++        feasibility["path"], feasibility["lead_times"] = ["Implantação"], {}
++        self.assertEqual(str(compute(without_license)[0].start_deadline), "2026-11-10")
++        self.assertEqual(str(compute(expansion_case())[0].start_deadline), "2026-10-27")
++
++    def test_declared_lead_time_must_be_on_the_path(self) -> None:
++        proposal = expansion_case()
++        proposal["event_feasibility"][0]["path"] = ["Implantação"]
++        self.assertIn("prazo declarado fora do caminho até o evento: licenciamento", compute(proposal)[0].errors[0])
++
++    def test_approved_stabilization_buffer_moves_the_deadline(self) -> None:
++        proposal = expansion_case()
++        proposal["governance"] = {"stabilization_buffer": {"state": "commitment", "value": "5 dias úteis de estabilização"}}
++        self.assertEqual(stabilization_days(proposal), 7)
++        self.assertEqual(str(compute(proposal)[0].start_deadline), "2026-10-20")
++
++    def test_no_default_buffer_becomes_a_caveat(self) -> None:
++        result = compute(expansion_case())[0]
++        self.assertIn("não há folga de estabilização aprovada", " ".join(result.caveats))
++
++    def test_unknown_freeze_date_is_conditional_with_caveat(self) -> None:
++        result = compute(vertice_latest())[0]
++        self.assertEqual(result.classification, "conditional")
++        self.assertIn("não foi informada", " ".join(result.caveats))
++        self.assertEqual(str(result.step_deadlines["Ativação das licenças Edge DNS"]), "2026-12-14")
++
++    def test_same_inputs_same_dates(self) -> None:
++        texts = {paragraph(compute(deepcopy(expansion_case()))[0]) for _ in range(3)}
++        self.assertEqual(len(texts), 1)
++
++    def test_author_date_without_origin_blocks(self) -> None:
++        proposal = vertice_latest()
++        summary = next(s for s in proposal["sections"] if s["title"].casefold() == "resumo executivo")
++        summary["paragraphs"].append("O término ficaria entre 15/10/2026 e 22/10/2026.")
++        errors = errors_of(proposal)
++        self.assertIn("data 15/10 em texto do cliente sem origem", errors)
++        self.assertIn("data 22/10 em texto do cliente sem origem", errors)
++
++    def test_source_and_engine_dates_are_allowed(self) -> None:
++        proposal = vertice_latest()
++        summary = next(s for s in proposal["sections"] if s["title"].casefold() == "resumo executivo")
++        summary["paragraphs"].append("As matrículas começam em 11 de janeiro, e as licenças precisam estar ativas até 14/12/2026.")
++        self.assertEqual(validate_proposal_rules(proposal, vertice_source()), [])
++
++    def test_engine_paragraph_reaches_the_document(self) -> None:
++        with tempfile.TemporaryDirectory() as tmp:
++            output = Path(tmp) / "p.docx"
++            build_neutral_template_docx(vertice_latest(), TEMPLATE, output)
++            text = extract_docx_text(output)
++        self.assertIn('Prazo limite para a etapa "Ativação das licenças Edge DNS": 14/12/2026', text)
++
++    def test_written_dates_are_recognized(self) -> None:
++        self.assertEqual(day_months("1º de março, 2026-12-15 e 11/01"), {(1, 3), (15, 12), (11, 1)})
++
++
++class PhaseScopeTests(unittest.TestCase):
++    """A2 e N3: SLA e itens de prontidão declaram a fase ou opção a que pertencem."""
++
++    def test_readiness_item_needs_a_phase(self) -> None:
++        proposal = vertice_latest()
++        proposal["event_readiness"][0]["phase"] = "Fase inexistente"
++        self.assertIn("item de prontidão sem fase ou opção válida", errors_of(proposal))
++
++    def test_readiness_is_rendered_with_its_phase(self) -> None:
++        proposal = vertice_latest()
++        item = proposal["event_readiness"][0]
++        with tempfile.TemporaryDirectory() as tmp:
++            output = Path(tmp) / "p.docx"
++            build_neutral_template_docx(proposal, TEMPLATE, output)
++            self.assertIn(f"{item['phase']}: {item['text']}", extract_docx_text(output))
++
++    def test_sla_scope_is_rendered(self) -> None:
++        proposal = vertice_latest()
++        last = proposal["delivery"]["phases"][-1]["name"]
++        approved = deepcopy(proposal["governance"]["warranty"])
++        approved.update({"value": [last], "approved_value": [last], "applies_to_phases": [last]})
++        proposal["governance"]["sla_applicability"] = approved
++        with tempfile.TemporaryDirectory() as tmp:
++            output = Path(tmp) / "p.docx"
++            proposal["governance"]["engagement_type"]["value"] = "implementation"
++            build_neutral_template_docx(proposal, TEMPLATE, output)
++            self.assertIn(f"aplica-se somente a: {last}", extract_docx_text(output))
++
++
++class OptionalRangeTests(unittest.TestCase):
++    """A3: a faixa de uma onda opcional pode ser escrita como foi aprovada."""
++
++    def test_optional_wave_range_is_accepted(self) -> None:
++        proposal = vertice_latest()
++        proposal["optional_phase"] = {"title": "Fase 2", "waves": [{"id": "fase-2", "name": "Fase 2", "components": [], "weeks": [6, 8]}]}
++        proposal["document_text"]["schedule_sequence"] += " A Fase 2, opcional, leva de 6 a 8 semanas."
++        self.assertNotIn("diverge da soma das fases", errors_of(proposal))
++
++
++class ClientClarificationTests(unittest.TestCase):
++    """N4: contradição no documento do cliente é pedido de esclarecimento, não decisão da POPULOS."""
++
++    def test_clarification_needs_the_question(self) -> None:
++        proposal = vertice_latest()
++        proposal["traceability"].append({"requirement_id": "REQ-99", "requirement": "Prazo de implantação de 30 dias corridos (item 5.2) e 60 dias (item 9.1)",
++                                         "solution": "A esclarecer", "source": "TR", "speakers": ["input_document"], "hypothesis": False})
++        proposal["standard_conflicts"] = [{"category": "deadline", "requirement_id": "REQ-99", "status": "client_clarification",
++                                           "clarification_question": "Qual prazo prevalece: 30 dias (5.2) ou 60 dias (9.1)?"}]
++        self.assertIn("contradição do cliente sem pedido de esclarecimento", errors_of(proposal))
++        proposal["open_questions"].append("Qual prazo prevalece: 30 dias (5.2) ou 60 dias (9.1)?")
++        self.assertNotIn("REQ-99", errors_of(proposal))
++
++
++class InstitutionalStandardsTests(unittest.TestCase):
++    """A1: o autor enxerga os valores da tabela institucional, versionados com o template."""
++
++    def test_skill_carries_the_template_sla_values(self) -> None:
++        from scripts.export_institutional_standards import TARGET, institutional_standards
++        self.assertEqual(json.loads(TARGET.read_text(encoding="utf-8")), institutional_standards())
++        severities = {s["severity"]: (s["response"], s["resolution"]) for s in institutional_standards()["sla"]["severities"]}
++        self.assertEqual(severities["ALTA"], ("Até 1 hora", "Até 4 horas"))
++        self.assertEqual(severities["MÉDIA"], ("Até 2 horas", "Até 8 horas"))
++
++
++class DiagramWrapTests(unittest.TestCase):
++    """V1: rótulo longo quebra a linha em vez de encolher até ficar ilegível."""
++
++    def test_long_label_wraps_at_readable_size(self) -> None:
++        draw = ImageDraw.Draw(Image.new("RGB", (10, 10)))
++        label = "Datacenter próprio (principal) e nuvem pública (contingência automática)"
++        font = _font(REGULAR_FONTS, 24)
++        lines = _wrap(draw, label, font, 330)
++        self.assertLessEqual(len(lines), 3)
++        self.assertTrue(all(draw.textbbox((0, 0), line, font=font)[2] <= 330 for line in lines))
++
++    def test_diagram_labels_are_length_limited(self) -> None:
++        proposal = vertice_latest()
++        proposal["document_text"]["diagram_origins"] = "x" * 81
++        self.assertIn("formato (document_text.diagram_origins)", errors_of(proposal))
++
++
++class ViolationCodeTests(unittest.TestCase):
++    """N5: códigos estáveis para agregar violações por execução."""
++
++    def test_codes(self) -> None:
++        self.assertEqual(code_of("decisão interna aberta: warranty"), "DECISAO-ABERTA")
++        self.assertEqual(code_of("data 15/10 em texto do cliente sem origem no insumo nem no cálculo do motor: sections"), "DATA-SEM-ORIGEM")
++        self.assertEqual(code_of("GATE sem_catalogo: pedido fora do catálogo"), "GATE-CATALOGO")
++        self.assertEqual(code_of("formato (x): y"), "FORMATO")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_v7_engine.py b/tests/test_v7_engine.py
+index 07095f8..295b8dc 100644
+--- a/tests/test_v7_engine.py
++++ b/tests/test_v7_engine.py
+@@ -19,7 +19,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
+ 
+ def vertice_latest() -> dict:
+     """A real authoring output (diverse-case round, case 01), upgraded to the latest contract."""
+-    return json.loads((FIXTURES / "vertice_v10.json").read_text(encoding="utf-8"))
++    return json.loads((FIXTURES / "vertice_v11.json").read_text(encoding="utf-8"))
+ 
+ 
+ def vertice_source() -> str:
+@@ -173,7 +173,7 @@ class CaseRunnerTests(unittest.TestCase):
+     def test_iteration_limit_is_enforced(self) -> None:
+         with mock.patch.object(case_runner, "engine_config", return_value={"max_iterations": 2}):
+             self.assertEqual(self._submit("{").get("status"), "violations")
+-            self.assertEqual(self._submit({"rules_version": 10}).get("status"), "violations")
++            self.assertEqual(self._submit({"rules_version": 11}).get("status"), "violations")
+             self.assertEqual(self._submit(vertice_latest())["status"], "limit_reached")
+         log = json.loads((self.run_dir / "attempts.json").read_text(encoding="utf-8"))
+         self.assertEqual([a["attempt"] for a in log["attempts"]], [1, 2])
+@@ -181,8 +181,8 @@ class CaseRunnerTests(unittest.TestCase):
+ 
+     def test_malformed_and_old_states_come_back_as_feedback(self) -> None:
+         self.assertIn("não é um objeto JSON", validate_state([])[0])
+-        self.assertIn("rules_version deve ser 10", validate_state({"rules_version": 9})[0])
+-        self.assertEqual(validate_state({"rules_version": 10, "input_assessment": "x"}),
++        self.assertIn("rules_version deve ser 11", validate_state({"rules_version": 10})[0])
++        self.assertEqual(validate_state({"rules_version": 11, "input_assessment": "x"}),
+                          ["formato (input_assessment): 'x' is not of type 'object'"])
+ 
+     def test_source_extraction_reads_text_and_docx(self) -> None:
+diff --git a/tests/test_v8_engine.py b/tests/test_v8_engine.py
+index 0838134..181db43 100644
+--- a/tests/test_v8_engine.py
++++ b/tests/test_v8_engine.py
+@@ -156,6 +156,8 @@ class SlaApplicabilityTests(unittest.TestCase):
+         approved = deepcopy(proposal["governance"]["warranty"])
+         approved.update({"value": ["phased"], "approved_value": ["phased"], "source": "decisão do caso sobre o SLA"})
+         proposal["governance"]["sla_applicability"] = approved
++        self.assertIn("sla_applicability aprovada sem as fases ou opções a que se aplica", errors_of(proposal))  # v11
++        approved["applies_to_phases"] = [proposal["delivery"]["phases"][-1]["name"]]
+         self.assertNotIn("sla_applicability", errors_of(proposal))
+ 
+ 

@@ -1,0 +1,4 @@
+0f409db Motor v8.3: decisão de caso não pode se declarar padrão institucional
+1983953 Motor v8.2: skill e validador alinhados (achados da rodada selada)
+8b7ffa8 Motor v8.1 (regras v9): aprovação só com citação literal do insumo
+2713a8e Motor v8: correções da rodada de casos diversos

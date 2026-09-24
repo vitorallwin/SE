@@ -1,0 +1,33 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:32:40.703852+00:00",
+      "errors_count": 1,
+      "errors": [
+        "faixa 1–2 semanas diverge da soma das fases (3–4): Levantamento e planejamento (1 semana), configuração e migração (1 a 2 semanas) e estabili"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:32:49.998654+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "composition": {
+        "status": "blocked_by_composer",
+        "error": "AttributeError: 'str' object has no attribute 'get'",
+        "trace": "Traceback (most recent call last):\n  File \"/home/user/SE/sales_engineer/case_runner.py\", line 40, in compose\n    build_neutral_template_docx(state, TEMPLATE, output)\n  File \"/home/user/SE/sales_engineer/neutral_template_builder.py\", line 641, in build_neutral_template_docx\n    role_rows.append([item.get(\"party\", \"\"), item.get(\"responsibility\", \"\"), \"Conforme plano\"])\n                      ^^^^^^^^\nAttributeError: 'str' object has no attribute 'get'\n"
+      }
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T16:32:54.676126+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb9/w-010231ba/execucao/final/VERTICE-EDGEDNS-2026.docx"
+      }
+    }
+  ]
+}

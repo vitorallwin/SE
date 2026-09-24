@@ -1,0 +1,56 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:04:06.550028+00:00",
+      "errors_count": 15,
+      "errors": [
+        "decisão interna aberta: support_response_resolution_times",
+        "decisão sem modo de dado (test/production): engagement_type",
+        "decisão sem modo de dado (test/production): license_supply",
+        "decisão sem modo de dado (test/production): warranty",
+        "decisão sem modo de dado (test/production): support",
+        "decisão sem modo de dado (test/production): qualification",
+        "decisão sem modo de dado (test/production): implementation_estimate",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): engagement_type",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): license_supply",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): support",
+        "valor aprovado não aparece na citação do insumo: qualification",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): qualification"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:04:21.471692+00:00",
+      "errors_count": 15,
+      "errors": [
+        "decisão interna aberta: support_response_resolution_times",
+        "decisão sem modo de dado (test/production): engagement_type",
+        "decisão sem modo de dado (test/production): license_supply",
+        "decisão sem modo de dado (test/production): warranty",
+        "decisão sem modo de dado (test/production): support",
+        "decisão sem modo de dado (test/production): qualification",
+        "decisão sem modo de dado (test/production): implementation_estimate",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): engagement_type",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): license_supply",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): support",
+        "valor aprovado não aparece na citação do insumo: qualification",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): qualification"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T17:04:39.889417+00:00",
+      "errors_count": 1,
+      "errors": [
+        "decisão interna aberta: support_response_resolution_times"
+      ]
+    }
+  ]
+}

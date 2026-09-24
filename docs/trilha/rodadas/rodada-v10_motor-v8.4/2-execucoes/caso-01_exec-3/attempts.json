@@ -1,0 +1,14 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:01:51.373795+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb10/w-dcc7d564/execucao/final/VERTICE-EDGEDNS-2026.docx"
+      }
+    }
+  ]
+}

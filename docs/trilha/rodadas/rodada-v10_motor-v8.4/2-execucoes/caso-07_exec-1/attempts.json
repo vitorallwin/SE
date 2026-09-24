@@ -1,0 +1,43 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:03:19.701005+00:00",
+      "errors_count": 14,
+      "errors": [
+        "faixa 6–8 semanas diverge da soma das fases (3–4): Prazo para a campanha de 01/03/2027: a partir de 24/09/2026, a Fase 1 termina entre 15/10/",
+        "decisão sem modo de dado (test/production): engagement_type",
+        "decisão sem modo de dado (test/production): license_supply",
+        "decisão sem modo de dado (test/production): warranty",
+        "decisão sem modo de dado (test/production): sla_applicability",
+        "decisão sem modo de dado (test/production): phase1_estimate",
+        "decisão sem modo de dado (test/production): phase2_estimate",
+        "decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para 'phased')",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): engagement_type",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): license_supply",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): sla_applicability"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:03:48.818631+00:00",
+      "errors_count": 1,
+      "errors": [
+        "decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para 'phased')"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T17:03:56.466121+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb10/w-821dc80d/execucao/final/POPULOS-SOLARIS-PORTAL-2026.docx"
+      }
+    }
+  ]
+}

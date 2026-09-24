@@ -1,0 +1,29 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:02:32.402854+00:00",
+      "errors_count": 6,
+      "errors": [
+        "decisão interna aberta: engagement_type",
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: license_supply",
+        "engagement_type ausente ou inválido",
+        "opcional na matriz de rastreabilidade: REQ-08 cita Account Protector",
+        "decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para 'None')"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:02:37.045189+00:00",
+      "errors_count": 5,
+      "errors": [
+        "decisão interna aberta: engagement_type",
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: license_supply",
+        "engagement_type ausente ou inválido",
+        "decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para 'None')"
+      ]
+    }
+  ]
+}

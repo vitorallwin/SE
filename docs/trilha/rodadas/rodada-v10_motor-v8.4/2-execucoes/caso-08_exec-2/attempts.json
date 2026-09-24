@@ -1,0 +1,28 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:04:06.379253+00:00",
+      "errors_count": 9,
+      "errors": [
+        "decisão interna aberta: support_levels",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): engagement_type",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): license_supply",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): support_coverage",
+        "valor aprovado não aparece na citação do insumo: qualification",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): qualification"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:04:47.915269+00:00",
+      "errors_count": 1,
+      "errors": [
+        "decisão interna aberta: support_levels"
+      ]
+    }
+  ]
+}

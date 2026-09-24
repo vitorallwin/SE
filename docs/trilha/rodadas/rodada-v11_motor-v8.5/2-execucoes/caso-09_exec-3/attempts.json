@@ -1,0 +1,33 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:23:35.107632+00:00",
+      "errors_count": 7,
+      "errors": [
+        "decisão sem modo de dado (test/production): engagement_type",
+        "decisão sem modo de dado (test/production): warranty",
+        "decisão sem modo de dado (test/production): license_supply",
+        "decisão sem modo de dado (test/production): effort_estimate",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): engagement_type",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): license_supply"
+      ],
+      "codes": [
+        "APROVACAO-CAMPOS",
+        "APROVACAO-CITACAO"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:23:44.210596+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "codes": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb11/w-88177cd4/execucao/final/LUMINA-BOT-2026.docx"
+      }
+    }
+  ]
+}

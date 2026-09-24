@@ -1,0 +1,29 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:33:19.526828+00:00",
+      "errors_count": 6,
+      "errors": [
+        "decisão interna aberta: engagement_type",
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: license_supply",
+        "engagement_type ausente ou inválido",
+        "faixa 1–2 semanas diverge da soma das fases (2–3): Levantamento e Assessment (1 a 2 semanas), seguido do desenho da solução (1 semana). A ond",
+        "decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para 'None')"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:33:25.274290+00:00",
+      "errors_count": 5,
+      "errors": [
+        "decisão interna aberta: engagement_type",
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: license_supply",
+        "engagement_type ausente ou inválido",
+        "decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para 'None')"
+      ]
+    }
+  ]
+}

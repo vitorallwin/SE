@@ -1,0 +1,25 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:33:18.113794+00:00",
+      "errors_count": 4,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: technical_qualification",
+        "decisão interna aberta: support_resolution_terms",
+        "faixa 2–3 semanas diverge da soma das fases (4–5): Planejamento e levantamento (1 semana), configuração e ativação (2 a 3 semanas), testes, r"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:33:22.571676+00:00",
+      "errors_count": 3,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: technical_qualification",
+        "decisão interna aberta: support_resolution_terms"
+      ]
+    }
+  ]
+}

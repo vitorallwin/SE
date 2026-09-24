@@ -1,0 +1,30 @@
+{
+  "rules_version": 9,
+  "data_mode": "test",
+  "input_assessment": {
+    "status": "insufficient",
+    "missing": [
+      "identificação da empresa cliente (razão social, CNPJ ou nome da organização)",
+      "identificação do site ou aplicação a proteger (domínio, URL ou ativos publicados)",
+      "necessidade concreta: ameaça, incidente ou requisito de segurança a tratar",
+      "contato válido e papel do solicitante",
+      "volumes, ambiente de hospedagem e prazos"
+    ],
+    "reason": "O material é uma mensagem de formulário ('Quero proteger meu site. Me mandem uma proposta.') assinada apenas por 'Ricardo', sem empresa, telefone, domínio ou necessidade concreta sobre ativos identificáveis. Não há base para selecionar produtos, dimensionar ou definir escopo."
+  },
+  "catalog_fit": {
+    "status": "fits",
+    "requested": "proteção de site",
+    "reason": "Proteção de site web está no domínio do catálogo, mas o encaixe em produto específico só pode ser avaliado após a qualificação do cliente e da necessidade."
+  },
+  "open_questions": [
+    "Qual é a empresa ou organização solicitante e qual o papel do Ricardo nela?",
+    "Qual site ou quais domínios e aplicações precisam de proteção (URLs, APIs, subdomínios)?",
+    "Contra o que o site precisa ser protegido: ataques a aplicação (WAF), DDoS, bots, fraude de login, malware em uploads, ou outro risco?",
+    "Houve algum incidente recente ou exigência regulatória/contratual que motiva o pedido?",
+    "Onde o site está hospedado hoje e se já existe CDN, WAF ou outra solução de segurança contratada?",
+    "Qual é o volume aproximado de tráfego (requisições, usuários, picos) do site?",
+    "Existe prazo ou evento crítico que a proteção precisa atender?",
+    "Qual o melhor canal e horário para uma reunião de levantamento (e-mail e telefone de contato)?"
+  ]
+}

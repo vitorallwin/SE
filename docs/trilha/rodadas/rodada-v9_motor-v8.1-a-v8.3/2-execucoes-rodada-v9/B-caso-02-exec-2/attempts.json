@@ -1,0 +1,21 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:32:43.472435+00:00",
+      "errors_count": 2,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "integração SIEM sem controle de dados sensíveis"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:32:53.302933+00:00",
+      "errors_count": 1,
+      "errors": [
+        "decisão interna aberta: warranty"
+      ]
+    }
+  ]
+}

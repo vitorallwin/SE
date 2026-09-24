@@ -1,0 +1,964 @@
+{
+  "rules_version": 11,
+  "proposal_date": "2026-09-24",
+  "data_mode": "test",
+  "client_name": "Prefeitura Municipal de Rio Claro do Sul",
+  "opportunity": "Pregão Eletrônico nº 112/2026 — DNS autoritativo e proteção de aplicações web",
+  "code": "POPULOS-RCS-PE112-2026",
+  "opportunity_id": "RCS-PE-112-2026",
+  "input_assessment": {
+    "status": "sufficient",
+    "missing": [],
+    "reason": "O Termo de Referência identifica o órgão (SMTI), as zonas DNS, as cinco aplicações do Anexo I, volumes de tráfego e requisitos técnicos concretos."
+  },
+  "catalog_fit": {
+    "status": "fits",
+    "requested": "DNS autoritativo com DNSSEC e proteção de aplicações web (WAF, DDoS de camada 7, controle de taxa, painel e exportação de eventos)",
+    "reason": "Edge DNS cobre DNS autoritativo distribuído com DNSSEC; App & API Protector cobre WAF, mitigação de DDoS L7 e integração SIEM."
+  },
+  "client_scope": {
+    "type": "implementation",
+    "excludes_implementation": false,
+    "source": "TR item 1.1: contratação de serviço de DNS autoritativo e de proteção de aplicações web em nuvem, com licenciamento por 12 (doze) meses, implantação, repasse de conhecimento e suporte técnico; TR item 5.1",
+    "forbidden_in_committed": []
+  },
+  "governance": {
+    "engagement_type": {
+      "state": "commitment",
+      "value": "implementation",
+      "approved_value": "implementation",
+      "source": "Aprovações internas POPULOS, e-mail de 24/09/2026 14:05",
+      "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail de Vitor (Executivo de Contas, POPULOS) de 24/09/2026 14:05",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "Vitor (Executivo de Contas, POPULOS) — 24/09/2026 14:05\n> Aprovo para o Pregão 112/2026 de Rio Claro do Sul: engajamento de implantação (implementation)."
+    },
+    "license_supply": {
+      "state": "commitment",
+      "value": "as licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada",
+      "approved_value": "as licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada",
+      "source": "Aprovações internas POPULOS, e-mail de 24/09/2026 14:05; TR item 10.1",
+      "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail de Vitor (Executivo de Contas, POPULOS) de 24/09/2026 14:05",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "Vitor (Executivo de Contas, POPULOS) — 24/09/2026 14:05\n> Aprovo para o Pregão 112/2026 de Rio Claro do Sul: engajamento de implantação (implementation). Aprovo que as licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada, conforme o item 10.1 do TR."
+    },
+    "warranty": {
+      "state": "commitment",
+      "value": "a POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 12 meses após o Termo de Aceite Definitivo",
+      "approved_value": "a POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 12 meses após o Termo de Aceite Definitivo",
+      "source": "Aprovações internas POPULOS, e-mail de 24/09/2026 14:05; TR item 8.1",
+      "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail de Vitor (Executivo de Contas, POPULOS) de 24/09/2026 14:05",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "Vitor (Executivo de Contas, POPULOS) — 24/09/2026 14:05\n> Aprovo para o Pregão 112/2026 de Rio Claro do Sul: engajamento de implantação (implementation). Aprovo que as licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada, conforme o item 10.1 do TR. Aprovo a garantia: a POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 12 meses após o Termo de Aceite Definitivo."
+    },
+    "support": {
+      "state": "commitment",
+      "value": "suporte técnico 8x5 durante a vigência de 12 meses",
+      "approved_value": "suporte técnico 8x5 durante a vigência de 12 meses",
+      "source": "Aprovações internas POPULOS, e-mail de 24/09/2026 14:05; TR item 7.1",
+      "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail de Vitor (Executivo de Contas, POPULOS) de 24/09/2026 14:05",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "Vitor (Executivo de Contas, POPULOS) — 24/09/2026 14:05\n> Aprovo para o Pregão 112/2026 de Rio Claro do Sul: engajamento de implantação (implementation). Aprovo que as licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada, conforme o item 10.1 do TR. Aprovo a garantia: a POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 12 meses após o Termo de Aceite Definitivo. Aprovo o suporte técnico 8x5 durante a vigência de 12 meses, conforme o item 7.1 do TR."
+    },
+    "support_sla": {
+      "state": "populos_internal_decision",
+      "value": null,
+      "approved_value": null,
+      "source": "TR itens 7.2 e 7.3 exigem tempos de resposta e resolução para incidentes do suporte técnico durante 12 meses; a tabela institucional cobre apenas falhas decorrentes dos serviços executados e declara não ser suporte gerenciado. A aprovação de 24/09/2026 cobre o regime 8x5 (item 7.1), não os prazos dos itens 7.2 e 7.3.",
+      "approved_by": null,
+      "approved_at": null,
+      "approval_record": null,
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": null
+    },
+    "qualification": {
+      "state": "commitment",
+      "value": "a POPULOS possui 3 profissionais com certificação técnica Akamai vigente",
+      "approved_value": "a POPULOS possui 3 profissionais com certificação técnica Akamai vigente",
+      "source": "Aprovações internas POPULOS, e-mail de 24/09/2026 14:40; TR item 6.1",
+      "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail de Vitor (Executivo de Contas, POPULOS) de 24/09/2026 14:40",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "Vitor (Executivo de Contas, POPULOS) — 24/09/2026 14:40\n> Confirmo para o Pregão 112/2026: a POPULOS possui 3 profissionais com certificação técnica Akamai vigente, e a documentação será apresentada na habilitação, atendendo ao item 6.1."
+    },
+    "implementation_estimate": {
+      "state": "commitment",
+      "value": "5 a 6 semanas de implantação",
+      "approved_value": "5 a 6 semanas de implantação",
+      "source": "Aprovações internas POPULOS, e-mail de 24/09/2026 15:10",
+      "approved_by": "Ana Ribeiro (Arquiteta, POPULOS)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail de Ana Ribeiro (Arquiteta, POPULOS) de 24/09/2026 15:10",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approver_role": "arquiteto",
+      "approval_quote": "Aprovo a estimativa de esforço para o Pregão 112/2026: 5 a 6 semanas de implantação."
+    },
+    "sla": {
+      "state": "commitment",
+      "basis": "populos_standard",
+      "value": "Tabela institucional de SLA POPULOS (ALTA 1h/4h, MÉDIA 2h/8h, BAIXA 16h/24h) para falhas decorrentes dos serviços executados, durante a execução e a garantia técnica",
+      "source": "institutional-standards.json",
+      "template_version": "2026.09.24-1"
+    }
+  },
+  "discovery": {
+    "business_goals": [
+      "Eliminar o ponto único de falha do DNS municipal com DNS autoritativo distribuído e DNSSEC (REQ-01, REQ-02)",
+      "Reduzir indisponibilidades causadas por ataques na camada de aplicação nas cinco aplicações do Anexo I (REQ-03, REQ-04, REQ-05)",
+      "Dar à SMTI visibilidade e exportação dos eventos de segurança (REQ-06, REQ-07)",
+      "Implantar a solução em até 45 dias corridos com repasse de conhecimento e suporte técnico (REQ-08, REQ-09, REQ-10)"
+    ]
+  },
+  "traceability": [
+    {
+      "requirement_id": "REQ-01",
+      "requirement": "DNS autoritativo distribuído com suporte a DNSSEC para 3 zonas (cerca de 150 registros)",
+      "solution": "Edge DNS",
+      "evidence": "TR 4.1 e 3.1",
+      "source": "TR item 4.1; TR item 3.1",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-02",
+      "requirement": "Redundância geográfica do DNS hoje mantido em servidor próprio",
+      "solution": "Edge DNS",
+      "evidence": "TR 2.2",
+      "source": "TR item 2.2",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-03",
+      "requirement": "WAF com proteção contra as categorias OWASP Top 10 e atualização automática de regras para as 5 aplicações do Anexo I",
+      "solution": "App & API Protector",
+      "evidence": "TR 4.2 e 3.2; Anexo I",
+      "source": "TR item 4.2; TR item 3.2; Anexo I",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-04",
+      "requirement": "Mitigação de ataques de negação de serviço na camada 7",
+      "solution": "App & API Protector",
+      "evidence": "TR 4.3 e 2.1",
+      "source": "TR item 4.3; TR item 2.1",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-05",
+      "requirement": "Controle de taxa de requisições configurável por aplicação",
+      "solution": "App & API Protector",
+      "evidence": "TR 4.4",
+      "source": "TR item 4.4",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-06",
+      "requirement": "Painel de eventos de segurança acessível pela equipe da SMTI",
+      "solution": "App & API Protector",
+      "evidence": "TR 4.5",
+      "source": "TR item 4.5",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-07",
+      "requirement": "Exportação de eventos de segurança em formato compatível com syslog",
+      "solution": "App & API Protector (integração SIEM)",
+      "evidence": "TR 4.6",
+      "source": "TR item 4.6",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-08",
+      "requirement": "Migração das 3 zonas DNS e onboarding das 5 aplicações com configuração de políticas e testes, em janelas acordadas, em até 45 dias corridos a partir da Ordem de Serviço",
+      "solution": "Serviços de implantação POPULOS",
+      "evidence": "TR 5.1, 5.2 e 5.3",
+      "source": "TR itens 5.1, 5.2 e 5.3",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-09",
+      "requirement": "Repasse de conhecimento à equipe da SMTI",
+      "solution": "Serviços de implantação POPULOS",
+      "evidence": "TR 1.1",
+      "source": "TR item 1.1",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-10",
+      "requirement": "Suporte técnico 8x5 durante 12 meses, com tempos de resposta e resolução por severidade",
+      "solution": "Suporte técnico POPULOS",
+      "evidence": "TR 7.1, 7.2 e 7.3",
+      "source": "TR itens 7.1, 7.2 e 7.3",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-11",
+      "requirement": "Comprovação de ao menos 2 profissionais com certificação técnica do fabricante",
+      "solution": "Equipe certificada POPULOS",
+      "evidence": "TR 6.1",
+      "source": "TR item 6.1",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-12",
+      "requirement": "Garantia dos serviços de implantação por 12 meses após o Termo de Aceite Definitivo",
+      "solution": "Garantia técnica POPULOS",
+      "evidence": "TR 8.1",
+      "source": "TR item 8.1",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-13",
+      "requirement": "Licenças fornecidas pela contratada com vigência de 12 meses a partir da ativação",
+      "solution": "Revenda autorizada de licenças Akamai",
+      "evidence": "TR 10.1",
+      "source": "TR item 10.1",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-14",
+      "requirement": "Aceite em duas etapas: TAP após a implantação e TAD 10 dias após o TAP sem pendências",
+      "solution": "Critérios de aceite da implantação",
+      "evidence": "TR 9.1",
+      "source": "TR item 9.1",
+      "speakers": [
+        "input_document"
+      ],
+      "hypothesis": false
+    }
+  ],
+  "source_coverage": [
+    {
+      "ref": "TR 1.1",
+      "statement": "Objeto: DNS autoritativo e proteção de aplicações web em nuvem, licenciamento 12 meses, implantação, repasse de conhecimento e suporte técnico",
+      "status": "coberto",
+      "targets": [
+        "sumário",
+        "escopo",
+        "engajamento"
+      ]
+    },
+    {
+      "ref": "TR 2.1",
+      "statement": "4 indisponibilidades em 2026 atribuídas a ataques na camada de aplicação",
+      "status": "coberto",
+      "targets": [
+        "sumário",
+        "REQ-04"
+      ]
+    },
+    {
+      "ref": "TR 2.2",
+      "statement": "DNS em servidor próprio sem redundância geográfica",
+      "status": "coberto",
+      "targets": [
+        "REQ-02",
+        "sumário"
+      ]
+    },
+    {
+      "ref": "TR 3.1",
+      "statement": "3 zonas DNS com cerca de 150 registros",
+      "status": "coberto",
+      "targets": [
+        "REQ-01",
+        "dimensionamento"
+      ]
+    },
+    {
+      "ref": "TR 3.2",
+      "statement": "Proteção das 5 aplicações do Anexo I",
+      "status": "coberto",
+      "targets": [
+        "REQ-03",
+        "dimensionamento"
+      ]
+    },
+    {
+      "ref": "TR 3.3",
+      "statement": "6 milhões de requisições por dia com picos de 400 requisições por segundo",
+      "status": "coberto",
+      "targets": [
+        "dimensionamento"
+      ]
+    },
+    {
+      "ref": "TR 4.1",
+      "statement": "DNS autoritativo distribuído com DNSSEC",
+      "status": "coberto",
+      "targets": [
+        "REQ-01"
+      ]
+    },
+    {
+      "ref": "TR 4.2",
+      "statement": "WAF OWASP Top 10 com atualização automática de regras",
+      "status": "coberto",
+      "targets": [
+        "REQ-03"
+      ]
+    },
+    {
+      "ref": "TR 4.3",
+      "statement": "Mitigação de DDoS na camada 7",
+      "status": "coberto",
+      "targets": [
+        "REQ-04"
+      ]
+    },
+    {
+      "ref": "TR 4.4",
+      "statement": "Controle de taxa de requisições por aplicação",
+      "status": "coberto",
+      "targets": [
+        "REQ-05"
+      ]
+    },
+    {
+      "ref": "TR 4.5",
+      "statement": "Painel de eventos de segurança para a SMTI",
+      "status": "coberto",
+      "targets": [
+        "REQ-06"
+      ]
+    },
+    {
+      "ref": "TR 4.6",
+      "statement": "Exportação de eventos compatível com syslog",
+      "status": "coberto",
+      "targets": [
+        "REQ-07"
+      ]
+    },
+    {
+      "ref": "TR 5.1",
+      "statement": "Migração das zonas e onboarding das aplicações com políticas e testes",
+      "status": "coberto",
+      "targets": [
+        "REQ-08",
+        "escopo"
+      ]
+    },
+    {
+      "ref": "TR 5.2",
+      "statement": "Prazo de implantação de 45 dias corridos a partir da Ordem de Serviço",
+      "status": "coberto",
+      "targets": [
+        "REQ-08"
+      ]
+    },
+    {
+      "ref": "TR 5.3",
+      "statement": "Mudanças em produção em janelas acordadas com a SMTI",
+      "status": "coberto",
+      "targets": [
+        "REQ-08",
+        "premissas"
+      ]
+    },
+    {
+      "ref": "TR 6.1",
+      "statement": "Ao menos 2 profissionais certificados pelo fabricante",
+      "status": "coberto",
+      "targets": [
+        "REQ-11"
+      ]
+    },
+    {
+      "ref": "TR 7.1",
+      "statement": "Suporte técnico 8x5 durante 12 meses",
+      "status": "coberto",
+      "targets": [
+        "REQ-10"
+      ]
+    },
+    {
+      "ref": "TR 7.2",
+      "statement": "Severidade alta: resposta em até 1 hora e resolução em até 4 horas",
+      "status": "pendente",
+      "targets": [
+        "REQ-10"
+      ]
+    },
+    {
+      "ref": "TR 7.3",
+      "statement": "Severidade média: resposta em até 2 horas e resolução em até 8 horas",
+      "status": "pendente",
+      "targets": [
+        "REQ-10"
+      ]
+    },
+    {
+      "ref": "TR 8.1",
+      "statement": "Garantia de 12 meses após o TAD",
+      "status": "coberto",
+      "targets": [
+        "REQ-12"
+      ]
+    },
+    {
+      "ref": "TR 9.1",
+      "statement": "TAP após a implantação e TAD 10 dias após o TAP sem pendências",
+      "status": "coberto",
+      "targets": [
+        "REQ-14"
+      ]
+    },
+    {
+      "ref": "TR 10.1",
+      "statement": "Licenças fornecidas pela contratada com vigência de 12 meses a partir da ativação",
+      "status": "coberto",
+      "targets": [
+        "REQ-13"
+      ]
+    },
+    {
+      "ref": "TR 11.1",
+      "statement": "Proposta responde a cada item e informa marca e nome comercial",
+      "status": "coberto",
+      "targets": [
+        "sumário",
+        "escopo"
+      ]
+    },
+    {
+      "ref": "Anexo I",
+      "statement": "Lista das 5 aplicações, incluindo Emissão de Notas Fiscais (Web + API)",
+      "status": "coberto",
+      "targets": [
+        "REQ-03",
+        "dimensionamento"
+      ]
+    },
+    {
+      "ref": "Cabeçalho do TR",
+      "statement": "Sessão pública em 28/10/2026",
+      "status": "descartado",
+      "targets": [],
+      "reason": "Data do certame licitatório; não condiciona o cronograma de implantação, que conta a partir da Ordem de Serviço."
+    }
+  ],
+  "client_numbers": [
+    {
+      "quote": "4 (quatro) indisponibilidades em 2026",
+      "ref": "TR 2.1",
+      "destination": "contexto_de_dor",
+      "summary_marker": "quatro indisponibilidades"
+    },
+    {
+      "quote": "3 (três) zonas",
+      "ref": "TR 3.1",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "cerca de 150 registros no total",
+      "ref": "TR 3.1",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "5 (cinco) aplicações do Anexo I",
+      "ref": "TR 3.2",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "6 milhões de requisições por dia",
+      "ref": "TR 3.3",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "picos de 400 requisições por segundo",
+      "ref": "TR 3.3",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "45 (quarenta e cinco) dias corridos",
+      "ref": "TR 5.2",
+      "destination": "meta"
+    },
+    {
+      "quote": "ao menos 2 (dois) profissionais",
+      "ref": "TR 6.1",
+      "destination": "descartado_com_motivo",
+      "reason": "Requisito de habilitação atendido pela equipe certificada da POPULOS; não é dimensionamento nem meta da solução."
+    },
+    {
+      "quote": "12 (doze) meses",
+      "ref": "TR 1.1, 7.1, 8.1 e 10.1",
+      "destination": "descartado_com_motivo",
+      "reason": "Vigência contratual de licenças, suporte e garantia, tratada nas condições de contratação aprovadas."
+    },
+    {
+      "quote": "resposta em até 1 hora e resolução em até 4 horas",
+      "ref": "TR 7.2",
+      "destination": "descartado_com_motivo",
+      "reason": "Nível de serviço de suporte pendente de decisão comercial; não é dimensionamento da solução."
+    },
+    {
+      "quote": "resposta em até 2 horas e resolução em até 8 horas",
+      "ref": "TR 7.3",
+      "destination": "descartado_com_motivo",
+      "reason": "Nível de serviço de suporte pendente de decisão comercial; não é dimensionamento da solução."
+    },
+    {
+      "quote": "10 dias após o TAP",
+      "ref": "TR 9.1",
+      "destination": "descartado_com_motivo",
+      "reason": "Regra de aceite do cliente, refletida nos marcos de aceite; não é meta técnica."
+    },
+    {
+      "quote": "28/10/2026",
+      "ref": "Cabeçalho do TR",
+      "destination": "descartado_com_motivo",
+      "reason": "Data da sessão pública do pregão, sem efeito sobre o cronograma técnico."
+    }
+  ],
+  "open_questions": [
+    "A SMTI pode informar a origem (hospedagem) de cada aplicação do Anexo I e os endereços atuais de publicação, para o planejamento do onboarding?",
+    "Qual a plataforma de destino dos eventos em formato syslog e quais campos podem ser exportados?",
+    "Quais janelas de mudança em produção a SMTI já tem pré-aprovadas para a migração das zonas e das aplicações?"
+  ],
+  "standard_conflicts": [
+    {
+      "category": "sla",
+      "requirement_id": "REQ-10",
+      "status": "conflict",
+      "decision_key": "support_sla"
+    },
+    {
+      "category": "warranty",
+      "requirement_id": "REQ-12",
+      "status": "compatible",
+      "reason": "A garantia de 12 meses após o TAD foi aprovada pela POPULOS em 24/09/2026 exatamente como exigida no item 8.1."
+    },
+    {
+      "category": "qualification",
+      "requirement_id": "REQ-11",
+      "status": "compatible",
+      "reason": "A POPULOS confirmou 3 profissionais com certificação Akamai vigente, acima do mínimo de 2 exigido no item 6.1."
+    },
+    {
+      "category": "deadline",
+      "requirement_id": "REQ-08",
+      "status": "compatible",
+      "reason": "A estimativa aprovada de 5 a 6 semanas cabe nos 45 dias corridos do item 5.2."
+    }
+  ],
+  "solution_decisions": [
+    {
+      "product_id": "edge_dns",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-01",
+        "REQ-02"
+      ],
+      "rationale": "O TR exige DNS autoritativo distribuído com DNSSEC para 3 zonas hoje mantidas em servidor próprio sem redundância geográfica.",
+      "client_summary": "DNS autoritativo distribuído na borda, com DNSSEC, para as três zonas municipais.",
+      "capabilities": [
+        "DNS autoritativo",
+        "Anycast",
+        "DNSSEC"
+      ]
+    },
+    {
+      "product_id": "app_api_protector",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-03",
+        "REQ-04",
+        "REQ-05",
+        "REQ-06",
+        "REQ-07"
+      ],
+      "rationale": "As cinco aplicações públicas sofreram indisponibilidades por ataques de camada de aplicação e o TR exige WAF, mitigação de DDoS L7, controle de taxa, painel e exportação de eventos.",
+      "client_summary": "Proteção das cinco aplicações do Anexo I com WAF adaptativo, mitigação de DDoS na camada de aplicação e integração com SIEM.",
+      "capabilities": [
+        "WAF",
+        "DDoS L7",
+        "integração SIEM"
+      ]
+    },
+    {
+      "product_id": "malware_protection",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "O TR não descreve fluxo de envio de arquivos nem requisito de inspeção de uploads."
+    },
+    {
+      "product_id": "alb",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há múltiplas origens nem roteamento por requisição no TR."
+    },
+    {
+      "product_id": "gtm",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há múltiplos data centers ou failover entre provedores no TR."
+    },
+    {
+      "product_id": "ion",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há meta de desempenho ligada a jornada mensurável."
+    },
+    {
+      "product_id": "prolexic",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "O requisito de negação de serviço limita-se à camada 7 (TR 4.3)."
+    },
+    {
+      "product_id": "account_protector",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há evidência de fraude ou abuso de contas."
+    },
+    {
+      "product_id": "ip_accelerator",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há aplicação TCP/UDP não HTTP no escopo."
+    },
+    {
+      "product_id": "bot_manager",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há caso de automação maliciosa evidenciado."
+    }
+  ],
+  "products": [
+    "edge_dns",
+    "app_api_protector"
+  ],
+  "architecture": {
+    "summary": "As três zonas municipais passam a ser servidas pelo Edge DNS, com DNSSEC e distribuição na borda Akamai, eliminando a dependência do servidor próprio. O tráfego das cinco aplicações do Anexo I passa pela borda Akamai, onde o App & API Protector aplica WAF, mitigação de DDoS na camada de aplicação e controle de taxa de requisições por aplicação antes de encaminhar as requisições legítimas às origens da Prefeitura; os eventos de segurança ficam disponíveis em painel para a SMTI e são exportados em formato compatível com syslog."
+  },
+  "sections": [
+    {
+      "title": "Resumo executivo",
+      "paragraphs": [
+        "A Prefeitura Municipal de Rio Claro do Sul registrou quatro indisponibilidades em 2026 no portal de serviços e no sistema de emissão de notas fiscais, atribuídas a ataques na camada de aplicação, e mantém o DNS dos domínios municipais em servidor próprio, sem redundância geográfica.",
+        "A POPULOS propõe, em resposta ao Pregão Eletrônico nº 112/2026, os serviços Akamai Edge DNS e Akamai App & API Protector, com licenciamento por 12 meses fornecido pela POPULOS por revenda autorizada, implantação, repasse de conhecimento e suporte técnico em regime 8x5.",
+        "A implantação está planejada em 5 a 6 semanas, dentro do prazo de 45 dias corridos a partir da Ordem de Serviço, com mudanças em produção realizadas em janelas acordadas com a SMTI."
+      ]
+    }
+  ],
+  "dimensioning": [
+    [
+      "Zonas DNS autoritativas",
+      "3 zonas, cerca de 150 registros",
+      "TR item 3.1",
+      "Confirmado"
+    ],
+    [
+      "Aplicações protegidas",
+      "5 aplicações (Anexo I)",
+      "TR item 3.2 e Anexo I",
+      "Confirmado"
+    ],
+    [
+      "Tráfego legítimo agregado",
+      "6 milhões de requisições por dia, picos de 400 requisições por segundo",
+      "TR item 3.3",
+      "Confirmado"
+    ]
+  ],
+  "estimates": [
+    {
+      "item": "Esforço de implantação",
+      "value": "5 a 6 semanas",
+      "owner": "Ana Ribeiro",
+      "owner_role": "arquiteto"
+    }
+  ],
+  "assessment_items": [
+    "Inventário das 3 zonas DNS e dos cerca de 150 registros, com validação dos requisitos de DNSSEC",
+    "Levantamento das origens, certificados e fluxos das 5 aplicações do Anexo I, incluindo a API de notas fiscais",
+    "Definição das políticas de WAF, dos limites de taxa por aplicação e do destino dos eventos em syslog"
+  ],
+  "client_roles": [
+    "Gestor do contrato na SMTI",
+    "Administrador dos domínios e do DNS atual",
+    "Responsáveis técnicos pelas aplicações do Anexo I",
+    "Equipe de segurança da SMTI para o painel e a exportação de eventos"
+  ],
+  "team_competencies": [
+    "Arquitetura e implantação de Akamai Edge DNS com DNSSEC",
+    "Configuração de políticas de WAF e mitigação de DDoS de aplicação no App & API Protector",
+    "Integração de eventos de segurança via syslog"
+  ],
+  "scope": {
+    "included": [
+      "Licenças Akamai Edge DNS e App & API Protector por 12 meses a partir da ativação, fornecidas por revenda autorizada",
+      "Migração das 3 zonas DNS para o Edge DNS com ativação de DNSSEC",
+      "Onboarding das 5 aplicações do Anexo I no App & API Protector com políticas de WAF, mitigação de DDoS de camada 7 e controle de taxa de requisições por aplicação",
+      "Configuração do painel de eventos de segurança para a equipe da SMTI",
+      "Exportação de eventos em formato compatível com syslog, com mascaramento de dados pessoais nos campos exportados",
+      "Repasse de conhecimento à equipe da SMTI",
+      "Suporte técnico em regime 8x5 durante 12 meses"
+    ],
+    "deliverables": [
+      "Plano de implantação e de janelas de mudança",
+      "Zonas DNS migradas e assinadas com DNSSEC",
+      "Políticas de proteção ativas para as 5 aplicações",
+      "Documentação as-built da configuração",
+      "Sessões de repasse de conhecimento"
+    ],
+    "excluded": [
+      "Alterações de código nas aplicações da Prefeitura",
+      "Administração da plataforma de destino dos eventos syslog",
+      "Correção de vulnerabilidades nas origens das aplicações",
+      "Registro ou transferência de domínios junto ao registrador"
+    ]
+  },
+  "delivery": {
+    "phases": [
+      {
+        "name": "Planejamento e levantamento",
+        "kind": "planning",
+        "weeks": [
+          1,
+          1
+        ],
+        "duration": "1 semana",
+        "objective": "Levantar zonas, aplicações e origens e aprovar o plano e as janelas com a SMTI",
+        "dependency": "Ordem de Serviço",
+        "outputs": [
+          "Plano de implantação",
+          "Calendário de janelas"
+        ]
+      },
+      {
+        "name": "Migração DNS",
+        "kind": "implementation",
+        "weeks": [
+          1,
+          1
+        ],
+        "duration": "1 semana",
+        "objective": "Migrar as 3 zonas para o Edge DNS e ativar DNSSEC",
+        "dependency": "Licenças ativas e acesso ao registrador",
+        "outputs": [
+          "Zonas migradas",
+          "DNSSEC ativo"
+        ]
+      },
+      {
+        "name": "Onboarding das aplicações",
+        "kind": "implementation",
+        "weeks": [
+          2,
+          3
+        ],
+        "duration": "2 a 3 semanas",
+        "objective": "Publicar as 5 aplicações na borda e aplicar políticas de WAF, DDoS de camada 7 e controle de taxa",
+        "dependency": "Certificados e acesso às origens",
+        "outputs": [
+          "Políticas ativas",
+          "Painel e exportação syslog configurados"
+        ]
+      },
+      {
+        "name": "Ajuste e repasse",
+        "kind": "transition",
+        "weeks": [
+          1,
+          1
+        ],
+        "duration": "1 semana",
+        "objective": "Ajustar políticas, entregar a documentação e realizar o repasse de conhecimento",
+        "dependency": "Conclusão do onboarding",
+        "outputs": [
+          "Documentação as-built",
+          "Repasse de conhecimento",
+          "Termo de Aceite Provisório"
+        ]
+      }
+    ],
+    "responsibilities": [
+      {
+        "party": "SMTI",
+        "responsibility": "Emitir a Ordem de Serviço, indicar os responsáveis técnicos e aprovar as janelas de mudança"
+      },
+      {
+        "party": "Responsáveis pelas aplicações",
+        "responsibility": "Fornecer acesso às origens, certificados e validar o funcionamento após cada mudança"
+      },
+      {
+        "party": "Administração de domínios",
+        "responsibility": "Executar a delegação das zonas e a publicação de DNSSEC junto ao registrador"
+      }
+    ]
+  },
+  "populos_roles": [
+    [
+      "Gerente de projeto",
+      "Planejamento, janelas e marcos de aceite",
+      "Durante a implantação"
+    ],
+    [
+      "Arquiteto de soluções",
+      "Desenho da configuração e das políticas",
+      "Durante a implantação"
+    ],
+    [
+      "Especialista certificado Akamai",
+      "Migração DNS, onboarding e ajuste de políticas",
+      "Durante a implantação"
+    ]
+  ],
+  "assumptions": [
+    "As mudanças em produção ocorrem em janelas acordadas com a SMTI, validadas no plano de implantação.",
+    "A SMTI fornece acesso às origens e aos certificados das 5 aplicações até o fim da fase de planejamento; a validação ocorre no plano de implantação.",
+    "O prazo de 5 a 6 semanas conta a partir da Ordem de Serviço e depende da ativação das licenças no início da implantação."
+  ],
+  "restrictions": [
+    "A proteção abrange somente as 5 aplicações do Anexo I.",
+    "O DNS abrange somente as 3 zonas do item 3.1 do TR.",
+    "Mudanças em produção só ocorrem em janelas aprovadas pela SMTI.",
+    "A solução não altera o código nem a infraestrutura das origens da Prefeitura."
+  ],
+  "risks": [
+    {
+      "risk": "Atraso na delegação das zonas junto ao registrador",
+      "impact": "Deslocamento da migração DNS",
+      "mitigation": "Agendar a delegação na fase de planejamento com o administrador de domínios"
+    },
+    {
+      "risk": "Bloqueio de tráfego legítimo por políticas novas",
+      "impact": "Falhas de acesso de cidadãos",
+      "mitigation": "Ativar políticas em modo de monitoração antes do bloqueio e ajustar em janela acordada"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "requirement_id": "REQ-01",
+      "phase": "committed",
+      "criterion": "As 3 zonas respondem pelo Edge DNS com os cerca de 150 registros conferidos contra o inventário e com cadeia DNSSEC validada por consulta a resolvedor validador."
+    },
+    {
+      "requirement_id": "REQ-02",
+      "phase": "committed",
+      "criterion": "A delegação das 3 zonas aponta para os servidores de nomes Akamai, verificada por consulta pública após a migração."
+    },
+    {
+      "requirement_id": "REQ-03",
+      "phase": "committed",
+      "criterion": "As 5 aplicações estão publicadas na borda com política de WAF ativa e atualização automática de regras habilitada, verificada no console."
+    },
+    {
+      "requirement_id": "REQ-04",
+      "phase": "committed",
+      "criterion": "A proteção contra DDoS de camada 7 está ativa para as 5 aplicações, evidenciada na configuração publicada."
+    },
+    {
+      "requirement_id": "REQ-05",
+      "phase": "committed",
+      "criterion": "Cada aplicação possui regra de controle de taxa de requisições configurada, demonstrada por teste controlado que registra o evento no painel."
+    },
+    {
+      "requirement_id": "REQ-06",
+      "phase": "committed",
+      "criterion": "A equipe da SMTI acessa o painel de eventos com credenciais próprias e visualiza os eventos das 5 aplicações."
+    },
+    {
+      "requirement_id": "REQ-07",
+      "phase": "committed",
+      "criterion": "Eventos de segurança são recebidos na plataforma de destino indicada pela SMTI em formato compatível com syslog, com os campos de dados pessoais mascarados."
+    },
+    {
+      "requirement_id": "REQ-08",
+      "phase": "committed",
+      "criterion": "A migração e o onboarding são concluídos com o Termo de Aceite Provisório emitido pela SMTI."
+    },
+    {
+      "requirement_id": "REQ-09",
+      "phase": "committed",
+      "criterion": "Sessões de repasse de conhecimento realizadas com lista de presença e documentação as-built entregue."
+    },
+    {
+      "requirement_id": "REQ-14",
+      "phase": "committed",
+      "criterion": "Termo de Aceite Definitivo emitido após o Termo de Aceite Provisório sem pendências, conforme o item 9.1 do TR."
+    }
+  ],
+  "document_text": {
+    "about_akamai": "A Akamai é fabricante dos serviços de borda ofertados nesta proposta, Edge DNS e App & API Protector, operados em nuvem e contratados por licenciamento anual.",
+    "about_solution": "A solução combina DNS autoritativo distribuído com DNSSEC para as zonas municipais e proteção das aplicações web e da API de notas fiscais na borda, com painel e exportação de eventos para a SMTI.",
+    "partnership": "A POPULOS é parceira Akamai e fornece as licenças por revenda autorizada, com equipe de 3 profissionais com certificação técnica Akamai vigente, cuja documentação será apresentada na habilitação.",
+    "coverage": "A proposta atende aos itens 4.1 a 4.6 do Termo de Referência com os serviços Akamai Edge DNS e Akamai App & API Protector.",
+    "dimensioning_intro": "O dimensionamento segue as quantidades informadas no Termo de Referência.",
+    "assessment_outcome": "O levantamento inicial entrega o plano de implantação, o inventário validado das zonas e das aplicações e o calendário de janelas aprovado pela SMTI.",
+    "methodology_intro": "A implantação segue fases sequenciais com validação da SMTI ao fim de cada fase e mudanças em produção somente em janelas acordadas.",
+    "knowledge_transfer": "O repasse de conhecimento cobre a operação do Edge DNS, a leitura do painel de eventos e o ajuste das políticas de proteção pela equipe da SMTI.",
+    "tests": "Cada mudança é validada com testes de resolução DNS, de acesso às aplicações e de controle de taxa, com retorno à configuração anterior quando necessário.",
+    "schedule_intro": "O cronograma prevê de 5 a 6 semanas a partir da Ordem de Serviço, dentro do prazo de 45 dias corridos do item 5.2 do TR.",
+    "schedule_sequence": "Planejamento e levantamento, migração DNS, onboarding das aplicações e ajuste com repasse de conhecimento.",
+    "closing": "A POPULOS permanece à disposição da SMTI para esclarecimentos sobre esta proposta técnica.",
+    "callout_qualifications": "Equipe com 3 profissionais com certificação técnica Akamai vigente.",
+    "callout_limits": "A proteção cobre as 5 aplicações do Anexo I e o DNS cobre as 3 zonas do item 3.1.",
+    "callout_migration": "Toda mudança em produção ocorre em janela acordada com a SMTI e possui plano de retorno.",
+    "callout_milestones": "Termo de Aceite Provisório ao fim da implantação e Termo de Aceite Definitivo após o prazo do item 9.1.",
+    "diagram_users": "Cidadãos e contribuintes",
+    "diagram_users_detail": "Acesso aos portais e à API de notas fiscais",
+    "diagram_origins_title": "Origens da Prefeitura",
+    "diagram_origins": "5 aplicações do Anexo I",
+    "front_titles": {
+      "continuity": "DNS autoritativo resiliente",
+      "protection": "Proteção das aplicações web"
+    }
+  }
+}

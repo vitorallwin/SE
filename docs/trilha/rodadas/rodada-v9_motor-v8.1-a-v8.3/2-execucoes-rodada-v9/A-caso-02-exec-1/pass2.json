@@ -1,0 +1,573 @@
+{
+  "rules_version": 9,
+  "data_mode": "test",
+  "client_name": "Agência de Tecnologia do Estado do Cerrado (ATEC)",
+  "opportunity": "Pregão Eletrônico nº 045/2026",
+  "code": "ATEC-PE-045-2026",
+  "opportunity_id": "ATEC-045-2026",
+  "input_assessment": {
+    "status": "sufficient",
+    "missing": [],
+    "reason": "O Termo de Referência contém cliente identificado, escopo, requisitos técnicos e cronograma."
+  },
+  "catalog_fit": {
+    "status": "fits",
+    "requested": "Proteção de aplicações web e mitigação de ataques de negação de serviço, WAF, proteção de APIs e DDoS em nuvem",
+    "reason": "O catálogo cobre WAF, APIs, mitigação de DDoS L7 e infraestrutura L3/L4."
+  },
+  "client_scope": {
+    "type": "implementation",
+    "excludes_implementation": false,
+    "source": "Contratação de solução de proteção de aplicações web e mitigação de ataques de negação de serviço, em nuvem, incluindo licenciamento por 12 (doze) meses, implantação, repasse de conhecimento e suporte técnico (TR item 1.1)",
+    "forbidden_in_committed": []
+  },
+  "governance": {
+    "engagement_type": {
+      "state": "commitment",
+      "value": "implementation",
+      "approved_value": "implementation",
+      "source": "E-mail interno de aprovação de 24/09/2026",
+      "approved_by": "Vitor",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approver_role": "arquiteto",
+      "approval_quote": "engagement_type | implementation | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
+    },
+    "warranty": {
+      "state": "commitment",
+      "value": "Garantia dos serviços de implantação por 12 meses após o Termo de Aceite Definitivo.",
+      "approved_value": "Garantia dos serviços de implantação por 12 meses após o Termo de Aceite Definitivo.",
+      "source": "Termo de Referência item 8.1",
+      "approved_by": "Vitor",
+      "approved_at": "2026-09-24",
+      "approval_record": "Termo de Referência item 8.1 e E-mail de aprovação",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approver_role": "arquiteto",
+      "approval_quote": "8.1 Garantia dos serviços de implantação por 12 (doze) meses após o Termo de Aceite Definitivo. | Vitor | 2026-09-24"
+    },
+    "license_supply": {
+      "state": "commitment",
+      "value": "As licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada, conforme item 10.1 do TR.",
+      "approved_value": "As licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada, conforme item 10.1 do TR.",
+      "source": "E-mail interno de aprovação de 24/09/2026",
+      "approved_by": "Vitor",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approver_role": "arquiteto",
+      "approval_quote": "Licenciamento | As licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada, conforme item 10.1 do TR. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
+    },
+    "sla": {
+      "state": "commitment",
+      "basis": "populos_standard",
+      "value": "Tabela institucional do template POPULOS",
+      "source": "Template POPULOS vigente",
+      "template_version": "2026.09.24-1"
+    }
+  },
+  "discovery": {
+    "business_goals": [
+      "Garantir a disponibilidade e resiliência dos portais de serviços ao cidadão contra ataques de negação de serviço (REQ-01)",
+      "Proteger aplicações web e APIs contra exploração de vulnerabilidades e OWASP Top 10 (REQ-02)"
+    ]
+  },
+  "traceability": [
+    {
+      "requirement_id": "REQ-01",
+      "requirement": "Mitigação de ataques DDoS nas camadas 3, 4 e 7",
+      "solution": "App & API Protector e Prolexic",
+      "evidence": "Termo de Referência item 4.3",
+      "source": "Termo de Referência item 4.3",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-02",
+      "requirement": "WAF com proteção contra as categorias OWASP Top 10 e proteção de APIs",
+      "solution": "App & API Protector",
+      "evidence": "Termo de Referência itens 4.1 e 4.2",
+      "source": "Termo de Referência itens 4.1 e 4.2",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-03",
+      "requirement": "Integração dos eventos de segurança com o SIEM da ATEC via syslog ou API com armazenamento em território nacional e controle estrito de dados sensíveis",
+      "solution": "App & API Protector e Prolexic",
+      "evidence": "Termo de Referência itens 4.5 e 4.6",
+      "source": "Termo de Referência itens 4.5 e 4.6",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    }
+  ],
+  "source_coverage": [
+    {
+      "ref": "TR item 1.1",
+      "statement": "Contratação de solução de proteção de aplicações web e mitigação de ataques de negação de serviço, em nuvem, incluindo licenciamento por 12 meses, implantação, repasse de conhecimento e suporte técnico.",
+      "status": "coberto",
+      "targets": [
+        "escopo"
+      ]
+    },
+    {
+      "ref": "TR item 2.1",
+      "statement": "Os portais da ATEC sofreram, entre março e agosto de 2026, 7 incidentes de indisponibilidade atribuídos a ataques de negação de serviço, sendo o mais longo de 5 horas.",
+      "status": "coberto",
+      "targets": [
+        "sumário"
+      ],
+      "reason": "Contextualiza a dor do cliente com citação do número de incidentes."
+    },
+    {
+      "ref": "TR item 3.2",
+      "statement": "Volume agregado de tráfego legítimo é de aproximadamente 40 milhões de requisições por dia, com picos de 3.500 requisições por segundo.",
+      "status": "coberto",
+      "targets": [
+        "dimensionamento"
+      ]
+    },
+    {
+      "ref": "TR item 4.1",
+      "statement": "Firewall de aplicação web (WAF) com proteção contra as categorias OWASP Top 10.",
+      "status": "coberto",
+      "targets": [
+        "REQ-02"
+      ]
+    },
+    {
+      "ref": "TR item 4.2",
+      "statement": "Proteção de APIs, com descoberta automática dos endpoints expostos.",
+      "status": "coberto",
+      "targets": [
+        "REQ-02"
+      ]
+    },
+    {
+      "ref": "TR item 4.3",
+      "statement": "Mitigação de ataques DDoS nas camadas 3, 4 e 7.",
+      "status": "coberto",
+      "targets": [
+        "REQ-01"
+      ]
+    },
+    {
+      "ref": "TR item 4.4",
+      "statement": "Painel de visualização de eventos em tempo real, em língua portuguesa ou inglesa.",
+      "status": "coberto",
+      "targets": [
+        "sumário"
+      ]
+    },
+    {
+      "ref": "TR item 4.5",
+      "statement": "Integração dos eventos de segurança com o SIEM da ATEC via syslog ou API.",
+      "status": "coberto",
+      "targets": [
+        "REQ-03"
+      ]
+    },
+    {
+      "ref": "TR item 4.6",
+      "statement": "Os logs de eventos de segurança deverão ser armazenados exclusivamente em território nacional com controle de dados sensíveis.",
+      "status": "coberto",
+      "targets": [
+        "REQ-03"
+      ]
+    },
+    {
+      "ref": "TR item 4.7",
+      "statement": "A solução deverá garantir disponibilidade de 100% dos portais protegidos.",
+      "status": "coberto",
+      "targets": [
+        "sumário"
+      ]
+    },
+    {
+      "ref": "TR item 5.2",
+      "statement": "O prazo de implantação é de 30 dias corridos a partir da emissão da Ordem de Serviço.",
+      "status": "coberto",
+      "targets": [
+        "engajamento"
+      ]
+    },
+    {
+      "ref": "TR item 6.1",
+      "statement": "A CONTRATADA deverá comprovar, na habilitação, possuir em seu quadro ao menos 2 profissionais com certificação técnica.",
+      "status": "coberto",
+      "targets": [
+        "premissas"
+      ]
+    },
+    {
+      "ref": "TR item 7.1",
+      "statement": "Suporte técnico 24x7 durante toda a vigência contratual.",
+      "status": "coberto",
+      "targets": [
+        "escopo"
+      ]
+    },
+    {
+      "ref": "TR item 9.1",
+      "statement": "O prazo total de implantação é de 60 dias corridos a partir da assinatura do contrato.",
+      "status": "coberto",
+      "targets": [
+        "engajamento"
+      ]
+    }
+  ],
+  "client_numbers": [
+    {
+      "quote": "7 incidentes de indisponibilidade",
+      "ref": "TR item 2.1",
+      "destination": "sumário",
+      "summary_marker": "Os portais da ATEC sofreram 7 incidentes de indisponibilidade decorrentes de ataques de negação de serviço.",
+      "reason": "Contextualiza a dor do cliente diretamente no sumário executivo."
+    },
+    {
+      "quote": "40 milhões de requisições por dia",
+      "ref": "TR item 3.2",
+      "destination": "dimensionamento",
+      "summary_marker": "Volume agregado de tráfego legítimo dimensionado para 40 milhões de requisições diárias.",
+      "reason": "Utilizado para dimensionamento da solução."
+    },
+    {
+      "quote": "3.500 requisições por segundo",
+      "ref": "TR item 3.2",
+      "destination": "dimensionamento",
+      "summary_marker": "Picos de 3.500 requisições por segundo.",
+      "reason": "Utilizado para dimensionamento de pico de tráfego."
+    },
+    {
+      "quote": "12 aplicações",
+      "ref": "TR item 3.1",
+      "destination": "dimensionamento",
+      "summary_marker": "Onboarding de 12 aplicações listadas no Anexo I.",
+      "reason": "Escopo de portais a proteger."
+    }
+  ],
+  "open_questions": [],
+  "solution_decisions": [
+    {
+      "product_id": "app_api_protector",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-02",
+        "REQ-03"
+      ],
+      "rationale": "Atende integralmente ao WAF OWASP Top 10, proteção de APIs e integração com SIEM com controle de dados sensíveis solicitados no TR.",
+      "client_summary": "Proteção avançada de aplicações web e APIs com WAF adaptativo.",
+      "capabilities": [
+        "WAF",
+        "proteção de APIs",
+        "Adaptive Security Engine"
+      ],
+      "implementation_status": "modality_pending"
+    },
+    {
+      "product_id": "prolexic",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-01",
+        "REQ-03"
+      ],
+      "rationale": "Atende à mitigação de ataques DDoS nas camadas 3, 4 e 7 e proteção de infraestrutura solicitada.",
+      "client_summary": "Proteção DDoS de infraestrutura para ambientes em nuvem e híbridos.",
+      "capabilities": [
+        "mitigação DDoS L3/L4",
+        "scrubbing distribuído",
+        "runbooks de resposta"
+      ],
+      "implementation_status": "modality_pending"
+    },
+    {
+      "product_id": "edge_dns",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "DNS autoritativo não foi solicitado no escopo do TR.",
+      "client_summary": "Não aplicável ao escopo.",
+      "capabilities": [],
+      "implementation_status": "modality_pending"
+    },
+    {
+      "product_id": "malware_protection",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Inspeção de upload de arquivos não foi solicitada no escopo.",
+      "client_summary": "Não aplicável ao escopo.",
+      "capabilities": [],
+      "implementation_status": "modality_pending"
+    },
+    {
+      "product_id": "alb",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Balanceamento global entre múltiplas origens não foi requerido.",
+      "client_summary": "Não aplicável ao escopo.",
+      "capabilities": [],
+      "implementation_status": "modality_pending"
+    },
+    {
+      "product_id": "gtm",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Gerenciamento de tráfego global via DNS não foi solicitado.",
+      "client_summary": "Não aplicável ao escopo.",
+      "capabilities": [],
+      "implementation_status": "modality_pending"
+    },
+    {
+      "product_id": "ion",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Aceleração de desempenho web não consta como requisito obrigatório.",
+      "client_summary": "Não aplicável ao escopo.",
+      "capabilities": [],
+      "implementation_status": "modality_pending"
+    },
+    {
+      "product_id": "account_protector",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Proteção contra fraude em contas não foi solicitada.",
+      "client_summary": "Não aplicável ao escopo.",
+      "capabilities": [],
+      "implementation_status": "modality_pending"
+    },
+    {
+      "product_id": "ip_accelerator",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Aceleração TCP/UDP não se aplica às aplicações web e APIs do escopo.",
+      "client_summary": "Não aplicável ao escopo.",
+      "capabilities": [],
+      "implementation_status": "modality_pending"
+    },
+    {
+      "product_id": "bot_manager",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Mitigação avançada de bots não foi requerida no TR.",
+      "client_summary": "Não aplicável ao escopo.",
+      "capabilities": [],
+      "implementation_status": "modality_pending"
+    }
+  ],
+  "products": [
+    "app_api_protector",
+    "prolexic"
+  ],
+  "architecture": {
+    "summary": "A arquitetura recomendada combina o App & API Protector para a segurança de camada 7 (WAF e APIs) e o Prolexic para a proteção de infraestrutura contra ataques DDoS nas camadas 3 e 4, garantindo disponibilidade contínua aos portais da ATEC sem impacto ao tráfego legítimo."
+  },
+  "sections": [
+    {
+      "title": "Resumo executivo",
+      "paragraphs": [
+        "A presente proposta técnica atende ao Pregão Eletrônico nº 045/2026 da Agência de Tecnologia do Estado do Cerrado (ATEC), fornecendo uma solução robusta de proteção de aplicações web, APIs e mitigação de ataques de negação de serviço em nuvem.",
+        "Considerando que os portais da ATEC sofreram 7 incidentes de indisponibilidade e os picos de tráfego de até 3.500 requisições por segundo nos 12 portais de serviços ao cidadão, a POPULOS apresenta uma solução integrada com App & API Protector e Prolexic.",
+        "O escopo contempla o licenciamento por 12 meses, implantação completa sem indisponibilidade em até 60 dias, repasse de conhecimento e suporte técnico especializado 24x7."
+      ]
+    }
+  ],
+  "dimensioning": [
+    [
+      "Volume de Tráfego Legítimo",
+      "40 milhões de req/dia",
+      "Estimativa média informada no TR",
+      "Confirmado"
+    ],
+    [
+      "Pico de Requisições",
+      "3.500 req/s",
+      "Dimensionamento de pico informado no TR",
+      "Confirmado"
+    ],
+    [
+      "Aplicações Protegidas",
+      "12 portais",
+      "Anexo I do Termo de Referência",
+      "Confirmado"
+    ]
+  ],
+  "estimates": [
+    {
+      "item": "Implantação e Onboarding",
+      "value": "60 dias corridos",
+      "owner": "Equipe de Delivery POPULOS",
+      "owner_role": "delivery"
+    }
+  ],
+  "assessment_items": [
+    "Ambiente atual composto por 12 portais de serviços ao cidadão expostos na internet.",
+    "Tráfego agregado estimado em 40 milhões de requisições diárias com picos de 3.500 req/s.",
+    "Necessidade de integração de eventos de segurança com o SIEM existente da ATEC com armazenamento nacional e controle de dados sensíveis."
+  ],
+  "client_roles": [
+    "Gestor do Contrato pela ATEC",
+    "Equipe de Infraestrutura e Redes",
+    "Equipe de Segurança da Informação / SIEM",
+    "Responsáveis pelas aplicações web e APIs"
+  ],
+  "scope": {
+    "included": [
+      "Licenciamento por 12 meses das soluções Akamai App & API Protector e Prolexic",
+      "Implantação e onboarding das 12 aplicações listadas no Anexo I",
+      "Configuração de políticas de WAF, proteção de APIs e mitigação DDoS L3/L4",
+      "Integração dos eventos de segurança com o SIEM da ATEC via syslog ou API com controle de dados sensíveis",
+      "Repasse de conhecimento técnico",
+      "Suporte técnico 24x7 durante a vigência contratual"
+    ],
+    "deliverables": [
+      "Plano de Projeto e Implantação",
+      "Relatório de Conclusão da Implantação",
+      "Termo de Aceite Provisório (TAP)",
+      "Termo de Aceite Definitivo (TAD)",
+      "Manuais e Documentação de As-Built"
+    ],
+    "excluded": [
+      "Alterações ou refatoração de código-fonte das aplicações da ATEC",
+      "Gestão operacional diária do SIEM do cliente",
+      "Fornecimento de infraestrutura de conectividade de última milha do cliente"
+    ]
+  },
+  "delivery": {
+    "phases": [
+      {
+        "name": "Fase 1: Planejamento e Configuração Inicial",
+        "kind": "design",
+        "weeks": [
+          1,
+          2
+        ],
+        "duration": "15 dias",
+        "objective": "Alinhamento técnico, mapeamento das 12 aplicações e desenho das políticas de segurança.",
+        "dependency": "Assinatura do contrato e emissão da Ordem de Serviço",
+        "outputs": [
+          "Plano de Projeto",
+          "Desenho de Arquitetura"
+        ]
+      },
+      {
+        "name": "Fase 2: Implantação e Onboarding",
+        "kind": "implementation",
+        "weeks": [
+          3,
+          6
+        ],
+        "duration": "30 dias",
+        "objective": "Onboarding dos 12 portais, ativação do WAF, proteção de APIs e Prolexic.",
+        "dependency": "Conclusão da Fase 1",
+        "outputs": [
+          "Ambiente configurado em modo de monitoramento e proteção"
+        ]
+      },
+      {
+        "name": "Fase 3: Integração SIEM e Testes",
+        "kind": "implementation",
+        "weeks": [
+          7,
+          8
+        ],
+        "duration": "15 dias",
+        "objective": "Integração com o SIEM da ATEC, validação de logs em território nacional com controle de dados sensíveis e testes de aceite.",
+        "dependency": "Conclusão da Fase 2",
+        "outputs": [
+          "Relatório de Integração e Emissão do TAP"
+        ]
+      }
+    ],
+    "responsibilities": [
+      [
+        "ATEC",
+        "Disponibilizar pontos de contato e acessos necessários para integração",
+        "Compromisso"
+      ],
+      [
+        "POPULOS",
+        "Executar o projeto de implantação, onboarding e repasse de conhecimento",
+        "Compromisso"
+      ]
+    ]
+  },
+  "assumptions": [
+    "A ATEC fornecerá os acessos e cooperação técnica necessários para a integração das 12 aplicações.",
+    "O SIEM da ATEC estará disponível e acessível para a integração de eventos via syslog ou API.",
+    "Os responsáveis pelas aplicações da ATEC participarão das janelas de validação.",
+    "A conectividade de rede nas pontas do cliente atenderá aos requisitos operacionais do Prolexic."
+  ],
+  "restrictions": [
+    "A execução dos serviços ocorrerá conforme as janelas de manutenção aprovadas pela ATEC.",
+    "A solução opera sobre o tráfego HTTP/HTTPS e de rede elegível conforme especificações do fabricante.",
+    "Nenhuma intervenção direta no código-fonte das aplicações será realizada pela equipe POPULOS.",
+    "O armazenamento de logs de segurança em território nacional seguirá os recursos nativos disponíveis na plataforma."
+  ],
+  "risks": [
+    {
+      "risk": "Indisponibilidade temporária durante o onboarding",
+      "impact": "Alto",
+      "mitigation": "Execução da implantação em modo transparente/monitoramento antes do bloqueio efetivo."
+    },
+    {
+      "risk": "Atraso na disponibilização de acessos pelo cliente",
+      "impact": "Médio",
+      "mitigation": "Acompanhamento ativo via cronograma e reuniões de alinhamento."
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "requirement_id": "REQ-01",
+      "phase": "committed",
+      "criterion": "Comprovação da mitigação de ataques DDoS em L3, L4 e L7 durante os testes de validação."
+    },
+    {
+      "requirement_id": "REQ-02",
+      "phase": "committed",
+      "criterion": "Validação do funcionamento do WAF com regras OWASP Top 10 e proteção de APIs nos 12 portais."
+    },
+    {
+      "requirement_id": "REQ-03",
+      "phase": "committed",
+      "criterion": "Confirmação do envio bem-sucedido de eventos de segurança para o SIEM da ATEC com retenção nacional e controle de dados sensíveis."
+    }
+  ],
+  "event_readiness": [
+    "Revisão preventiva de capacidade e dimensionamento de tráfego para os portais da ATEC.",
+    "Monitoramento em tempo real através do painel de eventos da solução.",
+    "Suporte técnico especializado 24x7 com tempos de resposta aderentes aos níveis de severidade."
+  ],
+  "critical_events": [
+    {
+      "name": "Operação Contínua dos Portais de Serviços ao Cidadão",
+      "date": null,
+      "source": "Termo de Referência item 1.1",
+      "pending_question": "A data específica de pico sazonal não foi informada no TR."
+    }
+  ],
+  "event_feasibility": [],
+  "document_text": {
+    "about_solution": "A solução implementada combina tecnologias de ponta para assegurar a proteção integral dos portais de serviços da ATEC contra ameaças web e volumétricas.",
+    "coverage": "A abrangência contempla a proteção das 12 aplicações listadas no Anexo I do Termo de Referência.",
+    "dimensioning_intro": "O dimensionamento foi baseado no volume agregado de tráfego de 40 milhões de requisições diárias e picos de 3.500 requisições por segundo.",
+    "methodology_intro": "A metodologia de implantação da POPULOS assegura entrega estruturada em até 60 dias sem interrupção dos serviços.",
+    "tests": "Os testes de validação contemplam a verificação de WAF, proteção de APIs, mitigação de DDoS e integração com o SIEM.",
+    "schedule_intro": "O cronograma total de execução compreende 60 dias corridos a partir da assinatura do contrato.",
+    "schedule_sequence": "O projeto é dividido em três fases sequenciais: Planejamento, Implantação e Integração/Testes.",
+    "closing": "A POPULOS reafirma seu compromisso com a excelência técnica e a segurança dos serviços digitais da ATEC.",
+    "callout_migration": "A implantação será conduzida sem indisponibilidade dos portais de atendimento.",
+    "callout_milestones": "O aceite será formalizado em duas etapas: Termo de Aceite Provisório (TAP) e Termo de Aceite Definitivo (TAD).",
+    "diagram_users": "Cidadãos e usuários acessando os portais de serviços da ATEC pela internet.",
+    "diagram_users_detail": "Acesso via protocolos HTTP/HTTPS e requisições web e de API protegidas pela borda.",
+    "diagram_origins_title": "Data Center e Infraestrutura da ATEC",
+    "diagram_origins": "Hospedagem das 12 aplicações web e APIs de atendimento ao cidadão."
+  }
+}

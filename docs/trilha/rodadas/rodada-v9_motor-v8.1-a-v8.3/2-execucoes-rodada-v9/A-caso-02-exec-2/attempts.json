@@ -1,0 +1,16 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:31:43.914573+00:00",
+      "errors_count": 5,
+      "errors": [
+        "número de dor ausente do sumário: 7 incidentes de indisponibilidade",
+        "número de dor ausente do sumário: 5 horas no portal de emissão de documentos",
+        "destino de cobertura inexistente: contexto_de_dor (item 2.1)",
+        "integração SIEM sem controle de dados sensíveis",
+        "aprovação citada não existe no insumo (approval_quote): warranty"
+      ]
+    }
+  ]
+}

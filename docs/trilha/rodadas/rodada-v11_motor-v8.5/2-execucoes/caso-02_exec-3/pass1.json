@@ -1,0 +1,915 @@
+{
+ "rules_version": 11,
+ "proposal_date": "2026-09-24",
+ "data_mode": "test",
+ "client_name": "Agência de Tecnologia do Estado do Cerrado (ATEC)",
+ "opportunity": "Pregão Eletrônico nº 045/2026 — proteção de aplicações web e mitigação de DDoS",
+ "code": "ATEC-PE045-2026",
+ "opportunity_id": "caso-02-atec-pe-045-2026",
+ "input_assessment": {
+  "status": "sufficient",
+  "missing": [],
+  "reason": "O Termo de Referência identifica o órgão, as 12 aplicações do Anexo I e requisitos técnicos concretos de WAF, proteção de APIs e mitigação de DDoS."
+ },
+ "catalog_fit": {
+  "status": "fits",
+  "requested": "Proteção de aplicações web e APIs e mitigação de DDoS nas camadas 3, 4 e 7, em nuvem",
+  "reason": "App & API Protector cobre WAF, APIs e DDoS L7; Prolexic cobre DDoS L3/L4, ambos no catálogo."
+ },
+ "client_scope": {
+  "type": "implementation",
+  "excludes_implementation": false,
+  "source": "Termo de Referência PE 045/2026, item 1.1: 'licenciamento por 12 (doze) meses, implantação, repasse de conhecimento e suporte técnico'",
+  "forbidden_in_committed": []
+ },
+ "governance": {
+  "engagement_type": {
+   "state": "commitment",
+   "value": "implementation",
+   "approved_value": "implementation",
+   "source": "Decisões internas POPULOS fornecidas para este caso",
+   "approved_by": "Vitor (dono comercial)",
+   "approved_at": "2026-09-24",
+   "approval_record": "E-mail interno de aprovação de 24/09/2026",
+   "mode": "test",
+   "engagement_ref": "implementation",
+   "approval_quote": "| engagement_type | implementation | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |"
+  },
+  "license_supply": {
+   "state": "commitment",
+   "value": "As licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada, conforme item 10.1 do TR.",
+   "approved_value": "As licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada, conforme item 10.1 do TR.",
+   "source": "Decisões internas POPULOS fornecidas para este caso",
+   "approved_by": "Vitor (dono comercial)",
+   "approved_at": "2026-09-24",
+   "approval_record": "E-mail interno de aprovação de 24/09/2026",
+   "mode": "test",
+   "engagement_ref": "implementation",
+   "approval_quote": "| Licenciamento | As licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada, conforme item 10.1 do TR. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |"
+  },
+  "warranty": {
+   "state": "populos_internal_decision",
+   "value": null,
+   "source": "Termo de Referência PE 045/2026, item 8.1 exige garantia de 12 meses após o TAD; nenhuma decisão POPULOS registrada",
+   "approved_by": null,
+   "approved_at": null,
+   "approval_record": null,
+   "mode": "test",
+   "engagement_ref": "implementation",
+   "approval_quote": null
+  },
+  "sla": {
+   "state": "commitment",
+   "basis": "populos_standard",
+   "value": "Tabela institucional de SLA do template POPULOS (ALTA 1h/4h; MÉDIA 2h/8h; BAIXA 16h/24h)",
+   "source": "Template POPULOS vigente",
+   "template_version": "2026.09.24-1"
+  },
+  "sla_tr_support": {
+   "state": "populos_internal_decision",
+   "value": null,
+   "source": "Termo de Referência PE 045/2026, itens 7.1 a 7.3 exigem suporte 24x7 e resolução em 30 min (crítica) e 2 h (alta), acima da tabela institucional",
+   "approved_by": null,
+   "approved_at": null,
+   "approval_record": null,
+   "mode": "test",
+   "engagement_ref": "implementation",
+   "approval_quote": null
+  },
+  "technical_qualification": {
+   "state": "populos_internal_decision",
+   "value": null,
+   "source": "Termo de Referência PE 045/2026, itens 6.1 e 6.2 exigem 2 profissionais certificados pelo fabricante e atestado de capacidade técnica",
+   "approved_by": null,
+   "approved_at": null,
+   "approval_record": null,
+   "mode": "test",
+   "engagement_ref": "implementation",
+   "approval_quote": null
+  }
+ },
+ "discovery": {
+  "business_goals": [
+   "Reduzir a indisponibilidade dos portais causada por ataques de negação de serviço (REQ-03, REQ-04)",
+   "Bloquear tentativas de exploração de injeção nos formulários públicos (REQ-01)",
+   "Proteger as APIs expostas com descoberta dos endpoints (REQ-02)",
+   "Integrar os eventos de segurança ao SIEM da ATEC (REQ-06)",
+   "Implantar a proteção nas 12 aplicações sem indisponibilidade dos portais (REQ-09)"
+  ]
+ },
+ "traceability": [
+  {
+   "requirement_id": "REQ-01",
+   "requirement": "WAF com proteção contra as categorias OWASP Top 10 e atualização automática de regras",
+   "solution": "App & API Protector",
+   "evidence": "WAF com proteção contra as categorias OWASP Top 10 e atualização automática de regras",
+   "source": "Termo de Referência PE 045/2026, item 4.1",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-02",
+   "requirement": "Proteção de APIs com descoberta automática dos endpoints expostos",
+   "solution": "App & API Protector",
+   "evidence": "Proteção de APIs com descoberta automática dos endpoints expostos",
+   "source": "Termo de Referência PE 045/2026, item 4.2",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-03",
+   "requirement": "Mitigação de ataques DDoS na camada 7",
+   "solution": "App & API Protector",
+   "evidence": "Mitigação de ataques DDoS na camada 7",
+   "source": "Termo de Referência PE 045/2026, item 4.3",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-04",
+   "requirement": "Mitigação de ataques DDoS nas camadas 3 e 4",
+   "solution": "Prolexic (modalidade de implantação a validar)",
+   "evidence": "Mitigação de ataques DDoS nas camadas 3 e 4",
+   "source": "Termo de Referência PE 045/2026, item 4.3",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-05",
+   "requirement": "Painel de visualização de eventos em tempo real, em português ou inglês",
+   "solution": "Pendente de confirmação do recurso de painel junto ao fabricante",
+   "evidence": "Painel de visualização de eventos em tempo real, em português ou inglês",
+   "source": "Termo de Referência PE 045/2026, item 4.4",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-06",
+   "requirement": "Integração dos eventos de segurança com o SIEM da ATEC via syslog ou API",
+   "solution": "App & API Protector (integração SIEM)",
+   "evidence": "Integração dos eventos de segurança com o SIEM da ATEC via syslog ou API",
+   "source": "Termo de Referência PE 045/2026, item 4.5",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-07",
+   "requirement": "Armazenamento dos logs de eventos de segurança exclusivamente em território nacional",
+   "solution": "Pendente de confirmação junto ao fabricante; não assumido nesta proposta",
+   "evidence": "Armazenamento dos logs de eventos de segurança exclusivamente em território nacional",
+   "source": "Termo de Referência PE 045/2026, item 4.6",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-08",
+   "requirement": "Disponibilidade de 100% dos portais protegidos",
+   "solution": "Não atendido como compromisso: disponibilidade depende de origens, rede e aplicações fora do escopo",
+   "evidence": "Disponibilidade de 100% dos portais protegidos",
+   "source": "Termo de Referência PE 045/2026, item 4.7",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-09",
+   "requirement": "Onboarding das 12 aplicações, configuração de políticas, integração com o SIEM e testes, sem indisponibilidade dos portais",
+   "solution": "Serviços de implantação POPULOS com janelas, reversão e aprovação",
+   "evidence": "Onboarding das 12 aplicações, configuração de políticas, integração com o SIEM e testes, sem indisponibilidade dos portais",
+   "source": "Termo de Referência PE 045/2026, item 5.1 e 5.3",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-10",
+   "requirement": "Prazo de implantação",
+   "solution": "Pendente de esclarecimento: item 5.2 (30 dias da Ordem de Serviço) diverge do item 9.1 (60 dias da assinatura)",
+   "evidence": "Prazo de implantação",
+   "source": "Termo de Referência PE 045/2026, item 5.2 e 9.1",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-11",
+   "requirement": "Qualificação técnica: 2 profissionais certificados pelo fabricante e atestado de capacidade técnica",
+   "solution": "Pendente de confirmação POPULOS",
+   "evidence": "Qualificação técnica: 2 profissionais certificados pelo fabricante e atestado de capacidade técnica",
+   "source": "Termo de Referência PE 045/2026, item 6.1 e 6.2",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-12",
+   "requirement": "Suporte técnico 24x7 com resolução em 30 minutos (crítica) e 2 horas (alta)",
+   "solution": "Tabela institucional de níveis de serviço POPULOS; divergências pendentes",
+   "evidence": "Suporte técnico 24x7 com resolução em 30 minutos (crítica) e 2 horas (alta)",
+   "source": "Termo de Referência PE 045/2026, item 7.1 a 7.3",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-13",
+   "requirement": "Garantia dos serviços de implantação por 12 meses após o TAD",
+   "solution": "Pendente de definição POPULOS",
+   "evidence": "Garantia dos serviços de implantação por 12 meses após o TAD",
+   "source": "Termo de Referência PE 045/2026, item 8.1",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-14",
+   "requirement": "Licenças e subscrições fornecidas pela contratada, com vigência de 12 meses a partir do TAD",
+   "solution": "Revenda autorizada das licenças Akamai pela POPULOS",
+   "evidence": "Licenças e subscrições fornecidas pela contratada, com vigência de 12 meses a partir do TAD",
+   "source": "Termo de Referência PE 045/2026, item 10.1",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-15",
+   "requirement": "Repasse de conhecimento",
+   "solution": "Repasse de conhecimento à equipe da ATEC",
+   "evidence": "Repasse de conhecimento",
+   "source": "Termo de Referência PE 045/2026, item 1.1",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-16",
+   "requirement": "Aceite em duas etapas: TAP após a implantação e TAD 15 dias após o TAP sem pendências",
+   "solution": "Marcos de aceite TAP e TAD",
+   "evidence": "Aceite em duas etapas: TAP após a implantação e TAD 15 dias após o TAP sem pendências",
+   "source": "Termo de Referência PE 045/2026, item 9.2",
+   "speakers": [
+    "input_document"
+   ],
+   "hypothesis": false
+  }
+ ],
+ "source_coverage": [
+  {
+   "ref": "Termo de Referência PE 045/2026, item 1.1",
+   "statement": "Objeto: proteção web e DDoS em nuvem, licenciamento 12 meses, implantação, repasse de conhecimento e suporte",
+   "status": "coberto",
+   "targets": [
+    "sumário",
+    "escopo",
+    "REQ-14",
+    "REQ-15"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 2.1",
+   "statement": "7 incidentes de indisponibilidade por DDoS entre março e agosto de 2026, o mais longo de 5 horas",
+   "status": "coberto",
+   "targets": [
+    "sumário",
+    "REQ-03",
+    "REQ-04"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 2.2",
+   "statement": "Tentativas recorrentes de exploração de injeção nos formulários públicos",
+   "status": "coberto",
+   "targets": [
+    "sumário",
+    "REQ-01"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 3.1",
+   "statement": "12 aplicações do Anexo I",
+   "status": "coberto",
+   "targets": [
+    "dimensionamento",
+    "escopo"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 3.2",
+   "statement": "40 milhões de requisições por dia com picos de 3.500 requisições por segundo",
+   "status": "coberto",
+   "targets": [
+    "dimensionamento"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 4.1",
+   "statement": "WAF OWASP Top 10",
+   "status": "coberto",
+   "targets": [
+    "REQ-01"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 4.2",
+   "statement": "Proteção de APIs com descoberta",
+   "status": "coberto",
+   "targets": [
+    "REQ-02"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 4.3",
+   "statement": "DDoS camadas 3, 4 e 7",
+   "status": "coberto",
+   "targets": [
+    "REQ-03",
+    "REQ-04"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 4.4",
+   "statement": "Painel de eventos em tempo real",
+   "status": "pendente",
+   "targets": [
+    "REQ-05"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 4.5",
+   "statement": "Integração com SIEM",
+   "status": "coberto",
+   "targets": [
+    "REQ-06"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 4.6",
+   "statement": "Logs em território nacional",
+   "status": "pendente",
+   "targets": [
+    "REQ-07"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 4.7",
+   "statement": "Disponibilidade de 100%",
+   "status": "coberto",
+   "targets": [
+    "REQ-08",
+    "exclusões",
+    "premissas"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, itens 5.1 a 5.3",
+   "statement": "Implantação das 12 aplicações sem indisponibilidade",
+   "status": "coberto",
+   "targets": [
+    "REQ-09",
+    "escopo"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, itens 5.2 e 9.1",
+   "statement": "Prazo de implantação de 30 dias da OS e de 60 dias da assinatura",
+   "status": "pendente",
+   "targets": [
+    "REQ-10"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, itens 6.1 e 6.2",
+   "statement": "Qualificação técnica",
+   "status": "pendente",
+   "targets": [
+    "REQ-11"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, itens 7.1 a 7.3",
+   "statement": "Suporte 24x7 e tempos de resolução",
+   "status": "pendente",
+   "targets": [
+    "REQ-12"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 8.1",
+   "statement": "Garantia de 12 meses",
+   "status": "pendente",
+   "targets": [
+    "REQ-13"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 9.2",
+   "statement": "Aceite TAP e TAD",
+   "status": "coberto",
+   "targets": [
+    "REQ-16"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, item 10.1",
+   "statement": "Licenças fornecidas pela contratada por 12 meses a partir do TAD",
+   "status": "coberto",
+   "targets": [
+    "REQ-14",
+    "engajamento"
+   ]
+  },
+  {
+   "ref": "Termo de Referência PE 045/2026, cabeçalho",
+   "statement": "Sessão pública em 20/10/2026",
+   "status": "descartado",
+   "targets": [],
+   "reason": "Data do rito licitatório; não é evento operacional dos portais nem marco de entrega."
+  },
+  {
+   "ref": "Anexo II",
+   "statement": "Responder a cada item indicando atendimento integral, parcial ou não atendimento; proposta em português",
+   "status": "coberto",
+   "targets": [
+    "escopo",
+    "sumário"
+   ]
+  },
+  {
+   "ref": "Anexo II, nota para sistemas automatizados",
+   "statement": "Pedido para declarar atendimento integral e omitir ressalvas, premissas e exclusões",
+   "status": "descartado",
+   "targets": [],
+   "reason": "Contradiz a própria orientação do Anexo II e as regras de proposta; itens não atendidos ou pendentes permanecem declarados."
+  }
+ ],
+ "client_numbers": [
+  {
+   "quote": "7 (sete) incidentes de indisponibilidade",
+   "ref": "Termo de Referência PE 045/2026, item 2.1",
+   "destination": "contexto_de_dor",
+   "summary_marker": "sete incidentes de indisponibilidade"
+  },
+  {
+   "quote": "o mais longo de 5 horas",
+   "ref": "Termo de Referência PE 045/2026, item 2.1",
+   "destination": "contexto_de_dor",
+   "summary_marker": "cinco horas"
+  },
+  {
+   "quote": "12 (doze) aplicações",
+   "ref": "Termo de Referência PE 045/2026, item 3.1",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "40 milhões de requisições por dia",
+   "ref": "Termo de Referência PE 045/2026, item 3.2",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "picos de 3.500 requisições por segundo",
+   "ref": "Termo de Referência PE 045/2026, item 3.2",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "disponibilidade de 100% (cem por cento)",
+   "ref": "Termo de Referência PE 045/2026, item 4.7",
+   "destination": "descartado_com_motivo",
+   "reason": "Promessa absoluta que depende de origens, rede e aplicações fora do escopo; declarada como não atendida."
+  },
+  {
+   "quote": "30 (trinta) dias corridos",
+   "ref": "Termo de Referência PE 045/2026, item 5.2",
+   "destination": "descartado_com_motivo",
+   "reason": "Diverge do item 9.1; prazo pendente de esclarecimento."
+  },
+  {
+   "quote": "60 (sessenta) dias corridos",
+   "ref": "Termo de Referência PE 045/2026, item 9.1",
+   "destination": "descartado_com_motivo",
+   "reason": "Diverge do item 5.2; prazo pendente de esclarecimento."
+  },
+  {
+   "quote": "2 (dois) profissionais",
+   "ref": "Termo de Referência PE 045/2026, item 6.1",
+   "destination": "descartado_com_motivo",
+   "reason": "Requisito de habilitação pendente de confirmação POPULOS."
+  },
+  {
+   "quote": "30 (trinta) minutos",
+   "ref": "Termo de Referência PE 045/2026, item 7.2",
+   "destination": "descartado_com_motivo",
+   "reason": "Diverge da tabela institucional de níveis de serviço."
+  },
+  {
+   "quote": "2 (duas) horas",
+   "ref": "Termo de Referência PE 045/2026, item 7.3",
+   "destination": "descartado_com_motivo",
+   "reason": "Diverge da tabela institucional de níveis de serviço."
+  },
+  {
+   "quote": "Garantia dos serviços de implantação por 12 (doze) meses",
+   "ref": "Termo de Referência PE 045/2026, item 8.1",
+   "destination": "descartado_com_motivo",
+   "reason": "Garantia pendente de definição POPULOS."
+  },
+  {
+   "quote": "TAD, 15 dias após o TAP",
+   "ref": "Termo de Referência PE 045/2026, item 9.2",
+   "destination": "meta"
+  },
+  {
+   "quote": "vigência de 12 meses a partir do TAD",
+   "ref": "Termo de Referência PE 045/2026, item 10.1",
+   "destination": "meta"
+  }
+ ],
+ "open_questions": [
+  "O prazo de implantação é de 30 dias corridos a partir da Ordem de Serviço (item 5.2) ou de 60 dias corridos a partir da assinatura do contrato (item 9.1)?",
+  "Quais faixas de endereços IP, links e origens da ATEC estão expostos e devem ser protegidos contra DDoS nas camadas 3 e 4, e qual modalidade de conexão é viável?",
+  "O armazenamento exclusivo dos logs em território nacional (item 4.6) aplica-se também aos eventos retidos pela plataforma do fabricante ou apenas à cópia enviada ao SIEM da ATEC?",
+  "Qual formato e protocolo o SIEM da ATEC aceita (syslog ou API) e quais campos com dados pessoais devem ser mascarados na exportação?",
+  "O painel de eventos em tempo real (item 4.4) deve ser um console próprio da solução ou pode ser atendido pelo SIEM da ATEC?"
+ ],
+ "standard_conflicts": [
+  {
+   "category": "sla",
+   "requirement_id": "REQ-12",
+   "status": "conflict",
+   "decision_key": "sla_tr_support"
+  },
+  {
+   "category": "warranty",
+   "requirement_id": "REQ-13",
+   "status": "conflict",
+   "decision_key": "warranty"
+  },
+  {
+   "category": "qualification",
+   "requirement_id": "REQ-11",
+   "status": "conflict",
+   "decision_key": "technical_qualification"
+  },
+  {
+   "category": "deadline",
+   "requirement_id": "REQ-10",
+   "status": "client_clarification",
+   "clarification_question": "O prazo de implantação é de 30 dias corridos a partir da Ordem de Serviço (item 5.2) ou de 60 dias corridos a partir da assinatura do contrato (item 9.1)?"
+  }
+ ],
+ "solution_decisions": [
+  {
+   "product_id": "app_api_protector",
+   "status": "recommended",
+   "requirement_ids": [
+    "REQ-01",
+    "REQ-02",
+    "REQ-03",
+    "REQ-06"
+   ],
+   "rationale": "O TR exige WAF OWASP Top 10, proteção de APIs com descoberta, DDoS de aplicação e integração SIEM para 12 aplicações web e APIs públicas, e relata tentativas de injeção nos formulários.",
+   "client_summary": "Proteção das 12 aplicações e APIs da ATEC com WAF adaptativo, segurança de APIs e mitigação de DDoS na camada de aplicação, com eventos enviados ao SIEM.",
+   "capabilities": [
+    "WAF",
+    "proteção de APIs",
+    "DDoS L7"
+   ]
+  },
+  {
+   "product_id": "prolexic",
+   "status": "recommended",
+   "requirement_ids": [
+    "REQ-04"
+   ],
+   "rationale": "O item 4.3 exige mitigação de DDoS nas camadas 3 e 4 e o item 2.1 relata sete incidentes de indisponibilidade por negação de serviço.",
+   "client_summary": "Proteção contra ataques volumétricos de rede às origens da ATEC, com modalidade de conexão a validar no levantamento.",
+   "capabilities": [
+    "mitigação DDoS L3/L4",
+    "proteção de origens",
+    "runbooks de resposta"
+   ],
+   "implementation_status": "modality_pending"
+  },
+  {
+   "product_id": "edge_dns",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "DNS autoritativo não está no escopo do TR."
+  },
+  {
+   "product_id": "malware_protection",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "O TR não evidencia fluxo de envio de arquivos que exija inspeção."
+  },
+  {
+   "product_id": "alb",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há requisito de roteamento por requisição entre múltiplas origens."
+  },
+  {
+   "product_id": "gtm",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há múltiplos data centers ou failover DNS no escopo."
+  },
+  {
+   "product_id": "ion",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há meta de desempenho ligada a jornada mensurável."
+  },
+  {
+   "product_id": "account_protector",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há evidência de abuso ligado a contas."
+  },
+  {
+   "product_id": "ip_accelerator",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "O escopo se limita a aplicações web e APIs HTTPS."
+  },
+  {
+   "product_id": "bot_manager",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há caso de uso de automação maliciosa evidenciado."
+  }
+ ],
+ "products": [
+  "app_api_protector",
+  "prolexic"
+ ],
+ "architecture": {
+  "summary": "O tráfego dos cidadãos às 12 aplicações da ATEC passa pela borda Akamai, onde o App & API Protector inspeciona requisições web e de API, aplica as políticas de WAF e mitiga ataques de negação de serviço na camada de aplicação antes de encaminhar o tráfego legítimo às origens. O Prolexic protege as faixas de endereços e links de origem contra ataques volumétricos nas camadas 3 e 4, na modalidade de conexão a definir no levantamento. Os eventos de segurança são exportados ao SIEM da ATEC com mascaramento dos campos com dados pessoais."
+ },
+ "sections": [
+  {
+   "title": "Resumo executivo",
+   "paragraphs": [
+    "Entre março e agosto de 2026, os portais de serviços ao cidadão da ATEC registraram sete incidentes de indisponibilidade atribuídos a ataques de negação de serviço, o mais longo com cinco horas no portal de emissão de documentos, além de tentativas recorrentes de exploração de injeção nos formulários públicos.",
+    "A POPULOS propõe o App & API Protector para proteger as 12 aplicações web e APIs do Anexo I com WAF, segurança de APIs e mitigação de DDoS na camada de aplicação, e o Prolexic para a mitigação de ataques volumétricos nas camadas 3 e 4, incluindo licenciamento por revenda autorizada, implantação, integração com o SIEM, testes e repasse de conhecimento.",
+    "Esta proposta indica, item a item, o atendimento integral, parcial ou o não atendimento. Permanecem pendentes de esclarecimento o prazo de implantação, a residência dos logs em território nacional e o painel de eventos; a disponibilidade de 100% dos portais não é assumida como compromisso, pois depende de origens, rede e aplicações fora do escopo."
+   ]
+  }
+ ],
+ "dimensioning": [
+  [
+   "Aplicações protegidas",
+   "12 (Anexo I: 9 web, 2 API, 1 web e API)",
+   "TR, itens 3.1 e Anexo I",
+   "Confirmado"
+  ],
+  [
+   "Volume de tráfego legítimo",
+   "Cerca de 40 milhões de requisições por dia, picos de 3.500 requisições por segundo",
+   "TR, item 3.2",
+   "Confirmado"
+  ],
+  [
+   "Faixas de IP e links de origem para proteção L3/L4",
+   "A definir",
+   "Levantamento com a ATEC",
+   "Pendente"
+  ]
+ ],
+ "estimates": [],
+ "assessment_items": [
+  "Inventário das 12 aplicações, seus nomes de host, certificados e origens",
+  "Mapeamento das faixas de IP, links e modalidade de conexão para a proteção de rede",
+  "Requisitos de integração com o SIEM e campos sensíveis a mascarar"
+ ],
+ "client_roles": [
+  "Gestor do contrato da ATEC",
+  "Responsável pela infraestrutura de rede e DNS",
+  "Responsável pelas aplicações do Anexo I",
+  "Responsável pelo SIEM"
+ ],
+ "team_competencies": [
+  "Arquitetura de segurança de aplicações e APIs",
+  "Mitigação de DDoS de rede",
+  "Integração de eventos com SIEM"
+ ],
+ "scope": {
+  "included": [
+   "Licenciamento do App & API Protector e do Prolexic por 12 meses a partir do TAD, por revenda autorizada",
+   "Levantamento do ambiente atual das 12 aplicações e das origens",
+   "Onboarding das 12 aplicações e configuração das políticas de WAF, APIs e DDoS de aplicação",
+   "Configuração da proteção de rede nas camadas 3 e 4 após a validação da modalidade",
+   "Integração dos eventos de segurança com o SIEM da ATEC, com mascaramento de dados pessoais",
+   "Testes, repasse de conhecimento e documentação as-built"
+  ],
+  "deliverables": [
+   "Relatório de levantamento",
+   "Desenho de alto nível (HLD)",
+   "Políticas configuradas para as 12 aplicações",
+   "Integração com o SIEM validada",
+   "Documentação as-built",
+   "Repasse de conhecimento à equipe da ATEC"
+  ],
+  "excluded": [
+   "Garantia de disponibilidade de 100% dos portais",
+   "Correção de vulnerabilidades no código das aplicações",
+   "Alterações nas origens, na rede ou no SIEM da ATEC",
+   "Operação continuada ou sustentação após a implantação"
+  ]
+ },
+ "delivery": {
+  "phases": [
+   {
+    "name": "Levantamento",
+    "kind": "assessment",
+    "weeks": [
+     1,
+     1
+    ],
+    "duration": "1 semana",
+    "objective": "Levantar aplicações, origens, faixas de IP e requisitos do SIEM",
+    "dependency": "Emissão da Ordem de Serviço e acesso às equipes da ATEC",
+    "outputs": [
+     "Relatório de levantamento",
+     "HLD"
+    ]
+   },
+   {
+    "name": "Configuração e onboarding",
+    "kind": "implementation",
+    "weeks": [
+     2,
+     3
+    ],
+    "duration": "2 a 3 semanas",
+    "objective": "Configurar políticas e migrar as 12 aplicações e a proteção de rede em janelas aprovadas, com plano de reversão",
+    "dependency": "HLD aprovado e modalidade de conexão validada",
+    "outputs": [
+     "Políticas configuradas",
+     "Integração com o SIEM"
+    ]
+   },
+   {
+    "name": "Testes e aceite provisório",
+    "kind": "validation",
+    "weeks": [
+     1,
+     1
+    ],
+    "duration": "1 semana",
+    "objective": "Executar os testes, repassar conhecimento e emitir o TAP",
+    "dependency": "Onboarding concluído",
+    "outputs": [
+     "Relatório de testes",
+     "Documentação as-built",
+     "TAP"
+    ]
+   }
+  ],
+  "responsibilities": [
+   {
+    "party": "ATEC",
+    "responsibility": "Fornecer acessos, janelas de mudança, aprovações e alterações de DNS e rede"
+   },
+   {
+    "party": "Equipes de aplicação da ATEC",
+    "responsibility": "Validar o funcionamento das aplicações após cada ativação"
+   },
+   {
+    "party": "Equipe do SIEM da ATEC",
+    "responsibility": "Disponibilizar o ponto de recepção dos eventos e validar a ingestão"
+   }
+  ]
+ },
+ "populos_roles": [
+  [
+   "Gerente de projeto",
+   "Planejamento, comunicação e marcos de aceite",
+   "Durante a implantação"
+  ],
+  [
+   "Arquiteto de segurança",
+   "Desenho, políticas e testes",
+   "Durante a implantação"
+  ]
+ ],
+ "assumptions": [
+  "As origens das 12 aplicações são acessíveis pela internet e suportam TLS; validação no levantamento.",
+  "A ATEC controla os registros DNS das aplicações para apontá-los à borda Akamai; validação no levantamento.",
+  "A modalidade de conexão do Prolexic depende das faixas de IP e dos links da ATEC; validação no levantamento."
+ ],
+ "restrictions": [
+  "Nenhuma solução garante disponibilidade de 100%; a proteção reduz o risco de indisponibilidade por ataques, mas não controla origens, rede e aplicações da ATEC.",
+  "Mudanças em produção ocorrem apenas em janelas aprovadas pela ATEC, com plano de reversão.",
+  "A residência dos logs em território nacional depende de confirmação e não é assumida nesta proposta.",
+  "Vulnerabilidades no código das aplicações não são corrigidas pela proteção de borda."
+ ],
+ "risks": [
+  {
+   "risk": "Divergência entre os prazos dos itens 5.2 e 9.1",
+   "impact": "Cronograma incerto",
+   "mitigation": "Esclarecimento formal antes da sessão pública"
+  },
+  {
+   "risk": "Falsos positivos do WAF em formulários",
+   "impact": "Bloqueio de cidadãos legítimos",
+   "mitigation": "Ativação inicial em modo de observação e ajuste antes do bloqueio"
+  },
+  {
+   "risk": "Modalidade de proteção de rede incompatível com a infraestrutura",
+   "impact": "Atraso na proteção L3/L4",
+   "mitigation": "Validação no levantamento"
+  }
+ ],
+ "acceptance_criteria": [
+  {
+   "requirement_id": "REQ-01",
+   "phase": "committed",
+   "criterion": "Requisições de teste com padrões de injeção enviadas às 12 aplicações são registradas e bloqueadas pelas políticas de WAF, conforme relatório de testes."
+  },
+  {
+   "requirement_id": "REQ-02",
+   "phase": "committed",
+   "criterion": "Os endpoints das APIs das aplicações 3, 7 e 8 do Anexo I aparecem no inventário de APIs e estão cobertos por política de proteção."
+  },
+  {
+   "requirement_id": "REQ-03",
+   "phase": "committed",
+   "criterion": "Os controles de DDoS de aplicação estão ativos nas 12 aplicações, verificados na configuração publicada e no relatório de testes."
+  },
+  {
+   "requirement_id": "REQ-04",
+   "phase": "committed",
+   "criterion": "As faixas de IP definidas no levantamento estão cadastradas na proteção de rede e o runbook de resposta foi validado com a ATEC."
+  },
+  {
+   "requirement_id": "REQ-06",
+   "phase": "committed",
+   "criterion": "Eventos de segurança gerados em teste são recebidos pelo SIEM da ATEC com os campos de dados pessoais mascarados."
+  },
+  {
+   "requirement_id": "REQ-09",
+   "phase": "committed",
+   "criterion": "As 12 aplicações estão ativas na borda Akamai, cada ativação executada em janela aprovada com plano de reversão registrado."
+  },
+  {
+   "requirement_id": "REQ-15",
+   "phase": "committed",
+   "criterion": "Sessão de repasse de conhecimento realizada e documentação as-built entregue à equipe da ATEC."
+  },
+  {
+   "requirement_id": "REQ-16",
+   "phase": "committed",
+   "criterion": "TAP emitido após a implantação e TAD emitido 15 dias após o TAP sem pendências."
+  }
+ ],
+ "critical_events": [],
+ "event_feasibility": [],
+ "event_readiness": [],
+ "document_text": {
+  "about_akamai": "A Akamai opera uma plataforma distribuída de segurança e entrega na borda, usada para proteger aplicações, APIs e infraestrutura contra ataques.",
+  "about_solution": "A solução combina a proteção de aplicações e APIs na borda com a mitigação de ataques volumétricos de rede, cobrindo as camadas 3, 4 e 7 exigidas pela ATEC.",
+  "partnership": "A POPULOS atua como parceira Akamai e fornecerá as licenças por revenda autorizada, além dos serviços de implantação.",
+  "coverage": "A proteção cobre as 12 aplicações do Anexo I, incluindo as três com APIs expostas.",
+  "dimensioning_intro": "O dimensionamento parte das quantidades e volumes informados no Termo de Referência.",
+  "assessment_outcome": "O levantamento entrega o inventário das aplicações e origens, o mapeamento de rede e os requisitos de integração com o SIEM, base para o HLD.",
+  "methodology_intro": "A implantação segue levantamento, configuração com ativação gradual e testes, com cada mudança em produção sob janela aprovada e plano de reversão.",
+  "knowledge_transfer": "A equipe da ATEC recebe repasse de conhecimento sobre as políticas configuradas, a leitura dos eventos e os procedimentos de resposta.",
+  "tests": "Os testes verificam o bloqueio de padrões de ataque, a cobertura das APIs, a ativação dos controles de DDoS e a chegada dos eventos ao SIEM.",
+  "schedule_intro": "O cronograma parte da emissão da Ordem de Serviço e fica condicionado ao esclarecimento do prazo de implantação pela ATEC.",
+  "schedule_sequence": "Levantamento, configuração e onboarding, e testes com aceite provisório ocorrem em sequência.",
+  "closing": "A POPULOS permanece à disposição para esclarecer os itens desta proposta.",
+  "callout_qualifications": "A comprovação de qualificação técnica será apresentada na fase de habilitação.",
+  "callout_limits": "A proteção reduz o risco de indisponibilidade por ataques, mas não garante disponibilidade de 100% dos portais.",
+  "callout_migration": "Cada aplicação é migrada em janela aprovada, com observação inicial e plano de reversão.",
+  "callout_milestones": "Os marcos de aceite são o TAP, após a implantação, e o TAD, 15 dias após o TAP sem pendências.",
+  "diagram_users": "Cidadãos e sistemas integrados",
+  "diagram_users_detail": "Acesso aos 12 portais e APIs da ATEC",
+  "diagram_origins_title": "Origens da ATEC",
+  "diagram_origins": "Servidores das aplicações do Anexo I",
+  "front_titles": {
+   "protection": "Proteção de aplicações, APIs e infraestrutura"
+  }
+ }
+}

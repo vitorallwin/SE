@@ -1,0 +1,33 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:22:54.710548+00:00",
+      "errors_count": 5,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: sla_tr_exception",
+        "decisão interna aberta: qualification_evidence",
+        "decisão interna aberta: availability_commitment",
+        "data 02/09 em texto do cliente sem origem no insumo nem no cálculo do motor: sections"
+      ],
+      "codes": [
+        "DATA-SEM-ORIGEM",
+        "DECISAO-ABERTA"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:23:02.425556+00:00",
+      "errors_count": 3,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: sla_tr_exception",
+        "decisão interna aberta: qualification_evidence"
+      ],
+      "codes": [
+        "DECISAO-ABERTA"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "rules_version": 10,
+  "data_mode": "test",
+  "client_name": "Hospital São Lucas do Vale",
+  "opportunity": "Desktops virtuais Citrix para 1.100 estações",
+  "code": "HSLV-VDI-2026-09",
+  "opportunity_id": "caso-05",
+  "input_assessment": {
+    "status": "sufficient",
+    "missing": [],
+    "reason": "O material identifica o cliente (Hospital São Lucas do Vale, contato Juliana Castro, Gerente de TI) e uma necessidade concreta sobre ativos identificáveis: migrar cerca de 1.100 estações físicas com Windows 10 para desktops virtuais Citrix, com acesso ao prontuário eletrônico, inclusive por thin clients, com disponibilidade 24x7 e conformidade com a LGPD."
+  },
+  "catalog_fit": {
+    "status": "no_catalog",
+    "requested": "Assessment, desenho e estimativa de implantação de desktops virtuais (VDI) com Citrix para cerca de 1.100 estações, substituindo desktops físicos com Windows 10, com acesso ao prontuário eletrônico a partir de thin clients.",
+    "reason": "O catálogo fornecido cobre apenas produtos Akamai de borda (Edge DNS, App & API Protector, Malware Protection, Application Load Balancer, Global Traffic Management, Ion, Prolexic, Account Protector, IP Accelerator e Bot Manager Premier). Nenhum deles entrega virtualização de desktops, Citrix, migração de sistema operacional ou thin clients. A disponibilidade 24x7 e a LGPD são requisitos do ambiente VDI e não justificam encaixar produtos de borda sem relação com o pedido."
+  },
+  "open_questions": [
+    "A POPULOS dispõe de oferta aprovada e catálogo para virtualização de desktops Citrix que possa ser fornecido para esta proposta?",
+    "O hospital já possui licenciamento Citrix e Windows (VDA/Microsoft) ou a proposta deve contemplar o fornecimento dessas licenças?",
+    "Onde os desktops virtuais devem ser hospedados (data center próprio, nuvem pública ou modelo híbrido) e qual a infraestrutura atual disponível?",
+    "Qual é o sistema de prontuário eletrônico em uso e como ele é acessado hoje (aplicação cliente, web ou publicada)?",
+    "Qual a distribuição das 1.100 estações por perfil (recepção, enfermagem, farmácia, administrativo) e quantas serão thin clients?"
+  ]
+}

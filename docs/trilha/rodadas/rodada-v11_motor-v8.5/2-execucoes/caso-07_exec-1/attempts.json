@@ -1,0 +1,31 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:23:27.437699+00:00",
+      "errors_count": 6,
+      "errors": [
+        "citação da aprovação não nomeia o aprovador (Vitor): engagement_type",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor): warranty",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor): license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor): sla_applicability"
+      ],
+      "codes": [
+        "APROVACAO-CITACAO"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:23:40.382917+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "codes": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb11/w-6f6b50e2/execucao/final/SOLARIS-PORTAL-2026.docx"
+      }
+    }
+  ]
+}

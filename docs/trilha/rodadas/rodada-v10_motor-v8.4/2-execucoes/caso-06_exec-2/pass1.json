@@ -1,0 +1,30 @@
+{
+  "rules_version": 10,
+  "data_mode": "test",
+  "input_assessment": {
+    "status": "insufficient",
+    "missing": [
+      "identificação do cliente (razão social, CNPJ ou empresa)",
+      "contato completo do solicitante (apenas o primeiro nome foi informado)",
+      "identificação do site ou dos ativos a proteger (domínios, aplicações, APIs)",
+      "necessidade concreta: ameaça, incidente ou requisito que motiva o pedido",
+      "ambiente atual (hospedagem, origens, CDN ou proteção existente)",
+      "tipo de engajamento esperado, prazos e restrições"
+    ],
+    "reason": "O material é uma mensagem de formulário ('Quero proteger meu site. Me mandem uma proposta.') sem empresa, sem telefone, sem identificação do site e sem uma necessidade concreta sobre ativos identificáveis. Não há decisões internas fornecidas. O pedido é de segurança genérica, que não permite selecionar nem dimensionar produtos."
+  },
+  "catalog_fit": {
+    "status": "fits",
+    "requested": "proteção de site (pedido genérico, sem detalhamento)",
+    "reason": "Proteção de aplicações web está coberta pelo catálogo; o encaixe de produtos específicos só pode ser avaliado após a qualificação, pois linguagem genérica de segurança não sustenta a inclusão de nenhum produto."
+  },
+  "open_questions": [
+    "Qual é o nome da empresa (razão social e CNPJ) e quem será o contato responsável, com e-mail e telefone?",
+    "Qual site ou quais domínios, aplicações e APIs precisam ser protegidos?",
+    "Qual problema motivou o pedido: ataques já sofridos (por exemplo, DDoS, invasão, abuso por robôs, fraude em login) ou uma exigência de conformidade?",
+    "Onde o site está hospedado hoje (nuvem, data center próprio, uma ou várias origens) e já existe alguma solução de CDN, WAF ou proteção contratada?",
+    "Os usuários enviam arquivos ou fazem login no site, e existem APIs públicas expostas?",
+    "Qual o volume aproximado de tráfego e se há eventos de pico ou datas críticas previstas?",
+    "O que se espera do projeto (levantamento, desenho ou implantação), em que prazo e com qual orçamento ou restrição?"
+  ]
+}

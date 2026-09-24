@@ -1,0 +1,27 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:02:09.888235+00:00",
+      "errors_count": 5,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: support_resolution_times",
+        "decisão interna aberta: qualification_certifications",
+        "decisão interna aberta: implementation_deadline",
+        "integração SIEM sem controle de dados sensíveis"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:02:17.834681+00:00",
+      "errors_count": 4,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: support_resolution_times",
+        "decisão interna aberta: qualification_certifications",
+        "decisão interna aberta: implementation_deadline"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:23:12.415775+00:00",
+      "errors_count": 8,
+      "errors": [
+        "citação da aprovação não nomeia o aprovador (Vitor): engagement_type",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor): license_supply",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor): warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor): support",
+        "valor aprovado não aparece na citação do insumo: qualification",
+        "citação da aprovação não nomeia o aprovador (Vitor): qualification"
+      ],
+      "codes": [
+        "APROVACAO-CITACAO"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:23:28.549858+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "codes": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb11/w-b57d871d/execucao/final/POPULOS-RCS-PE112-2026.docx"
+      }
+    }
+  ]
+}

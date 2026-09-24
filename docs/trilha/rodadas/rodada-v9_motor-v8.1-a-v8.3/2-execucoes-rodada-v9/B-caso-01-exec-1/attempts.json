@@ -1,0 +1,29 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:32:36.569593+00:00",
+      "errors_count": 2,
+      "errors": [
+        "faixa 1–2 semanas diverge da soma das fases (3–4): Levantamento (1 semana), configuração e validação (1 semana) e troca de delegação com esta",
+        "dimensionamento estimado sem premissa de responsável: Esforço de implantação"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:32:43.199352+00:00",
+      "errors_count": 1,
+      "errors": [
+        "dimensionamento estimado sem premissa de responsável: Esforço de implantação"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T16:32:48.635698+00:00",
+      "errors_count": 1,
+      "errors": [
+        "dimensionamento estimado sem premissa de responsável: Esforço de implantação"
+      ]
+    }
+  ]
+}

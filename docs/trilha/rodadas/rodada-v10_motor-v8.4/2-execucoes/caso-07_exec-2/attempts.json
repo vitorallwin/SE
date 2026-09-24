@@ -1,0 +1,36 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:02:30.926722+00:00",
+      "errors_count": 7,
+      "errors": [
+        "decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para 'phased')",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): engagement_type",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): license_supply",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): sla_applicability"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:02:57.897776+00:00",
+      "errors_count": 1,
+      "errors": [
+        "decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para 'phased')"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T17:03:06.496627+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb10/w-750e2039/execucao/final/SOLARIS-2026-AAP-GTM.docx"
+      }
+    }
+  ]
+}

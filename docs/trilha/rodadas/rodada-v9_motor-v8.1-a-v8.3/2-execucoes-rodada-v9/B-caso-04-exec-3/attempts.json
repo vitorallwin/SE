@@ -1,0 +1,32 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:33:05.548658+00:00",
+      "errors_count": 3,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "faixa 1–2 semanas diverge da soma das fases (4–5): Levantamento e desenho (1 semana), configuração e observação (2 semanas) e ativação e acei",
+        "dimensionamento estimado sem premissa de responsável: Esforço de serviços"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:33:11.083479+00:00",
+      "errors_count": 2,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "dimensionamento estimado sem premissa de responsável: Esforço de serviços"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T16:33:15.734129+00:00",
+      "errors_count": 2,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "dimensionamento estimado sem premissa de responsável: Esforço de serviços"
+      ]
+    }
+  ]
+}

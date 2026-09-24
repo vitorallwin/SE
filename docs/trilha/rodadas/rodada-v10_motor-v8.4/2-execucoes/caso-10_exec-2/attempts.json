@@ -1,0 +1,23 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:02:29.546848+00:00",
+      "errors_count": 4,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): engagement_type",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): license_supply"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:02:42.665348+00:00",
+      "errors_count": 1,
+      "errors": [
+        "decisão interna aberta: warranty"
+      ]
+    }
+  ]
+}

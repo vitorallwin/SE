@@ -1,0 +1,20 @@
+{
+  "rules_version": 9,
+  "data_mode": "test",
+  "client_name": "Hospital São Lucas do Vale",
+  "opportunity": "Desktops virtuais Citrix — assessment e desenho da solução",
+  "input_assessment": {
+    "status": "sufficient",
+    "missing": [],
+    "reason": "O material identifica o cliente (Hospital São Lucas do Vale, contato Juliana Castro, Gerente de TI) e uma necessidade concreta sobre ativos identificáveis: migrar cerca de 1.100 estações físicas com Windows 10 para desktops virtuais Citrix, com acesso ao prontuário eletrônico, inclusive por thin clients, com disponibilidade 24x7 e conformidade com a LGPD."
+  },
+  "catalog_fit": {
+    "status": "no_catalog",
+    "requested": "Assessment, desenho e estimativa de implantação de infraestrutura de desktops virtuais (VDI) com Citrix para cerca de 1.100 estações, incluindo thin clients e acesso ao prontuário eletrônico.",
+    "reason": "O catálogo fornecido cobre apenas produtos Akamai de DNS, entrega, segurança de aplicações e rede na borda (Edge DNS, App & API Protector, Malware Protection, ALB, GTM, Ion, Prolexic, Account Protector, IP Accelerator, Bot Manager Premier). Nenhum deles oferece virtualização de desktops, Citrix, licenciamento de VDI ou migração de estações Windows. Os requisitos de disponibilidade 24x7 e LGPD não justificam mapear o pedido para produtos de borda não relacionados."
+  },
+  "open_questions": [
+    "A POPULOS possui oferta aprovada de VDI/Citrix fora deste catálogo para atender o pedido, ou o caso deve ser declinado ou encaminhado a outro parceiro?",
+    "Existe algum componente publicado na internet (portal de acesso Citrix, prontuário eletrônico ou APIs) que o hospital deseje proteger ou acelerar, o que poderia justificar uma proposta separada com o catálogo atual?"
+  ]
+}

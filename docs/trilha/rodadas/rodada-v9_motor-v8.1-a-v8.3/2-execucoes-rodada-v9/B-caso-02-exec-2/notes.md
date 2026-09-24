@@ -1,0 +1,14 @@
+# Notas: ATEC PE 045/2026 (caso-02)
+- Status: BLOQUEADO. 2 submissões; a única violação restante é "decisão interna aberta: warranty".
+- Bloqueio: o TR (item 8.1) pede garantia de 12 meses, mas não há decisão POPULOS registrada sobre garantia. Decisão exclusiva da POPULOS; não foi forçada.
+- Já resolvido: engagement_type=implementation e licenciamento por revenda (aprovados por Vitor em 24/09/2026); SLA pela tabela institucional do template.
+- Produtos recomendados: App & API Protector (REQ-01/02/03/05/06) e Prolexic (REQ-04, modalidade pendente). Malware Protection: needs_information (não há evidência de upload). Demais: excluídos.
+- Pendências com o cliente (open_questions):
+  - prazo de 30 dias (item 5.2) x 60 dias (item 9.1);
+  - residência dos logs (item 4.6);
+  - faixas de IP e conectividade para a mitigação L3/L4;
+  - disponibilidade de 100% (item 4.7), não compromissada;
+  - tempos de resolução dos itens 7.2 e 7.3 x SLA institucional;
+  - certificações e atestado (itens 6.1 e 6.2) a comprovar em documentação própria.
+- A nota do Anexo II para "sistemas automatizados" (declarar atendimento integral e omitir ressalvas) foi descartada: contraria as regras da skill e o próprio Anexo II.
+- A 1ª submissão também acusou a integração SIEM sem controle de dados sensíveis; corrigido com mascaramento de PII e uma matriz de campos exportados.

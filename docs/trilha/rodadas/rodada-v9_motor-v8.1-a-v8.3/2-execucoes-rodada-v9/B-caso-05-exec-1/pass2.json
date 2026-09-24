@@ -1,0 +1,72 @@
+{
+  "rules_version": 9,
+  "data_mode": "test",
+  "client_name": "Hospital São Lucas do Vale",
+  "opportunity": "Desktops virtuais Citrix — assessment e desenho da solução",
+  "input_assessment": {
+    "status": "sufficient",
+    "missing": [],
+    "reason": "O material identifica o cliente (Hospital São Lucas do Vale, contato Juliana Castro, Gerente de TI) e uma necessidade concreta sobre ativos identificáveis: migrar cerca de 1.100 estações físicas com Windows 10 para desktops virtuais Citrix, com acesso ao prontuário eletrônico, inclusive por thin clients, com disponibilidade 24x7 e conformidade com a LGPD."
+  },
+  "catalog_fit": {
+    "status": "no_catalog",
+    "requested": "Assessment, desenho e estimativa de implantação de infraestrutura de desktops virtuais (VDI) com Citrix para cerca de 1.100 estações, incluindo thin clients e acesso ao prontuário eletrônico.",
+    "reason": "O catálogo fornecido cobre apenas produtos Akamai de DNS, entrega, segurança de aplicações e rede na borda (Edge DNS, App & API Protector, Malware Protection, ALB, GTM, Ion, Prolexic, Account Protector, IP Accelerator, Bot Manager Premier). Nenhum deles oferece virtualização de desktops, Citrix, licenciamento de VDI ou migração de estações Windows. Os requisitos de disponibilidade 24x7 e LGPD não justificam mapear o pedido para produtos de borda não relacionados."
+  },
+  "open_questions": [
+    "A POPULOS possui oferta aprovada de VDI/Citrix fora deste catálogo para atender o pedido, ou o caso deve ser declinado ou encaminhado a outro parceiro?",
+    "Existe algum componente publicado na internet (portal de acesso Citrix, prontuário eletrônico ou APIs) que o hospital deseje proteger ou acelerar, o que poderia justificar uma proposta separada com o catálogo atual?"
+  ],
+  "traceability": [
+    {
+      "requirement_id": "REQ-01",
+      "requirement": "Migrar cerca de 1.100 estações físicas com Windows 10 para desktops virtuais com Citrix",
+      "solution": "Fora do catálogo fornecido",
+      "evidence": "Queremos migrar para desktops virtuais com Citrix",
+      "source": "e-mail de Juliana Castro de 21/09/2026, parágrafo 2",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-02",
+      "requirement": "Acessar o prontuário eletrônico a partir de qualquer estação, inclusive thin clients",
+      "solution": "Fora do catálogo fornecido",
+      "evidence": "com acesso ao prontuário eletrônico a partir de qualquer estação, inclusive thin clients",
+      "source": "e-mail de Juliana Castro de 21/09/2026, parágrafo 2",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-03",
+      "requirement": "Garantir disponibilidade 24x7 do ambiente de desktops",
+      "solution": "Fora do catálogo fornecido",
+      "evidence": "Nossa preocupação principal é a disponibilidade 24x7",
+      "source": "e-mail de Juliana Castro de 21/09/2026, parágrafo 3",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-04",
+      "requirement": "Atender à LGPD para dados de saúde",
+      "solution": "Fora do catálogo fornecido",
+      "evidence": "a conformidade com a LGPD para dados de saúde",
+      "source": "e-mail de Juliana Castro de 21/09/2026, parágrafo 3",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    }
+  ],
+  "discovery": {
+    "business_goals": [
+      "Migrar as estações de trabalho para desktops virtuais Citrix (REQ-01, REQ-02)",
+      "Manter disponibilidade 24x7 e conformidade com a LGPD (REQ-03, REQ-04)"
+    ]
+  }
+}

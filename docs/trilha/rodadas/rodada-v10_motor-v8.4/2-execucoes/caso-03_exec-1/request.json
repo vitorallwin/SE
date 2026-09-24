@@ -1,0 +1,12 @@
+{
+  "proposal_date": "2026-09-24",
+  "data_mode": "test",
+  "template_version": "2026.09.24-1",
+  "configuration": "B",
+  "author_model": "claude-opus-5-5",
+  "engine_version": "motor-v8.4",
+  "rules_version": 10,
+  "skill_sha256": "b5f3ae9148ae594624fdeb2c874a89ff46cd608c7d71951eff8360a71c8260f2",
+  "max_iterations": 3,
+  "source_folder": "caso-03"
+}

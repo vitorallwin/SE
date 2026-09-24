@@ -1,0 +1,26 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:07:54.318808+00:00",
+      "errors_count": 7,
+      "errors": [
+        "decisão interna aberta: support_severity_times",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor): license_supply",
+        "valor aprovado não aparece na citação do insumo: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor): warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor): support",
+        "valor aprovado não aparece na citação do insumo: qualification"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:08:07.564835+00:00",
+      "errors_count": 1,
+      "errors": [
+        "decisão interna aberta: support_severity_times"
+      ]
+    }
+  ]
+}

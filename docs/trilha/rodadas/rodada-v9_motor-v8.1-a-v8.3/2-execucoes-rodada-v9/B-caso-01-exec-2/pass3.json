@@ -1,0 +1,620 @@
+{
+  "rules_version": 9,
+  "data_mode": "test",
+  "client_name": "Vértice Educação",
+  "opportunity": "Migração do DNS autoritativo para Akamai Edge DNS com DNSSEC",
+  "code": "POPULOS-VERTICE-EDGEDNS-2026-09",
+  "opportunity_id": "caso-01",
+  "input_assessment": {
+    "status": "sufficient",
+    "missing": [],
+    "reason": "O material identifica o cliente (Vértice Educação), o contato técnico, a necessidade concreta (migrar o DNS autoritativo de 4 zonas identificadas para Edge DNS com DNSSEC), o volume aproximado de registros e a data limite (11/01/2027)."
+  },
+  "catalog_fit": {
+    "status": "fits",
+    "requested": "Migração do DNS autoritativo para Akamai Edge DNS com DNSSEC",
+    "reason": "Edge DNS consta do catálogo fornecido com as capacidades DNS autoritativo, DNSSEC e zonas primárias e secundárias."
+  },
+  "client_scope": {
+    "type": "implementation",
+    "excludes_implementation": false,
+    "source": "E-mail de 22/09/2026: \"Queremos migrar o DNS autoritativo para a Akamai (Edge DNS), com DNSSEC.\" e \"Precisamos de uma proposta de implantação.\"",
+    "forbidden_in_committed": []
+  },
+  "governance": {
+    "engagement_type": {
+      "state": "commitment",
+      "value": "implementation",
+      "approved_value": "implementation",
+      "source": "Decisões internas POPULOS fornecidas para este caso",
+      "approved_by": "Vitor (dono comercial)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "| engagement_type | implementation | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |"
+    },
+    "warranty": {
+      "state": "commitment",
+      "value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final.",
+      "approved_value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final.",
+      "source": "Decisões internas POPULOS fornecidas para este caso",
+      "approved_by": "Vitor (dono comercial)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "| Garantia | A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |"
+    },
+    "license_supply": {
+      "state": "commitment",
+      "value": "As licenças Akamai serão adquiridas diretamente pela Vértice Educação junto à Akamai.",
+      "approved_value": "As licenças Akamai serão adquiridas diretamente pela Vértice Educação junto à Akamai.",
+      "source": "Decisões internas POPULOS fornecidas para este caso",
+      "approved_by": "Vitor (dono comercial)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "| Licenciamento | As licenças Akamai serão adquiridas diretamente pela Vértice Educação junto à Akamai. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |"
+    },
+    "sla": {
+      "state": "commitment",
+      "basis": "populos_standard",
+      "value": "Tabela institucional do template POPULOS",
+      "source": "Template POPULOS vigente",
+      "template_version": "2026.09.24-1"
+    },
+    "effort_estimate": {
+      "state": "commitment",
+      "value": "3 a 4 semanas",
+      "approved_value": "3 a 4 semanas",
+      "source": "Decisões internas POPULOS fornecidas para este caso",
+      "approved_by": "Ana (arquiteta responsável)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approver_role": "arquiteto",
+      "approval_quote": "| Estimativa de esforço | 3 a 4 semanas | Ana (arquiteta responsável) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |"
+    }
+  },
+  "discovery": {
+    "business_goals": [
+      "Eliminar a dependência do painel do registrador para gestão do DNS autoritativo (REQ-01, REQ-04)",
+      "Proteger a integridade das respostas DNS das 4 zonas com DNSSEC (REQ-02)",
+      "Concluir e estabilizar a migração antes do início das matrículas em 11/01/2027 (REQ-05)",
+      "Preservar a disponibilidade do portal do aluno durante a migração (REQ-06)"
+    ]
+  },
+  "traceability": [
+    {
+      "requirement_id": "REQ-01",
+      "requirement": "Migrar o DNS autoritativo das zonas da Vértice Educação para o Edge DNS",
+      "solution": "edge_dns",
+      "evidence": "Cliente relata dois episódios no ano em que o painel do registrador ficou fora do ar e pede a migração para Edge DNS",
+      "source": "E-mail de 22/09/2026, parágrafo 1",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-02",
+      "requirement": "Habilitar DNSSEC nas zonas migradas",
+      "solution": "edge_dns",
+      "evidence": "Pedido explícito de migração com DNSSEC",
+      "source": "E-mail de 22/09/2026, parágrafo 1",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-03",
+      "requirement": "Migrar 4 zonas (vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br, vestibularvertice.com.br) com cerca de 380 registros dos tipos A, AAAA, CNAME, MX, TXT e SRV",
+      "solution": "edge_dns",
+      "evidence": "Inventário de zonas e tipos de registro informado pelo cliente",
+      "source": "E-mail de 22/09/2026, parágrafo 2",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-04",
+      "requirement": "Permitir alteração de registros sem depender do painel do registrador",
+      "solution": "edge_dns",
+      "evidence": "Episódios em que não foi possível alterar registros com o painel fora do ar",
+      "source": "E-mail de 22/09/2026, parágrafo 1",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-05",
+      "requirement": "Concluir e estabilizar a migração antes de 11/01/2027",
+      "solution": "edge_dns",
+      "evidence": "Início do período de matrículas em 11/01/2027",
+      "source": "E-mail de 22/09/2026, parágrafo 3",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-06",
+      "requirement": "Migrar sem indisponibilidade de resolução DNS para o portal do aluno",
+      "solution": "edge_dns",
+      "evidence": "Cliente declara que não pode haver indisponibilidade no portal do aluno",
+      "source": "E-mail de 22/09/2026, parágrafo 3",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    }
+  ],
+  "source_coverage": [
+    {
+      "ref": "E-mail de 22/09/2026, parágrafo 1",
+      "statement": "Rede de faculdades particulares com 14 unidades",
+      "status": "descartado",
+      "targets": [],
+      "reason": "Contexto institucional; o número de unidades não altera o dimensionamento das zonas DNS."
+    },
+    {
+      "ref": "E-mail de 22/09/2026, parágrafo 1",
+      "statement": "DNS hoje fica no painel do registrador, com dois episódios de indisponibilidade do painel no ano",
+      "status": "coberto",
+      "targets": [
+        "REQ-01",
+        "REQ-04",
+        "sumário"
+      ]
+    },
+    {
+      "ref": "E-mail de 22/09/2026, parágrafo 1",
+      "statement": "Migrar o DNS autoritativo para Edge DNS com DNSSEC",
+      "status": "coberto",
+      "targets": [
+        "REQ-01",
+        "REQ-02",
+        "escopo"
+      ]
+    },
+    {
+      "ref": "E-mail de 22/09/2026, parágrafo 2",
+      "statement": "4 zonas com cerca de 380 registros A, AAAA, CNAME, MX, TXT e SRV",
+      "status": "coberto",
+      "targets": [
+        "REQ-03",
+        "dimensionamento"
+      ]
+    },
+    {
+      "ref": "E-mail de 22/09/2026, parágrafo 3",
+      "statement": "Migração concluída e estável antes do início das matrículas em 11/01/2027",
+      "status": "coberto",
+      "targets": [
+        "REQ-05",
+        "sumário"
+      ]
+    },
+    {
+      "ref": "E-mail de 22/09/2026, parágrafo 3",
+      "statement": "Não pode haver indisponibilidade no portal do aluno",
+      "status": "coberto",
+      "targets": [
+        "REQ-06",
+        "premissas"
+      ]
+    },
+    {
+      "ref": "E-mail de 22/09/2026, parágrafo 4",
+      "statement": "Site principal e portal do aluno em um único servidor de um provedor de hospedagem",
+      "status": "coberto",
+      "targets": [
+        "premissas",
+        "exclusões"
+      ]
+    },
+    {
+      "ref": "E-mail de 22/09/2026, parágrafo 4",
+      "statement": "Melhoria de segurança do site talvez no futuro, sem orçamento agora",
+      "status": "coberto",
+      "targets": [
+        "exclusões"
+      ]
+    },
+    {
+      "ref": "E-mail de 22/09/2026, parágrafo 5",
+      "statement": "Pedido de proposta de implantação",
+      "status": "coberto",
+      "targets": [
+        "engajamento"
+      ]
+    }
+  ],
+  "client_numbers": [
+    {
+      "quote": "14 unidades",
+      "ref": "E-mail de 22/09/2026, parágrafo 1",
+      "destination": "descartado_com_motivo",
+      "reason": "Contexto institucional sem efeito sobre o dimensionamento do DNS."
+    },
+    {
+      "quote": "dois episódios este ano",
+      "ref": "E-mail de 22/09/2026, parágrafo 1",
+      "destination": "contexto_de_dor",
+      "summary_marker": "dois episódios"
+    },
+    {
+      "quote": "4 zonas",
+      "ref": "E-mail de 22/09/2026, parágrafo 2",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "cerca de 380 registros",
+      "ref": "E-mail de 22/09/2026, parágrafo 2",
+      "destination": "dimensionamento"
+    },
+    {
+      "quote": "11/01/2027",
+      "ref": "E-mail de 22/09/2026, parágrafo 3",
+      "destination": "meta"
+    }
+  ],
+  "open_questions": [
+    "Qual é o prazo previsto pela Vértice Educação para a aquisição das licenças Edge DNS diretamente junto à Akamai?",
+    "Qual data a Vértice Educação define para o congelamento de mudanças no DNS antes do início das matrículas em 11/01/2027?",
+    "Quem detém o acesso administrativo ao registrador de cada domínio para a troca de servidores de nomes e a publicação do registro DS?",
+    "A zona portalaluno.vertice.edu.br é hoje delegada a partir de vertice.edu.br ou está hospedada na mesma zona?"
+  ],
+  "solution_decisions": [
+    {
+      "product_id": "edge_dns",
+      "status": "recommended",
+      "requirement_ids": [
+        "REQ-01",
+        "REQ-02",
+        "REQ-03",
+        "REQ-04",
+        "REQ-05",
+        "REQ-06"
+      ],
+      "rationale": "O cliente pede explicitamente o DNS autoritativo na Akamai com DNSSEC para 4 zonas, após dois episódios de indisponibilidade do painel do registrador.",
+      "client_summary": "DNS autoritativo das 4 zonas da Vértice Educação servido pelo Edge DNS, com DNSSEC e gestão de zonas por portal e API independentes do registrador.",
+      "capabilities": [
+        "DNS autoritativo",
+        "DNSSEC",
+        "API de gestão"
+      ]
+    },
+    {
+      "product_id": "gtm",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Existe uma única origem (um servidor no provedor de hospedagem); não há múltiplos data centers ou failover entre provedores."
+    },
+    {
+      "product_id": "alb",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Existe somente uma origem; não há roteamento por requisição entre origens."
+    },
+    {
+      "product_id": "app_api_protector",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "O cliente declara que a melhoria de segurança do site não é o momento e não há orçamento."
+    },
+    {
+      "product_id": "malware_protection",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há fluxo de upload nem requisito de inspeção de arquivos no material."
+    },
+    {
+      "product_id": "ion",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há meta de latência ou experiência ligada a uma jornada web."
+    },
+    {
+      "product_id": "prolexic",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há requisito de DDoS volumétrico L3/L4."
+    },
+    {
+      "product_id": "account_protector",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há fraude ou abuso de contas relatado."
+    },
+    {
+      "product_id": "ip_accelerator",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há aplicação TCP/UDP não HTTP com requisito de transporte."
+    },
+    {
+      "product_id": "bot_manager",
+      "status": "excluded",
+      "requirement_ids": [],
+      "rationale": "Não há caso de uso de automação maliciosa evidenciado."
+    }
+  ],
+  "products": [
+    "edge_dns"
+  ],
+  "architecture": {
+    "summary": "As 4 zonas da Vértice Educação (vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br) passam a ser servidas pelo Edge DNS como servidor autoritativo primário, com DNSSEC habilitado. Os registros atuais são reproduzidos sem alteração de destino: o site principal e o portal do aluno continuam no servidor atual do provedor de hospedagem. A troca de servidores de nomes no registrador ocorre somente após a validação de equivalência das respostas, e a publicação do registro DS ocorre em etapa separada, após a estabilização da delegação."
+  },
+  "sections": [
+    {
+      "title": "Resumo executivo",
+      "paragraphs": [
+        "A Vértice Educação mantém hoje o DNS dos seus domínios no painel do registrador e registrou dois episódios neste ano em que o painel ficou fora do ar e não foi possível alterar registros. Esta proposta cobre a implantação do Akamai Edge DNS como DNS autoritativo das 4 zonas da instituição, com DNSSEC, executada pela POPULOS.",
+        "O trabalho reproduz os cerca de 380 registros atuais, valida a equivalência das respostas antes da troca de servidores de nomes e só então habilita o DNSSEC, reduzindo o risco para o portal do aluno durante a transição.",
+        "Viabilidade frente às matrículas: com início em 24/09/2026 e duração de 3 a 4 semanas, a conclusão da implantação fica entre 15/10/2026 e 22/10/2026, antes de 11/01/2027. Essas datas dependem da disponibilidade das licenças, adquiridas diretamente pela Vértice Educação junto à Akamai, cujo prazo ainda não foi informado; por isso a viabilidade é classificada como parcial até a confirmação desse prazo e da data de congelamento de mudanças."
+      ]
+    }
+  ],
+  "dimensioning": [
+    [
+      "Zonas DNS",
+      "4",
+      "Informado pelo cliente: vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br, vestibularvertice.com.br",
+      "Confirmado"
+    ],
+    [
+      "Registros DNS",
+      "cerca de 380",
+      "Informado pelo cliente; contagem exata confirmada na exportação das zonas",
+      "Pendente"
+    ],
+    [
+      "Tipos de registro",
+      "A, AAAA, CNAME, MX, TXT, SRV",
+      "Informado pelo cliente",
+      "Confirmado"
+    ]
+  ],
+  "estimates": [
+    {
+      "item": "Esforço de implantação",
+      "value": "3 a 4 semanas",
+      "owner": "Ana",
+      "owner_role": "arquiteto"
+    }
+  ],
+  "assessment_items": [
+    "Exportação e inventário dos registros das 4 zonas no registrador atual, incluindo TTLs.",
+    "Verificação da delegação de portalaluno.vertice.edu.br e dos registros de e-mail (MX, SRV e TXT).",
+    "Identificação dos responsáveis e acessos administrativos ao registrador de cada domínio."
+  ],
+  "client_roles": [
+    "Coordenador de Infraestrutura (ponto focal técnico e aprovador das janelas)",
+    "Responsável pelo acesso administrativo ao registrador dos domínios",
+    "Responsável pelo serviço de e-mail, para validação de MX, SRV e TXT"
+  ],
+  "scope": {
+    "included": [
+      "Criação e configuração das 4 zonas no Edge DNS.",
+      "Importação e revisão dos cerca de 380 registros A, AAAA, CNAME, MX, TXT e SRV.",
+      "Validação de equivalência entre as respostas do DNS atual e do Edge DNS antes da troca de delegação.",
+      "Redução planejada de TTLs e troca de servidores de nomes no registrador, executada pelo cliente com acompanhamento da POPULOS.",
+      "Habilitação do DNSSEC nas 4 zonas e publicação do registro DS com acompanhamento da POPULOS.",
+      "Plano de reversão e acompanhamento da estabilização após a troca.",
+      "Repasse de conhecimento sobre gestão de zonas pelo portal e pela API do Edge DNS."
+    ],
+    "deliverables": [
+      "Inventário das zonas e registros migrados.",
+      "Relatório de validação de equivalência de respostas por zona.",
+      "Runbook de troca de delegação, publicação de DS e reversão.",
+      "Documentação as-built da configuração do Edge DNS.",
+      "Sessão de repasse de conhecimento."
+    ],
+    "excluded": [
+      "Alterações no servidor de hospedagem, no site principal ou no portal do aluno.",
+      "Proteção de aplicações web, WAF ou mitigação de DDoS de aplicação.",
+      "Balanceamento ou distribuição de tráfego entre origens.",
+      "Aquisição das licenças Akamai, feita diretamente pela Vértice Educação.",
+      "Mudanças no serviço de e-mail além da reprodução dos registros existentes."
+    ]
+  },
+  "delivery": {
+    "phases": [
+      {
+        "name": "Levantamento e preparação",
+        "kind": "preparation",
+        "weeks": [
+          1,
+          1
+        ],
+        "duration": "1 semana",
+        "objective": "Inventariar as 4 zonas, confirmar acessos ao registrador e planejar as janelas",
+        "dependency": "Licenças Edge DNS ativas e acesso à exportação das zonas",
+        "outputs": [
+          "Inventário de zonas e registros",
+          "Plano de janelas e reversão"
+        ]
+      },
+      {
+        "name": "Configuração e validação",
+        "kind": "configuration",
+        "weeks": [
+          1,
+          1
+        ],
+        "duration": "1 semana",
+        "objective": "Criar as zonas no Edge DNS, importar registros e validar a equivalência das respostas",
+        "dependency": "Inventário aprovado pelo cliente",
+        "outputs": [
+          "Zonas configuradas",
+          "Relatório de validação de equivalência"
+        ]
+      },
+      {
+        "name": "Troca de delegação, DNSSEC e estabilização",
+        "kind": "production",
+        "weeks": [
+          1,
+          2
+        ],
+        "duration": "Até 2 semanas",
+        "objective": "Trocar os servidores de nomes, habilitar DNSSEC, publicar o DS e acompanhar a estabilização",
+        "dependency": "Janela aprovada pelo cliente e acesso ao registrador",
+        "outputs": [
+          "Delegação migrada",
+          "DNSSEC ativo e validado",
+          "Documentação as-built",
+          "Repasse de conhecimento"
+        ]
+      }
+    ],
+    "responsibilities": [
+      {
+        "party": "Vértice Educação",
+        "responsibility": "Aquisição das licenças Edge DNS diretamente junto à Akamai."
+      },
+      {
+        "party": "Vértice Educação",
+        "responsibility": "Acesso ao registrador, execução da troca de servidores de nomes e publicação do DS."
+      },
+      {
+        "party": "Vértice Educação",
+        "responsibility": "Aprovação das janelas de mudança e do inventário de registros."
+      }
+    ],
+    "populos_roles": [
+      [
+        "Arquiteto responsável",
+        "Desenho da migração, validação de equivalência e plano de reversão",
+        "Durante todo o projeto"
+      ],
+      [
+        "Engenheiro de implantação",
+        "Configuração das zonas, DNSSEC e acompanhamento das janelas",
+        "Fases 2 e 3"
+      ],
+      [
+        "Gerente de projeto",
+        "Cronograma, comunicação e aceite",
+        "Durante todo o projeto"
+      ]
+    ]
+  },
+  "assumptions": [
+    "As licenças Edge DNS estarão ativas no início do projeto; o cronograma de 3 a 4 semanas começa a contar a partir dessa ativação.",
+    "O cliente fornecerá a exportação completa das zonas ou acesso de leitura ao painel atual na primeira semana.",
+    "O registrador de cada domínio permite a troca de servidores de nomes e a publicação de registro DS.",
+    "O conjunto de registros não recebe alterações fora do processo acordado entre a validação de equivalência e a troca de delegação."
+  ],
+  "restrictions": [
+    "O serviço cobre apenas o DNS autoritativo das 4 zonas informadas.",
+    "A troca de delegação e a publicação do DS dependem de ação do cliente no registrador.",
+    "Janelas de mudança com impacto no DNS ocorrem somente com aprovação prévia do cliente.",
+    "Nenhuma mudança de DNS é executada durante o congelamento de mudanças definido pelo cliente antes das matrículas."
+  ],
+  "risks": [
+    {
+      "risk": "Atraso na aquisição das licenças pela Vértice Educação",
+      "impact": "Deslocamento do cronograma em direção ao período de matrículas",
+      "mitigation": "Confirmação do prazo de aquisição na assinatura e acompanhamento semanal"
+    },
+    {
+      "risk": "Registro omitido ou divergente na importação",
+      "impact": "Falha de resolução de um serviço após a troca",
+      "mitigation": "Validação de equivalência registro a registro antes da troca e TTLs reduzidos para reversão rápida"
+    },
+    {
+      "risk": "Erro na publicação do DS",
+      "impact": "Falha de validação DNSSEC em resolvedores validadores",
+      "mitigation": "DS publicado em etapa separada, após a estabilização da delegação, com runbook de remoção"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "requirement_id": "REQ-01",
+      "phase": "committed",
+      "criterion": "Consultas NS às 4 zonas retornam exclusivamente os servidores de nomes do Edge DNS, verificadas a partir de pelo menos 3 resolvedores públicos."
+    },
+    {
+      "requirement_id": "REQ-02",
+      "phase": "committed",
+      "criterion": "As 4 zonas retornam respostas assinadas e a cadeia DNSSEC é validada com sucesso (flag AD) em pelo menos 2 resolvedores públicos validadores."
+    },
+    {
+      "requirement_id": "REQ-03",
+      "phase": "committed",
+      "criterion": "O relatório de validação mostra 100% dos registros inventariados com resposta idêntica entre o DNS atual e o Edge DNS antes da troca de delegação."
+    },
+    {
+      "requirement_id": "REQ-04",
+      "phase": "committed",
+      "criterion": "Uma alteração de registro de teste é criada e removida pelo cliente no portal ou API do Edge DNS, sem uso do painel do registrador, durante o repasse de conhecimento."
+    },
+    {
+      "requirement_id": "REQ-05",
+      "phase": "committed",
+      "criterion": "O aceite final é registrado com as 4 zonas estáveis por pelo menos 5 dias corridos após a publicação do DS, antes da data de congelamento de mudanças definida pelo cliente."
+    },
+    {
+      "requirement_id": "REQ-06",
+      "phase": "committed",
+      "criterion": "Durante cada janela de troca, o nome do portal do aluno resolve para o mesmo endereço do servidor atual em verificações a cada 5 minutos a partir de pelo menos 3 resolvedores públicos."
+    }
+  ],
+  "event_readiness": [
+    "Congelamento de mudanças no DNS antes de 11/01/2027, em data a ser definida pela Vértice Educação.",
+    "Revisão de capacidade: confirmação de que as 4 zonas e seus registros estão completos e com TTLs adequados antes das matrículas.",
+    "Teste de resolução das 4 zonas a partir de múltiplos resolvedores, como teste de prontidão antes do congelamento.",
+    "Monitoramento da resolução do portal do aluno e da validação DNSSEC durante o período de estabilização.",
+    "Runbook de reversão e degradação: retorno da delegação e remoção do DS.",
+    "Sala de crise conduzida pela POPULOS nas janelas de troca de delegação e publicação do DS."
+  ],
+  "critical_events": [
+    {
+      "name": "Início do período de matrículas",
+      "date": "2027-01-11",
+      "source": "E-mail de 22/09/2026, parágrafo 3"
+    }
+  ],
+  "event_feasibility": [
+    {
+      "event": "Início do período de matrículas",
+      "reference_date": "2026-09-24",
+      "phase1_end_earliest": "2026-10-15",
+      "phase1_end_latest": "2026-10-22",
+      "classification": "partially_fits",
+      "path": "Implantação completa em 3 a 4 semanas a partir da ativação das licenças",
+      "reason": "A implantação cabe antes de 11/01/2027 a partir da data da proposta, mas o prazo de aquisição das licenças pelo cliente e a data de congelamento de mudanças ainda não foram informados.",
+      "summary_marker": "Viabilidade frente às matrículas",
+      "lead_times": {
+        "licenciamento": {
+          "weeks": null,
+          "pending_question": "Qual é o prazo previsto pela Vértice Educação para a aquisição das licenças Edge DNS diretamente junto à Akamai?"
+        }
+      }
+    }
+  ],
+  "document_text": {
+    "about_solution": "O Edge DNS é o serviço de DNS autoritativo da Akamai, distribuído na borda com Anycast, com suporte a DNSSEC e gestão de zonas por portal e API.",
+    "coverage": "A solução cobre o DNS autoritativo das 4 zonas da Vértice Educação e a assinatura DNSSEC dessas zonas. Aplicações, hospedagem e e-mail permanecem como estão.",
+    "dimensioning_intro": "O dimensionamento parte do inventário informado pelo cliente e será confirmado na exportação das zonas.",
+    "methodology_intro": "A POPULOS conduz a migração em três fases, com validação de equivalência antes de qualquer mudança de delegação e janelas aprovadas pelo cliente.",
+    "tests": "Os testes comparam, registro a registro, as respostas do DNS atual e do Edge DNS, verificam a propagação da delegação a partir de resolvedores públicos e validam a cadeia DNSSEC após a publicação do DS.",
+    "schedule_intro": "O cronograma soma 3 a 4 semanas a partir da ativação das licenças Edge DNS.",
+    "schedule_sequence": "Levantamento e preparação, seguido de configuração e validação e, por fim, troca de delegação, DNSSEC e estabilização, totalizando 3 a 4 semanas.",
+    "closing": "A POPULOS permanece à disposição para esclarecer esta proposta e alinhar as datas com o calendário de matrículas da Vértice Educação.",
+    "callout_migration": "A troca de servidores de nomes só ocorre após 100% de equivalência das respostas, e o DS é publicado em etapa separada, com reversão documentada.",
+    "callout_milestones": "Marcos: inventário aprovado, validação de equivalência concluída, delegação migrada, DNSSEC ativo e aceite final.",
+    "diagram_users": "Alunos, candidatos e colaboradores",
+    "diagram_users_detail": "Acessam o site principal, o portal do aluno, o vestibular e o e-mail por navegadores e clientes de e-mail, que consultam o Edge DNS.",
+    "diagram_origins_title": "Provedor de hospedagem atual",
+    "diagram_origins": "O site principal e o portal do aluno rodam em um único servidor no provedor de hospedagem atual, sem alteração neste projeto."
+  }
+}

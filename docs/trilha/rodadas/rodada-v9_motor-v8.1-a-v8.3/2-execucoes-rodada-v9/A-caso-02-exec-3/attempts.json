@@ -1,0 +1,69 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:31:48.063743+00:00",
+      "errors_count": 16,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "produto recomendado em 0 ondas (esperado 1): app_api_protector",
+        "produto recomendado em 0 ondas (esperado 1): prolexic",
+        "produto opcional dentro de onda: bot_manager",
+        "destino de cobertura inexistente: contexto_de_dor (TR item 2.1)",
+        "integração SIEM sem controle de dados sensíveis",
+        "janela da Fase 1 declarada diverge do cálculo (23/02–23/03): Sessão pública e operação contínua dos portais",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Sessão pública e operação contínua dos portais",
+        "sumário não declara a viabilidade do evento (23/02): Sessão pública e operação contínua dos portais",
+        "sumário não declara a viabilidade do evento (23/03): Sessão pública e operação contínua dos portais",
+        "sumário não declara a viabilidade do evento (prazo de implantação): Sessão pública e operação contínua dos portais",
+        "padrão institucional sem a versão vigente do template (2026.09.24-1): sla",
+        "opção que toca produção sem critério de aceite próprio: wave_bot",
+        "citação da aprovação não trata desta decisão (estimativa/semana): engagement_type_estimate",
+        "valor aprovado não aparece na citação do insumo: engagement_type_estimate",
+        "citação da aprovação não nomeia o aprovador (Vitor): engagement_type_estimate"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:32:49.719807+00:00",
+      "errors_count": 14,
+      "errors": [
+        "produto recomendado em 0 ondas (esperado 1): app_api_protector",
+        "produto recomendado em 0 ondas (esperado 1): prolexic",
+        "produto opcional dentro de onda: bot_manager",
+        "integração SIEM sem controle de dados sensíveis",
+        "janela da Fase 1 declarada diverge do cálculo (05/04–03/05): Sessão pública e operação contínua dos portais",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Sessão pública e operação contínua dos portais",
+        "sumário não declara a viabilidade do evento (05/04): Sessão pública e operação contínua dos portais",
+        "sumário não declara a viabilidade do evento (03/05): Sessão pública e operação contínua dos portais",
+        "sumário não declara a viabilidade do evento (prazo de implantação): Sessão pública e operação contínua dos portais",
+        "opção que toca produção sem critério de aceite próprio: wave_bot",
+        "aprovação citada não existe no insumo (approval_quote): warranty",
+        "citação da aprovação não trata desta decisão (estimativa/semana): engagement_type_estimate",
+        "valor aprovado não aparece na citação do insumo: engagement_type_estimate",
+        "citação da aprovação não nomeia o aprovador (Vitor): engagement_type_estimate"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T16:33:42.946600+00:00",
+      "errors_count": 14,
+      "errors": [
+        "produto recomendado em 0 ondas (esperado 1): app_api_protector",
+        "produto recomendado em 0 ondas (esperado 1): prolexic",
+        "produto opcional dentro de onda: bot_manager",
+        "integração SIEM sem controle de dados sensíveis",
+        "janela da Fase 1 declarada diverge do cálculo (05/04–03/05): Sessão pública e operação contínua dos portais",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Sessão pública e operação contínua dos portais",
+        "sumário não declara a viabilidade do evento (05/04): Sessão pública e operação contínua dos portais",
+        "sumário não declara a viabilidade do evento (03/05): Sessão pública e operação contínua dos portais",
+        "sumário não declara a viabilidade do evento (prazo de implantação): Sessão pública e operação contínua dos portais",
+        "opção que toca produção sem critério de aceite próprio: wave_bot",
+        "aprovação citada não existe no insumo (approval_quote): warranty",
+        "citação da aprovação não trata desta decisão (estimativa/semana): engagement_type_estimate",
+        "valor aprovado não aparece na citação do insumo: engagement_type_estimate",
+        "citação da aprovação não nomeia o aprovador (Vitor): engagement_type_estimate"
+      ]
+    }
+  ]
+}

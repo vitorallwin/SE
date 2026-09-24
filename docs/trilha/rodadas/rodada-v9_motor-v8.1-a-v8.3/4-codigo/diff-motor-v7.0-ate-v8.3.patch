@@ -1,0 +1,2788 @@
+diff --git a/GUIA_TECNICO_E_RELATORIO_V4.md b/GUIA_TECNICO_E_RELATORIO_V4.md
+index 5231846..98c965b 100644
+--- a/GUIA_TECNICO_E_RELATORIO_V4.md
++++ b/GUIA_TECNICO_E_RELATORIO_V4.md
+@@ -540,7 +540,32 @@ python .\scripts\author_with_gemini.py <pasta-da-execução>          # configur
+ 
+ Resultado por execução: `pass1..3.json`, `attempts.json` (violações da primeira passada e da final), `notes.md` e, quando emitido, `final/` com o DOCX e o relatório de cobertura.
+ 
+-## 18. Arquivos de trabalho fora da aplicação
++## 18. Motor v8: correções da rodada de casos diversos
++
++A rodada v7 (config B, casos 01 a 06, 3 execuções cada) acertou 18/18 decisões de emitir ou bloquear. Ela revelou cinco lacunas do núcleo, corrigidas na v8 (`_pre_proposal_gate` e `_validate_rules_v8`):
++
++| Achado | Correção |
++|---|---|
++| O compositor tinha texto fixo de um caso anterior ("nuvens", "SOC", "Assessment", "lojistas") | Os slots dependentes do caso não têm mais texto padrão: `document_text` obrigatório, além de `client_roles`, `restrictions`, `assessment_items` e `dimensioning`. `assets/case_residue.json` bloqueia termos de casos anteriores que cheguem ao DOCX sem estar no estado. |
++| Insumo insuficiente e pedido fora do catálogo bloqueavam só por falta de decisões | Gates `insumo_insuficiente` (`input_assessment`) e `sem_catalogo` (`catalog_fit`), avaliados antes de qualquer outra regra. |
++| Produto já contratado aparecia como excluído | Status `already_contracted`, com `contract_ref`. Aparece como ambiente atual e não pode ser oferecido de novo. |
++| Cada autor declarava a aplicabilidade do SLA de um jeito | A instituição declara (`sla_applies_to` na whitelist). Outros engajamentos exigem a decisão aprovada `sla_applicability`. |
++| Autor podia rodar o validador fora do contador | O brief proíbe. É uma limitação conhecida: dentro do workspace, isso não pode ser impedido por código. |
++
++O fixture `tests/fixtures/vertice_v8.json` é uma saída real da rodada (caso 01), usada como estado limpo do contrato v8. Os testes estão em `tests/test_v8_engine.py`.
++
++### Motor v8.1 (regras v9)
++
++Na rodada v8, o autor Gemini escreveu decisões "aprovadas por Vitor" que não existem no insumo (garantia de 12 meses no caso 02, licenciamento no caso 04). O validador conferia só o preenchimento dos campos. Na v9, toda decisão de caso em `commitment` cita `approval_quote`, um trecho literal do insumo. O `record_attempt` passa o `insumo.md` ao validador, que confere: a citação existe no insumo, trata da decisão, nomeia o aprovador e contém o valor aprovado. O estado real do Gemini ficou como fixture (`tests/fixtures/lumina_gemini_aprovacao_inventada.json`).
++
++O `make_workspace --sealed` cria um workspace sem o código do motor: só brief, skill, caso e um `validate_attempt.py` que chama o motor fora da pasta. Assim o autor conhece as regras apenas pela skill e pelas mensagens do validador.
++
++### Motor v8.2 e v8.3
++
++- v8.2: na rodada selada (autor sem acesso ao código) apareceram três divergências entre skill e validador. A linha "Estimativa" era sempre recusada; a faixa de semanas de uma fase isolada era tratada como total; o formato de `delivery.responsibilities` passava no validador e derrubava o compositor. As três foram alinhadas.
++- v8.3: o Gemini marcou a decisão de licença como `populos_standard` para pular a aprovação. Agora só as decisões listadas em `institutional_decisions` na whitelist (hoje, `sla`) podem usar essa base.
++
++## 19. Arquivos de trabalho fora da aplicação
+ 
+ Estes arquivos ajudaram na geração e auditoria, mas não são necessários para executar a aplicação:
+ 
+diff --git a/assets/case_residue.json b/assets/case_residue.json
+new file mode 100644
+index 0000000..765ed11
+--- /dev/null
++++ b/assets/case_residue.json
+@@ -0,0 +1,26 @@
++{
++  "note": "Termos de casos anteriores. Se um deles aparece no DOCX sem aparecer em nenhum valor do estado, veio de texto fixo do compositor e bloqueia a emissão.",
++  "terms": [
++    "NexusPay",
++    "lojista",
++    "lojistas",
++    "checkout",
++    "Pix",
++    "Pix Day",
++    "Black Friday",
++    "multi-cloud",
++    "nuvens",
++    "duas nuvens",
++    "SOC",
++    "SIEM",
++    "oito a doze semanas",
++    "produção controlada",
++    "estabilização assistida",
++    "ondas",
++    "Cloud A",
++    "Cloud B",
++    "APIs de pagamento",
++    "cadastro",
++    "failover"
++  ]
++}
+diff --git a/assets/institutional_whitelist.json b/assets/institutional_whitelist.json
+index 80b1c8f..d3b42ee 100644
+--- a/assets/institutional_whitelist.json
++++ b/assets/institutional_whitelist.json
+@@ -7,5 +7,13 @@
+     "about_populos": "68c203484136c009cb5842018383cdf372f1a98a0e6d170566dffeb8a5ba82c3",
+     "sla": "cdd6c5cc352509acfa39563db5896e6780d0c79233f54e7869aa8ccce93fe496",
+     "confidentiality": "17d46e1f6c3dd83ba26bcb74f7eb52594430fa84673eaa4fb78ff2c23a66ddd1"
+-  }
++  },
++  "sla_applies_to": [
++    "implementation"
++  ],
++  "sla_applies_to_note": "Engajamentos em que a tabela institucional de SLA vale sem decisão do caso. Outros tipos exigem governance.sla_applicability aprovada.",
++  "institutional_decisions": [
++    "sla"
++  ],
++  "institutional_decisions_note": "Únicas decisões de governança que podem usar basis populos_standard. Qualquer outra é decisão do caso e exige aprovação citada do insumo."
+ }
+diff --git a/authoring/AUTHOR_BRIEF.md b/authoring/AUTHOR_BRIEF.md
+index 6899be4..458fade 100644
+--- a/authoring/AUTHOR_BRIEF.md
++++ b/authoring/AUTHOR_BRIEF.md
+@@ -13,13 +13,17 @@ Não consulte nenhum arquivo fora desta pasta de trabalho.
+ 
+ ## Saída
+ 
+-Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 7` e o `data_mode` informado no pedido.
++Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 9` e o `data_mode` informado no pedido.
++
++Antes de escrever a proposta, avalie o insumo (`input_assessment`) e o encaixe no catálogo (`catalog_fit`). Quando o insumo não basta ou o pedido está fora do catálogo, o resultado correto é o bloqueio, com as perguntas ou a lacuna declaradas, e não uma proposta.
+ 
+ ## Validação
+ 
+ 1. Salve o estado em um arquivo e submeta com `python scripts/validate_attempt.py <PASTA_DA_EXECUÇÃO> <arquivo.json>`.
+ 2. O validador devolve as violações. Corrija e submeta de novo.
+ 3. O limite é de 3 submissões por execução; a quarta é recusada. Se a terceira ainda tiver violações, pare e entregue como está.
++4. Só o `validate_attempt.py` conta como submissão. Não importe nem execute o validador por outro caminho.
++5. O validador é uma caixa-preta: as regras estão na skill, e as violações vêm nas mensagens dele. Não leia código-fonte.
+ 
+ Uma proposta bloqueada por uma decisão que só a POPULOS ou o cliente podem tomar é um resultado legítimo. Não force uma decisão para passar no validador.
+ 
+diff --git a/engine_config.json b/engine_config.json
+index 9047fce..2a3362b 100644
+--- a/engine_config.json
++++ b/engine_config.json
+@@ -1,6 +1,6 @@
+ {
+-  "engine_version": "motor-v7.0",
+-  "rules_version": 7,
++  "engine_version": "motor-v8.3",
++  "rules_version": 9,
+   "max_iterations": 3,
+   "template": "assets/proposal_neutral_template.docx",
+   "template_version": "2026.09.24-1",
+diff --git a/requirements.txt b/requirements.txt
+index 2ee3b49..f7ba14a 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,2 +1,2 @@
+ python-docx==1.2.0
+-
++Pillow>=10
+diff --git a/sales_engineer/case_runner.py b/sales_engineer/case_runner.py
+index aa1597f..6a52eee 100644
+--- a/sales_engineer/case_runner.py
++++ b/sales_engineer/case_runner.py
+@@ -20,14 +20,14 @@ def engine_config() -> dict[str, Any]:
+     return json.loads(ENGINE_CONFIG.read_text(encoding="utf-8"))
+ 
+ 
+-def validate_state(state: Any) -> list[str]:
++def validate_state(state: Any, source_text: str | None = None) -> list[str]:
+     """Rule violations for an authored state; a malformed state is reported, never raised."""
+     if not isinstance(state, dict):
+         return ["estado malformado: o documento raiz não é um objeto JSON"]
+     if int(state.get("rules_version", 0) or 0) < LATEST_RULES_VERSION:
+         return [f"rules_version deve ser {LATEST_RULES_VERSION} para o gerador genérico"]
+     try:
+-        return validate_proposal_rules(state)
++        return validate_proposal_rules(state, source_text)
+     except Exception as exc:  # noqa: BLE001 - malformed fields must come back as feedback to the author
+         return [f"estado malformado ({type(exc).__name__}): {exc}"]
+ 
+@@ -64,7 +64,10 @@ def record_attempt(run_dir: Path, state_path: Path) -> dict[str, Any]:
+     except json.JSONDecodeError as exc:
+         state, errors = None, [f"JSON inválido: {exc}"]
+     else:
+-        errors = validate_state(state)
++        source = run_dir / "insumo.md"
++        errors = validate_state(state, source.read_text(encoding="utf-8") if source.exists() else None)
++        if not source.exists():
++            errors.append("insumo.md ausente na pasta da execução: aprovações não podem ser conferidas")
+     entry = {"attempt": number, "at": datetime.now(timezone.utc).isoformat(), "errors_count": len(errors), "errors": errors}
+     if not errors and state is not None:
+         entry["composition"] = compose(state, run_dir / "final")
+@@ -140,6 +143,7 @@ ENGINE_FILES = [
+     "authoring/AUTHOR_BRIEF.md",
+     "assets/proposal_neutral_template.docx",
+     "assets/institutional_whitelist.json",
++    "assets/case_residue.json",
+     "scripts/validate_attempt.py",
+     "scripts/author_with_gemini.py",
+     *(f"sales_engineer/{name}.py" for name in (
+@@ -149,16 +153,44 @@ ENGINE_FILES = [
+ ]
+ 
+ 
+-def make_workspace(workspace: Path, source_dir: Path, proposal_date: str, data_mode: str, configuration: str) -> Path:
++SEALED_VALIDATOR = '''"""Submete uma tentativa ao motor, que fica fora desta pasta.
++
++Uso: python scripts/validate_attempt.py execucao execucao/estado.json
++"""
++import subprocess
++import sys
++from pathlib import Path
++
++ENGINE = Path({engine!r})
++args = [str(Path(arg).resolve()) for arg in sys.argv[1:]]
++sys.exit(subprocess.call([sys.executable, str(ENGINE / "scripts" / "validate_attempt.py"), *args]))
++'''
++
++
++def make_workspace(workspace: Path, source_dir: Path, proposal_date: str, data_mode: str, configuration: str,
++                   sealed: bool = False) -> Path:
+     """Physical isolation: a folder with only what production gives the author (engine, skill, brief, one case).
+ 
+-    No tests, fixtures, previous proposals, other cases, or version history are copied.
++    No tests, fixtures, previous proposals, other cases, or version history are copied. A sealed workspace
++    also leaves the engine out: the author gets the brief, the skill and the case, and submits through a
++    wrapper, so the rules are known only through the skill and the validator's messages.
+     Returns the execution folder inside the workspace.
+     """
+     import shutil
+ 
+     if workspace.exists():
+         raise FileExistsError(f"Workspace já existe: {workspace}")
++    if sealed:
++        brief = workspace / "authoring" / "AUTHOR_BRIEF.md"
++        brief.parent.mkdir(parents=True)
++        shutil.copy2(ROOT / "authoring" / "AUTHOR_BRIEF.md", brief)
++        shutil.copytree(ROOT / "skills", workspace / "skills")
++        wrapper = workspace / "scripts" / "validate_attempt.py"
++        wrapper.parent.mkdir(parents=True)
++        wrapper.write_text(SEALED_VALIDATOR.format(engine=str(ROOT)), encoding="utf-8")
++        run_dir = workspace / "execucao"
++        prepare_run(source_dir, run_dir, proposal_date, data_mode, configuration)
++        return run_dir
+     for relative in ENGINE_FILES:
+         target = workspace / relative
+         target.parent.mkdir(parents=True, exist_ok=True)
+diff --git a/sales_engineer/document_validation.py b/sales_engineer/document_validation.py
+index 8b05bdd..5149d02 100644
+--- a/sales_engineer/document_validation.py
++++ b/sales_engineer/document_validation.py
+@@ -119,3 +119,31 @@ def validate_state_against_docx(proposal: dict[str, Any], path: Path) -> None:
+         preview = "; ".join(missing[:8])
+         suffix = f"; +{len(missing) - 8} item(ns)" if len(missing) > 8 else ""
+         raise ValueError(f"Divergência estado × DOCX: {preview}{suffix}")
++
++
++CASE_RESIDUE_PATH = Path(__file__).resolve().parents[1] / "assets" / "case_residue.json"
++
++
++def _state_values_text(value: Any) -> str:
++    """Every string value of the state (keys excluded), for provenance checks."""
++    if isinstance(value, dict):
++        return " ".join(_state_values_text(item) for item in value.values())
++    if isinstance(value, (list, tuple)):
++        return " ".join(_state_values_text(item) for item in value)
++    return str(value) if value is not None else ""
++
++
++def find_case_residue(text: str, proposal: dict[str, Any], path: Path = CASE_RESIDUE_PATH) -> list[str]:
++    """Terms known from earlier cases that reach the document without appearing anywhere in this state.
++
++    Such a term can only come from fixed composer text, so it is residue of another case.
++    """
++    terms = json.loads(path.read_text(encoding="utf-8")).get("terms", [])
++    rendered = normalize_document_text(text)
++    state_text = normalize_document_text(_state_values_text(proposal))
++    found = []
++    for term in terms:
++        pattern = re.compile(rf"(?<!\w){re.escape(normalize_document_text(term))}(?!\w)")
++        if pattern.search(rendered) and not pattern.search(state_text):
++            found.append(term)
++    return found
+diff --git a/sales_engineer/neutral_template_builder.py b/sales_engineer/neutral_template_builder.py
+index ea5ade6..5d3b896 100644
+--- a/sales_engineer/neutral_template_builder.py
++++ b/sales_engineer/neutral_template_builder.py
+@@ -17,7 +17,7 @@ from docx.shared import Inches, Pt, RGBColor
+ from PIL import Image, ImageDraw, ImageFont
+ 
+ from .catalog import PRODUCTS
+-from .document_validation import detect_skill_leakage, find_vocabulary_violations, validate_state_against_docx
++from .document_validation import detect_skill_leakage, find_case_residue, find_vocabulary_violations, validate_state_against_docx
+ from .institutional_policy import validate_institutional_whitelist
+ from .proposal_rules import assert_proposal_rules
+ 
+@@ -161,6 +161,29 @@ def _strict(proposal: dict[str, Any]) -> bool:
+     return int(proposal.get("rules_version", 0) or 0) >= 5
+ 
+ 
++def _v8(proposal: dict[str, Any]) -> bool:
++    return int(proposal.get("rules_version", 0) or 0) >= 8
++
++
++def _slot(proposal: dict[str, Any], key: str, legacy_default: str) -> str:
++    """Case-dependent slot. From v8 on there is no default: the old defaults carried a previous case."""
++    value = _text(proposal.get("document_text", {}).get(key))
++    if value:
++        return value
++    if _v8(proposal):
++        raise ValueError(f"Slot do documento sem texto do caso: document_text.{key}")
++    return legacy_default
++
++
++def _state_list(proposal: dict[str, Any], key: str, legacy_default: list) -> list:
++    value = proposal.get(key)
++    if value:
++        return list(value)
++    if _v8(proposal):
++        raise ValueError(f"Lista do documento sem conteúdo do caso: {key}")
++    return legacy_default
++
++
+ _DIAGRAM_LABELS = {
+     "ion": "Ion", "app_api_protector": "AAP", "bot_manager": "Bot Manager",
+     "account_protector": "Account", "edge_dns": "Edge DNS", "gtm": "GTM", "alb": "ALB",
+@@ -173,10 +196,10 @@ def _diagram_boxes(proposal: dict[str, Any]) -> list[tuple[str, str]]:
+     edge = [_DIAGRAM_LABELS[p] for p in ("ion", "app_api_protector", "bot_manager", "account_protector") if p in recommended]
+     traffic = [_DIAGRAM_LABELS[p] for p in ("edge_dns", "gtm", "alb") if p in recommended]
+     return [
+-        ("Clientes e lojistas", "Jornadas web e API"),
++        (_slot(proposal, "diagram_users", "Clientes e lojistas"), _slot(proposal, "diagram_users_detail", "Jornadas web e API")),
+         ("Borda Akamai", " · ".join(edge) or "Controles de borda"),
+         ("Decisão de tráfego", " · ".join(traffic) or "DNS atual"),
+-        (_doc_text(proposal, "diagram_origins_title", "Origens do cliente"), _doc_text(proposal, "diagram_origins", "Cloud A · Cloud B · DC")),
++        (_slot(proposal, "diagram_origins_title", "Origens do cliente"), _slot(proposal, "diagram_origins", "Cloud A · Cloud B · DC")),
+     ]
+ 
+ 
+@@ -383,7 +406,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+ 
+     _replace_paragraph(p[19], "Sobre a Akamai")
+     _replace_paragraph(p[20], _doc_text(proposal, "about_akamai", f"A Akamai oferece serviços distribuídos de entrega, desempenho, proteção e observabilidade para aplicações, APIs e infraestrutura exposta à internet. A arquitetura desta proposta combina apenas as capacidades ligadas às jornadas e riscos priorizados por {client}."))
+-    _replace_paragraph(p[21], _doc_text(proposal, "about_solution", f"Para {client}, a solução integra continuidade multi-cloud, proteção de aplicações e APIs, defesa contra abuso automatizado e otimização das jornadas de checkout e cadastro. Cada frente possui escopo de configuração, evidência de teste e responsável definidos."))
++    _replace_paragraph(p[21], _slot(proposal, "about_solution", f"Para {client}, a solução integra continuidade multi-cloud, proteção de aplicações e APIs, defesa contra abuso automatizado e otimização das jornadas de checkout e cadastro. Cada frente possui escopo de configuração, evidência de teste e responsável definidos."))
+     _replace_paragraph(p[22], "Parceria POPULOS e Akamai")
+     _replace_paragraph(p[23], _doc_text(proposal, "partnership", "A POPULOS responde pela arquitetura, implantação, testes e documentação do projeto, com profissionais qualificados nas tecnologias previstas. As credenciais nominais da equipe serão apresentadas na mobilização, conforme os requisitos formais da contratação."))
+     _set_rows(p, range(24, 28), ["Arquitetura e segurança de aplicações Akamai;", "DNS, gestão global de tráfego e entrega de aplicações;", "Gestão de projeto, testes e documentação técnica."])
+@@ -394,13 +417,15 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+         _replace_paragraph(p[32], summary[1] if len(summary) > 1 else "A solução proposta atende às seguintes frentes:")
+         for extra in summary[2:]:
+             _insert_paragraph_like(p[33], p[32], extra, copy_run_format=True)
++    elif _v8(proposal):
++        raise ValueError("Resumo executivo ausente do estado")
+     else:
+         _replace_paragraph(p[31], f"Esta proposta técnica apresenta a abordagem recomendada para {client}.")
+         _replace_paragraph(p[32], "O escopo foi construído a partir dos requisitos e jornadas críticas apresentados pela NexusPay.")
+     front_lines = [f"{front['title']} — {', '.join(front['products'])}." for front in fronts]
+     p[30].paragraph_format.keep_with_next = True
+     _set_rows(p, range(33, 38), front_lines)
+-    _replace_paragraph(p[38], _doc_text(proposal, "coverage", "Abrangência: checkout, APIs de pagamento, cadastro e autenticação de lojistas, zonas DNS e origens distribuídas entre duas nuvens públicas e o datacenter corporativo."))
++    _replace_paragraph(p[38], _slot(proposal, "coverage", "Abrangência: checkout, APIs de pagamento, cadastro e autenticação de lojistas, zonas DNS e origens distribuídas entre duas nuvens públicas e o datacenter corporativo."))
+     _set_rows_dynamic(p, range(41, 48), goals, p[48])
+ 
+     _replace_paragraph(p[51], proposal.get("architecture", {}).get("summary", ""))
+@@ -419,12 +444,18 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+         for ix in bullet_indexes: _remove_paragraph(p[ix])
+ 
+     _replace_paragraph(p[61], "4. Dimensionamento e Abrangência")
+-    _replace_paragraph(p[62], _doc_text(proposal, "dimensioning_intro", "Para esta versão, o planejamento considera as jornadas críticas já identificadas e uma implantação em ondas. A quantidade contratual de zonas, propriedades, APIs, usuários e capacidade de proteção será fechada no levantamento inicial, sem interromper o desenho e a preparação técnica."))
++    _replace_paragraph(p[62], _slot(proposal, "dimensioning_intro", "Para esta versão, o planejamento considera as jornadas críticas já identificadas e uma implantação em ondas. A quantidade contratual de zonas, propriedades, APIs, usuários e capacidade de proteção será fechada no levantamento inicial, sem interromper o desenho e a preparação técnica."))
+     _replace_paragraph(p[63], "4.1 Itens de dimensionamento")
+-    _replace_paragraph(p[65], "Observação: a linha de base será levantada e validada durante o Assessment.")
++    dimensioning_note = _text(proposal.get("document_text", {}).get("dimensioning_note"))
++    if dimensioning_note:
++        _replace_paragraph(p[65], dimensioning_note)
++    elif _v8(proposal):
++        _remove_paragraph(p[65])
++    else:
++        _replace_paragraph(p[65], "Observação: a linha de base será levantada e validada durante o Assessment.")
+     _replace_paragraph(p[66], "4.2 Componentes centralizados e serviços de borda")
+     p[66].paragraph_format.page_break_before = False
+-    dims = proposal.get("dimensioning", [
++    dims = _state_list(proposal, "dimensioning", [
+         ("Zonas DNS e domínios críticos", "Faixa inicial: 3 a 8", "Validar inventário", "Premissa"),
+         ("Aplicações e APIs prioritárias", "Faixa inicial: 5 a 15", "Validar catálogo", "Premissa"),
+         ("Origens multi-cloud", "3 ambientes", "Duas nuvens e um datacenter", "Confirmado"),
+@@ -439,9 +470,9 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+         for c, value in zip(row.cells, values): _replace_cell(c, value)
+     component_rows = []
+     for decision in proposal.get("solution_decisions", []):
+-        if decision.get("status") not in {"recommended", "optional"}:
++        if decision.get("status") not in {"recommended", "optional", "already_contracted"}:
+             continue
+-        status = "Recomendado" if decision.get("status") == "recommended" else "Opção condicionada"
++        status = {"recommended": "Recomendado", "optional": "Opção condicionada", "already_contracted": "Já contratado — ambiente atual"}[decision["status"]]
+         if decision.get("implementation_status") == "modality_pending":
+             status += " — modalidade de implantação a definir"
+         component_rows.append((_product_name(str(decision.get("product_id"))), status))
+@@ -474,15 +505,15 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+     _repeat_table_header(trace_table.rows[0])
+ 
+     _replace_paragraph(p[68], "Como primeira etapa, a POPULOS realizará o levantamento detalhado do ambiente atual, contemplando no mínimo:")
+-    _set_rows(p, range(69, 72), proposal.get("assessment_items") or [
++    _set_rows(p, range(69, 72), _state_list(proposal, "assessment_items", [
+         "Inventário de domínios, aplicações, APIs e origens;",
+         "Métricas de tráfego, latência, disponibilidade e eventos de segurança;",
+         "Dependências de integração, acesso, observabilidade e conformidade.",
+-    ])
++    ]))
+     included = proposal.get("scope", {}).get("included", [])
+     if proposal.get("document_text", {}).get("heading_6"):
+         _replace_paragraph(p[73], proposal["document_text"]["heading_6"])
+-    _replace_paragraph(p[74], _doc_text(proposal, "methodology_intro", "A POPULOS disponibilizará equipe técnica e gestão de projeto para conduzir Assessment, Design, Implementação, Homologação, Produção e Estabilização. A execução seguirá o plano aprovado, com controles de mudança e evidências de cada marco."))
++    _replace_paragraph(p[74], _slot(proposal, "methodology_intro", "A POPULOS disponibilizará equipe técnica e gestão de projeto para conduzir Assessment, Design, Implementação, Homologação, Produção e Estabilização. A execução seguirá o plano aprovado, com controles de mudança e evidências de cada marco."))
+     _set_rows_dynamic(p, range(76, 85), included + proposal.get("scope", {}).get("deliverables", []), p[85])
+     phases = proposal.get("delivery", {}).get("phases", [])
+     optional_phase = proposal.get("optional_phase") or {}
+@@ -523,28 +554,28 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+     _replace_paragraph(p[93], "A POPULOS conduzirá o planejamento, a gestão de riscos e dependências e os reportes periódicos, em alinhamento com o ponto focal do cliente.")
+ 
+     _replace_paragraph(p[96], _doc_text(proposal, "knowledge_transfer", "A passagem de conhecimento abrangerá a arquitetura implantada, as configurações aprovadas, os procedimentos operacionais e a documentação final prevista no escopo."))
+-    _replace_paragraph(p[98], _doc_text(proposal, "tests", "Os testes validarão decisão de tráfego, failover, políticas de segurança, classificação de automações, risco de conta, desempenho das jornadas e envio de eventos ao SIEM, conforme critérios da seção 10."))
++    _replace_paragraph(p[98], _slot(proposal, "tests", "Os testes validarão decisão de tráfego, failover, políticas de segurança, classificação de automações, risco de conta, desempenho das jornadas e envio de eventos ao SIEM, conforme critérios da seção 10."))
+     _set_rows_dynamic(p, range(101, 106), proposal.get("scope", {}).get("excluded", []), p[106])
+     _set_rows_dynamic(p, range(110, 118), proposal.get("assumptions", []), p[118])
+     _replace_paragraph(p[118], f"8.2 Requisitos — Pessoas ({client})")
+     p[108].paragraph_format.page_break_before = False
+-    client_roles = [
++    client_roles = _state_list(proposal, "client_roles", [
+         "Ponto focal executivo: decisões e escalonamentos;",
+         "Infraestrutura: acessos a DNS, nuvens e origens;",
+         "Segurança/SOC: políticas, integrações e validação das evidências;",
+         "Aplicações: apoio aos testes de APIs e jornadas críticas.",
+-    ]
++    ])
+     _set_rows(p, range(119, 123), client_roles)
+-    restrictions = proposal.get("restrictions") or [
++    restrictions = _state_list(proposal, "restrictions", [
+         "O cronograma depende da disponibilização de acessos, dados de dimensionamento e janelas de mudança;",
+         "Mudanças em requisitos, volumetria ou integrações poderão exigir revisão de prazo e escopo;",
+         "A proposta não constitui homologação jurídica nem certificação de conformidade regulatória;",
+         "A faixa de oito a doze semanas pressupõe acessos no início de cada fase, uma janela de produção aprovada e ausência de alteração material de volumetria.",
+-    ]
++    ])
+     _set_rows(p, range(124, 128), restrictions)
+ 
+-    _replace_paragraph(p[133], _doc_text(proposal, "schedule_intro", "A implantação está estimada entre oito e doze semanas, contadas a partir da reunião de início, condicionada à liberação de acessos, validação do desenho e disponibilidade das janelas de mudança."))
+-    _replace_paragraph(p[134], _doc_text(proposal, "schedule_sequence", "A sequência inclui levantamento, desenho, implementação, homologação, entrada em produção e estabilização assistida."))
++    _replace_paragraph(p[133], _slot(proposal, "schedule_intro", "A implantação está estimada entre oito e doze semanas, contadas a partir da reunião de início, condicionada à liberação de acessos, validação do desenho e disponibilidade das janelas de mudança."))
++    _replace_paragraph(p[134], _slot(proposal, "schedule_sequence", "A sequência inclui levantamento, desenho, implementação, homologação, entrada em produção e estabilização assistida."))
+     _remove_paragraph(p[136])
+     _trim_table_columns(t[7], 5)
+     headers = ["Fase", "Atividade", "Dependência", "Duração", "Evidência"]
+@@ -592,7 +623,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+         for item in items:
+             _insert_paragraph_like(p[144], p[139], item)
+     _replace_paragraph(p[146], _doc_text(proposal, "warranty_intro", "A garantia técnica cobre a correção de defeitos diretamente atribuíveis aos serviços executados pela POPULOS. O prazo consta do quadro Garantia e vigência."))
+-    _replace_paragraph(p[148], _doc_text(proposal, "closing", "O projeto encerra-se após o aceite e a estabilização assistida. Operação continuada, suporte gerenciado, NOC 24x7 e equipe residente exigem contratação específica."))
++    _replace_paragraph(p[148], _slot(proposal, "closing", "O projeto encerra-se após o aceite e a estabilização assistida. Operação continuada, suporte gerenciado, NOC 24x7 e equipe residente exigem contratação específica."))
+     _replace_paragraph(p[149], "Condições de atendimento")
+     _replace_paragraph(p[150], "Durante a execução e a garantia, a POPULOS adotará o padrão institucional de atendimento abaixo para falhas atribuíveis aos serviços executados.")
+ 
+@@ -663,9 +694,9 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+             0: ("Aderência e qualificações", "A equipe será mobilizada com competências compatíveis com DNS, entrega, segurança de aplicações e gestão do projeto; as credenciais nominais serão apresentadas na mobilização."),
+             1: ("Modelo de fornecimento", " ".join(filter(None, [_doc_text(proposal, "license_prefix", ""), str(license_supply)]))),
+             2: ("Limite da frente", _doc_text(proposal, "callout_limits", "A solução cobre configuração e integração dos componentes recomendados. Alterações no código das aplicações e serviços de terceiros permanecem fora do escopo.")),
+-            5: ("Estratégia de migração", _doc_text(proposal, "callout_migration", "Implantação em ondas: homologação, produção controlada e estabilização, com janela aprovada, critérios de avanço e plano de reversão.")),
++            5: ("Estratégia de migração", _slot(proposal, "callout_migration", "Implantação em ondas: homologação, produção controlada e estabilização, com janela aprovada, critérios de avanço e plano de reversão.")),
+             6: ("Itens que exigem contratação específica", "Operação continuada, NOC 24x7, equipe residente, desenvolvimento de aplicações e serviços gerenciados adicionais não estão incluídos."),
+-            8: ("Marcos formais de aceite", _doc_text(proposal, "callout_milestones", "Desenho aprovado, homologação concluída, produção validada e documentação final aceita.")),
++            8: ("Marcos formais de aceite", _slot(proposal, "callout_milestones", "Desenho aprovado, homologação concluída, produção validada e documentação final aceita.")),
+             9: ("Garantia e vigência", str(warranty)),
+         }[table_index]
+         _replace_callout(t[table_index].cell(0, 0), title, body)
+@@ -731,6 +762,10 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+     leaked = detect_skill_leakage(client_text)
+     if leaked:
+         raise ValueError(f"Trechos copiados dos arquivos da skill: {'; '.join(leaked[:5])}")
++    if _v8(proposal):
++        residue = find_case_residue(client_text, proposal)
++        if residue:
++            raise ValueError(f"Texto de outro caso no documento (ausente do estado): {', '.join(residue)}")
+ 
+     for paragraph in doc.paragraphs:
+         style_name = str(getattr(paragraph.style, "name", ""))
+diff --git a/sales_engineer/proposal_rules.py b/sales_engineer/proposal_rules.py
+index ecbd964..19ac681 100644
+--- a/sales_engineer/proposal_rules.py
++++ b/sales_engineer/proposal_rules.py
+@@ -46,8 +46,14 @@ def _client_visible_texts(proposal: dict[str, Any]) -> Iterable[str]:
+     yield from proposal.get("assumptions", [])
+ 
+ 
+-def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
+-    """Return every violation of the v5 fidelity and integrity rules (empty list = compliant)."""
++def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None = None) -> list[str]:
++    """Return every violation of the v5 fidelity and integrity rules (empty list = compliant).
++
++    `source_text` is the extracted source material; from rules v9 on, case approvals are checked against it.
++    """
++    gate = _pre_proposal_gate(proposal)
++    if gate is not None:
++        return gate
+     errors: list[str] = []
+     governance = proposal.get("governance", {})
+ 
+@@ -77,9 +83,11 @@ def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
+     for phase in phases:
+         if not phase.get("weeks"):
+             errors.append(f"fase sem faixa numérica de semanas: {phase.get('name')}")
++    # A single phase's own range may be written too; any other range must be the total.
++    allowed_ranges = {(low, high)} | {tuple(phase["weeks"]) for phase in phases if len(phase.get("weeks") or []) == 2}
+     for text in _client_visible_texts(proposal):
+         for found in week_ranges(str(text)):
+-            if found != (low, high):
++            if found not in allowed_ranges:
+                 errors.append(f"faixa {found[0]}–{found[1]} semanas diverge da soma das fases ({low}–{high}): {str(text)[:90]}")
+ 
+     # Q-02 / Q-03: waves are contractual units.
+@@ -145,9 +153,10 @@ def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
+     for estimate in proposal.get("estimates", []):
+         if not estimate.get("owner"):
+             errors.append(f"estimativa sem responsável: {estimate.get('item')}")
++    owned = {normalize_document_text(e.get("item")) for e in proposal.get("estimates", []) if e.get("owner")}
+     for row in proposal.get("dimensioning", []):
+-        if len(row) > 3 and row[3] == "Estimativa":
+-            errors.append(f"dimensionamento estimado sem premissa de responsável: {row[0]}")
++        if len(row) > 3 and row[3] == "Estimativa" and normalize_document_text(row[0]) not in owned:
++            errors.append(f"dimensionamento estimado sem premissa de responsável (estimates.item igual ao item da linha): {row[0]}")
+ 
+     # F-02: exported data carries a sensitive-data control when privacy is required.
+     exports_data = any("siem" in str(item).casefold() for item in proposal.get("scope", {}).get("included", []))
+@@ -161,10 +170,14 @@ def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
+         errors.extend(_validate_rules_v6(proposal))
+     if int(proposal.get("rules_version", 0) or 0) >= 7:
+         errors.extend(_validate_rules_v7(proposal))
++    if int(proposal.get("rules_version", 0) or 0) >= 8:
++        errors.extend(_validate_rules_v8(proposal))
++    if int(proposal.get("rules_version", 0) or 0) >= 9 and source_text is not None:
++        errors.extend(_validate_approval_quotes(proposal, source_text))
+     return errors
+ 
+ 
+-LATEST_RULES_VERSION = 7
++LATEST_RULES_VERSION = 9
+ DATA_MODES = {"test", "production"}
+ # Prefixos normalizados (sem acento, minúsculos): aceitam "Arquiteto", "arquiteta", "Engenheira de redes"...
+ _TECHNICAL_ROLE_PREFIXES = ("arquitet", "engenh", "delivery", "pre-vendas tecnic", "pre vendas tecnic", "presales tecnic")
+@@ -225,6 +238,8 @@ def _validate_rules_v7(proposal: dict[str, Any]) -> list[str]:
+         if is_populos_standard(decision):
+             if decision.get("template_version") != template_version:
+                 errors.append(f"padrão institucional sem a versão vigente do template ({template_version}): {key}")
++            if _rules_version(proposal) >= 9 and key not in institutional_decisions():
++                errors.append(f"decisão do caso marcada como padrão institucional (só {', '.join(institutional_decisions())} pode): {key}")
+             continue
+         try:
+             date.fromisoformat(str(decision.get("approved_at", "")))
+@@ -310,7 +325,7 @@ def _validate_rules_v6(proposal: dict[str, Any]) -> list[str]:
+         if key != "engagement_type" and decision.get("engagement_ref") != engagement:
+             errors.append(f"decisão tomada para outro engajamento ({decision.get('engagement_ref')} ≠ {engagement}): {key}")
+     sla = governance.get("sla", {})
+-    if engagement not in sla.get("applies_to", []):
++    if int(proposal.get("rules_version", 0) or 0) < 8 and engagement not in sla.get("applies_to", []):
+         errors.append(f"bloco institucional de SLA não declarado aplicável ao engajamento {engagement}")
+ 
+     # Provenance per speaker: vendor-only statements are hypotheses.
+@@ -377,6 +392,173 @@ def _validate_rules_v6(proposal: dict[str, Any]) -> list[str]:
+     return errors
+ 
+ 
++PRODUCT_STATUSES = {"recommended", "optional", "needs_information", "excluded", "already_contracted"}
++INPUT_STATUSES = {"sufficient", "insufficient"}
++CATALOG_FIT = {"fits", "no_catalog"}
++MAX_QUALIFICATION_QUESTIONS = 8
++
++# Slots do template cujo texto depende do caso. Na v8 o compositor não tem texto padrão para eles:
++# ou o estado traz o texto, ou a emissão bloqueia (o texto padrão antigo carregava um caso anterior).
++REQUIRED_DOCUMENT_TEXT = (
++    "about_solution", "coverage", "dimensioning_intro", "methodology_intro", "tests",
++    "schedule_intro", "schedule_sequence", "closing", "callout_migration", "callout_milestones",
++    "diagram_users", "diagram_users_detail", "diagram_origins_title", "diagram_origins",
++)
++REQUIRED_LISTS = {"assessment_items": (3, 3), "restrictions": (4, 4), "client_roles": (1, 4), "dimensioning": (1, 3)}
++
++
++def _rules_version(proposal: dict[str, Any]) -> int:
++    return int(proposal.get("rules_version", 0) or 0)
++
++
++def _pre_proposal_gate(proposal: dict[str, Any]) -> list[str] | None:
++    """v8: before any proposal rule, decide whether a proposal may be written at all.
++
++    An insufficient input returns qualification questions; a request outside the catalog returns
++    the missing vendor package. Both block emission for their own reason, whatever else is missing.
++    """
++    if _rules_version(proposal) < 8:
++        return None
++    errors: list[str] = []
++    assessment = proposal.get("input_assessment") or {}
++    status = assessment.get("status")
++    if status not in INPUT_STATUSES:
++        return ["input_assessment.status ausente ou inválido (sufficient | insufficient)"]
++    if status == "insufficient":
++        questions = [q for q in proposal.get("open_questions", []) if str(q).strip()]
++        if not assessment.get("missing"):
++            errors.append("insumo insuficiente sem a lista do que falta (input_assessment.missing)")
++        if not 1 <= len(questions) <= MAX_QUALIFICATION_QUESTIONS:
++            errors.append(f"insumo insuficiente: devolva de 1 a {MAX_QUALIFICATION_QUESTIONS} perguntas essenciais (open_questions tem {len(questions)})")
++        errors.append("GATE insumo_insuficiente: não gerar proposta; devolver as perguntas de qualificação")
++        return errors
++    client_requirements = [
++        item for item in proposal.get("traceability", [])
++        if not item.get("hypothesis") and set(item.get("speakers", [])) & {"client", "input_document"}
++    ]
++    if not _text_value(proposal.get("client_name")) or not client_requirements:
++        return ["insumo declarado suficiente sem cliente identificado ou sem requisito do cliente: use input_assessment.status 'insufficient'"]
++    fit = proposal.get("catalog_fit") or {}
++    if fit.get("status") not in CATALOG_FIT:
++        return ["catalog_fit.status ausente ou inválido (fits | no_catalog)"]
++    if fit.get("status") == "no_catalog":
++        if not fit.get("requested") or not fit.get("reason"):
++            errors.append("catalog_fit no_catalog sem o que foi pedido (requested) e o motivo (reason)")
++        errors.append(f"GATE sem_catalogo: pedido fora do catálogo disponível ({fit.get('requested')}); requer pacote do fabricante")
++        return errors
++    return None
++
++
++def _text_value(value: Any) -> str:
++    return " ".join(str(value or "").split())
++
++
++def institutional_decisions() -> list[str]:
++    return list(json.loads(_WHITELIST.read_text(encoding="utf-8")).get("institutional_decisions", []))
++
++
++def sla_applicable_engagements() -> list[str]:
++    return list(json.loads(_WHITELIST.read_text(encoding="utf-8")).get("sla_applies_to", []))
++
++
++def _validate_rules_v8(proposal: dict[str, Any]) -> list[str]:
++    """Issues from the diverse-case round: no inherited template text, explicit product states for
++    the existing contract, SLA applicability decided by the institution (not by the author)."""
++    errors: list[str] = []
++    decisions = proposal.get("solution_decisions", [])
++    for decision in decisions:
++        if decision.get("status") not in PRODUCT_STATUSES:
++            errors.append(f"status de produto inválido: {decision.get('product_id')} = {decision.get('status')}")
++        if decision.get("status") == "already_contracted" and not decision.get("contract_ref"):
++            errors.append(f"produto já contratado sem referência ao contrato vigente (contract_ref): {decision.get('product_id')}")
++    if not any(d.get("status") in {"recommended", "optional", "needs_information"} for d in decisions):
++        errors.append("nenhum produto do catálogo em avaliação: se o pedido está fora do catálogo, use catalog_fit 'no_catalog'")
++    contracted = {d.get("product_id") for d in decisions if d.get("status") == "already_contracted"}
++    offered = set(proposal.get("products", []))
++    for wave in (proposal.get("optional_phase") or {}).get("waves", []):
++        offered |= set(wave.get("components", []))
++    for product in sorted(contracted & offered):
++        errors.append(f"produto já contratado oferecido de novo: {product}")
++
++    # Texto do documento: todo slot dependente do caso vem do estado.
++    document_text = proposal.get("document_text") or {}
++    for key in REQUIRED_DOCUMENT_TEXT:
++        if not _text_value(document_text.get(key)):
++            errors.append(f"document_text.{key} ausente: o compositor não usa texto padrão para este slot")
++    for key, (low, high) in REQUIRED_LISTS.items():
++        items = [item for item in proposal.get(key) or [] if item]
++        if not low <= len(items) <= high:
++            errors.append(f"{key} deve ter de {low} a {high} itens (tem {len(items)})")
++    if not any(str(s.get("title", "")).casefold() == "resumo executivo" and s.get("paragraphs") for s in proposal.get("sections", [])):
++        errors.append("sections sem 'Resumo executivo'")
++
++    # Formato dos campos que o compositor lê: o validador recusa o que o compositor não consegue montar.
++    for item in proposal.get("delivery", {}).get("responsibilities", []):
++        if not isinstance(item, dict) or not item.get("party") or not item.get("responsibility"):
++            errors.append(f"delivery.responsibilities deve ser lista de {{party, responsibility}}: {str(item)[:60]}")
++    for row in proposal.get("populos_roles", []):
++        if not isinstance(row, (list, tuple)) or len(row) != 3:
++            errors.append(f"populos_roles deve ser lista de [papel, responsabilidade, dedicação]: {str(row)[:60]}")
++
++    # SLA institucional: a aplicabilidade é da instituição (whitelist) ou de uma decisão aprovada do caso.
++    engagement = proposal.get("governance", {}).get("engagement_type", {}).get("value")
++    applicability = proposal.get("governance", {}).get("sla_applicability") or {}
++    if engagement not in sla_applicable_engagements() and not (
++        applicability.get("state") == "commitment" and engagement in (applicability.get("value") or [])
++    ):
++        errors.append(
++            f"decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para '{engagement}')"
++        )
++    return errors
++
++
++# Palavra que a citação da aprovação precisa conter, por decisão: impede citar a linha de outra decisão.
++_APPROVAL_TOPICS = {
++    "warranty": ("garantia",),
++    "license_supply": ("licen",),
++    "engagement_type": ("engajamento", "engagement"),
++    "sla_applicability": ("sla",),
++}
++_ESTIMATE_TOPICS = ("estimativa", "semana")
++MIN_QUOTE_LENGTH = 15
++
++
++def _quote_text(value: Any) -> str:
++    """Normalized text for quote matching: table pipes and markup never decide a match."""
++    text = re.sub(r"[|*_`>#]", " ", str(value or ""))
++    return normalize_document_text(text)
++
++
++def _validate_approval_quotes(proposal: dict[str, Any], source_text: str) -> list[str]:
++    """v9: a case approval exists only if the source material says so, literally.
++
++    Every committed case decision cites `approval_quote`, a verbatim excerpt of the source material
++    that names the decision topic and the approver. An approval absent from the material blocks.
++    """
++    errors: list[str] = []
++    source = _quote_text(source_text)
++    for key, decision in proposal.get("governance", {}).items():
++        if decision.get("state") != "commitment" or is_populos_standard(decision):
++            continue
++        quote = _quote_text(decision.get("approval_quote"))
++        if len(quote) < MIN_QUOTE_LENGTH:
++            errors.append(f"aprovação sem citação literal do insumo (approval_quote): {key}")
++            continue
++        if quote not in source:
++            errors.append(f"aprovação citada não existe no insumo (approval_quote): {key}")
++            continue
++        topics = _ESTIMATE_TOPICS if key.endswith("_estimate") else _APPROVAL_TOPICS.get(key, ())
++        if topics and not any(topic in quote for topic in topics):
++            errors.append(f"citação da aprovação não trata desta decisão ({'/'.join(topics)}): {key}")
++        value = decision.get("approved_value", decision.get("value"))
++        if isinstance(value, str) and _quote_text(value) not in quote:
++            errors.append(f"valor aprovado não aparece na citação do insumo: {key}")
++        approver = _quote_text(str(decision.get("approved_by", "")).split("(")[0]).split(" ")[0]
++        if approver and approver not in quote:
++            errors.append(f"citação da aprovação não nomeia o aprovador ({decision.get('approved_by')}): {key}")
++    return errors
++
++
+ def assert_proposal_rules(proposal: dict[str, Any]) -> None:
+     errors = validate_proposal_rules(proposal)
+     if errors:
+diff --git a/scripts/make_workspace.py b/scripts/make_workspace.py
+index 7162744..5ccbd90 100644
+--- a/scripts/make_workspace.py
++++ b/scripts/make_workspace.py
+@@ -1,6 +1,6 @@
+ """Create an isolated workspace for one execution: engine, skill, brief and a single case.
+ 
+-Usage: python scripts/make_workspace.py SOURCE_DIR WORKSPACE --config A|B [--date YYYY-MM-DD] [--mode test|production]
++Usage: python scripts/make_workspace.py SOURCE_DIR WORKSPACE --config A|B [--date YYYY-MM-DD] [--mode test|production] [--sealed]
+ The author works with the workspace as its working directory; its execution folder is WORKSPACE/execucao.
+ """
+ from __future__ import annotations
+@@ -24,8 +24,9 @@ def main() -> None:
+     parser.add_argument("--config", required=True, choices=["A", "B"])
+     parser.add_argument("--date", default=date.today().isoformat())
+     parser.add_argument("--mode", default="test", choices=["test", "production"])
++    parser.add_argument("--sealed", action="store_true", help="sem código do motor no workspace")
+     args = parser.parse_args()
+-    run_dir = make_workspace(args.workspace, args.source_dir, args.date, args.mode, args.config)
++    run_dir = make_workspace(args.workspace, args.source_dir, args.date, args.mode, args.config, sealed=args.sealed)
+     print(f"Workspace pronto: {args.workspace} (execução em {run_dir})")
+ 
+ 
+diff --git a/skills/akamai-proposal-authoring/SKILL.md b/skills/akamai-proposal-authoring/SKILL.md
+index 7ec8482..d05b28f 100644
+--- a/skills/akamai-proposal-authoring/SKILL.md
++++ b/skills/akamai-proposal-authoring/SKILL.md
+@@ -23,12 +23,13 @@ Create the smallest complete proposal that explains the client's problem, the re
+ ## Workflow
+ 
+ 1. Normalize the meeting into goals, pain points, requirements, constraints, volumes, dependencies, stakeholders, and open questions.
+-2. Evaluate each catalog product independently. Do not begin with a preselected bundle.
+-3. Apply the product gating criteria in [solution gating](references/solution-gating.md).
+-4. Produce solution decisions and a requirement traceability matrix.
+-5. Map the decisions onto the sections in [section model](references/section-model.md).
+-6. Run a critic pass. Block unsupported products, absolute promises, hidden open questions, unmeasurable acceptance criteria, and unresolved internal POPULOS decisions.
+-7. Render through deterministic code over the approved DOCX. The LLM writes structured state and the compositor only maps it into authorized slots.
++2. Decide whether the material supports a proposal (`input_assessment`) and whether the catalog covers the request (`catalog_fit`). If not, stop with the questions or the declared gap.
++3. Evaluate each catalog product independently. Do not begin with a preselected bundle.
++4. Apply the product gating criteria in [solution gating](references/solution-gating.md).
++5. Produce solution decisions and a requirement traceability matrix.
++6. Map the decisions onto the sections in [section model](references/section-model.md).
++7. Run a critic pass. Block unsupported products, absolute promises, hidden open questions, unmeasurable acceptance criteria, and unresolved internal POPULOS decisions.
++8. Render through deterministic code over the approved DOCX. The LLM writes structured state and the compositor only maps it into authorized slots.
+ 
+ ## Output contract
+ 
+diff --git a/skills/akamai-proposal-authoring/references/global-rules.md b/skills/akamai-proposal-authoring/references/global-rules.md
+index 659210d..7775fa2 100644
+--- a/skills/akamai-proposal-authoring/references/global-rules.md
++++ b/skills/akamai-proposal-authoring/references/global-rules.md
+@@ -35,8 +35,8 @@ The global state separates client facts, requirements, decisions, scope, commerc
+ 
+ ## Decisions, provenance and feasibility (rules v6 and v7)
+ 
+-- A decision is committed only with an explicit approval: approver, ISO date, and a record of where the approval happened. Moving on without objecting is not approval. The approved text is kept verbatim; context goes outside it.
+-- A decision is bound to the engagement type it was made for. When the engagement changes, dependent decisions reopen. An institutional block (such as the SLA table) is emitted only when declared applicable to the current engagement.
++- A decision is committed only with an explicit approval written in the source material: approver, ISO date, a record of where the approval happened, and a verbatim quote of it. Moving on without objecting is not approval. The approved text is kept verbatim; context goes outside it.
++- A decision is bound to the engagement type it was made for. When the engagement changes, dependent decisions reopen. An institutional block (such as the SLA table) is emitted only where the institution declares it applicable, or where an approved case decision extends it.
+ - `data_mode: test` marks the origin of the data. It never disables a check.
+ - An institutional standard is versioned with the approved template and is not approved per case.
+ - An effort estimate has a technical owner (architect, engineering, delivery, or technical presales).
+@@ -45,6 +45,13 @@ The global state separates client facts, requirements, decisions, scope, commerc
+ - For a critical event with a known date, feasibility is computed in the proposal from the proposal date, including the license lead time, and stated in the executive summary. An unknown lead time is an open question, never an estimate, and rules out a `fits` classification. A dateless event becomes an open question.
+ - Every option that touches production (a wave, a fast track) declares it, has its own window, rollback, approval, and acceptance criteria, and must fit before the change freeze, not only before the event.
+ 
++## Before writing a proposal (rules v8)
++
++- First decide whether a proposal can be written. When the material does not identify the client or a concrete need, the outcome is a short list of qualification questions, not a proposal.
++- When the request is for a technology the supplied catalog does not cover, the outcome is the declared gap. Catalog products are never stretched to fit an unrelated request.
++- Products the client already has belong to the current environment. They are not offered again and are not treated as exclusions.
++- Every case-dependent paragraph comes from the state. The compositor holds no text from any previous case.
++
+ ## Client-facing language
+ 
+ Never expose pipeline or drafting language. The single source for forbidden and untranslated terms is `lexicon.json`, consumed by code. Rewrite internal terms as proposal language such as `levantamento`, `premissa de dimensionamento`, `condição de contratação`, or a named requirement.
+diff --git a/skills/akamai-proposal-authoring/references/state-schema.md b/skills/akamai-proposal-authoring/references/state-schema.md
+index 8bea8ad..812cefa 100644
+--- a/skills/akamai-proposal-authoring/references/state-schema.md
++++ b/skills/akamai-proposal-authoring/references/state-schema.md
+@@ -1,4 +1,4 @@
+-# Proposal state schema (rules v7)
++# Proposal state schema (rules v9)
+ 
+ The author produces one JSON object. The validator (`scripts/validate_attempt.py`) checks the rules; the compositor maps the fields below into fixed slots of the approved template. Text fields are client-facing Portuguese unless noted. Values in angle brackets are placeholders, not examples to copy.
+ 
+@@ -6,18 +6,27 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
+ 
+ | Field | Type | Notes |
+ |---|---|---|
+-| `rules_version` | int | Must be `7`. |
++| `rules_version` | int | Must be `9`. |
+ | `data_mode` | `"test"` or `"production"` | Marks where the data comes from. It never relaxes a check. |
+ | `client_name`, `opportunity`, `code`, `opportunity_id` | string | `code` names the output file. |
+ 
++## Before the proposal: input and catalog
++
++Both fields are required and are checked before any other rule.
++
++- `input_assessment`: `{ "status": "sufficient" | "insufficient", "missing": [<what is missing>], "reason" }`. Use `insufficient` when the material does not identify the client or does not state at least one concrete need about identifiable assets. Then write only `input_assessment` and `open_questions` (1 to 8 essential qualification questions): no products, sections or scope. The validator returns the gate `insumo_insuficiente`, which is the correct outcome.
++- `catalog_fit`: `{ "status": "fits" | "no_catalog", "requested": <what the client asked for>, "reason" }`. Use `no_catalog` when the request is for a technology or vendor that the supplied catalog does not cover. Do not map it onto unrelated catalog products. The validator returns the gate `sem_catalogo`.
++
+ ## Client scope and governance
+ 
+ - `client_scope`: `{ "type": <engagement the client asked for>, "excludes_implementation": bool, "source": <quote/reference from the source material>, "forbidden_in_committed": [<terms the committed phase may not require, e.g. production-only actions>] }`.
+ - `governance`: object keyed by decision. Required keys: `engagement_type` (`assessment`, `design`, `implementation`, `phased`), `warranty`, `license_supply`, `sla`. Estimate decisions use a key ending in `_estimate`.
+-- Each decision: `{ "state": "commitment" | "populos_internal_decision", "value", "approved_value", "source", "approved_by", "approved_at" (YYYY-MM-DD), "approval_record", "mode", "engagement_ref", "approver_role" (estimates), "applies_to" (sla: list of engagement types) }`.
++- Each decision: `{ "state": "commitment" | "populos_internal_decision", "value", "approved_value", "source", "approved_by", "approved_at" (YYYY-MM-DD), "approval_record", "mode", "engagement_ref", "approver_role" (estimates), "approval_quote" }`.
+   - A decision is `commitment` only when the source material contains an explicit approval: who, when, and where it is recorded (`approval_record`). Otherwise keep `populos_internal_decision` with `value: null`; emission then blocks, which is the correct outcome.
+   - `approved_value` equals `value`. `engagement_ref` equals the current `engagement_type` value.
+-  - An institutional standard (such as the fixed SLA table) is not approved per case: use `{ "state": "commitment", "basis": "populos_standard", "value", "source", "template_version": <current template version>, "applies_to": [...] }`, without approver fields.
++  - `approval_quote` is a verbatim excerpt of the source material that records the approval: it names the decision, the approver and the approved value (for a table, the whole row). The validator looks for it in the source material; an approval that is not written there does not exist.
++  - An institutional standard is not approved per case. Only `sla` is an institutional decision; every other decision belongs to the case, even when it repeats an existing contract. For `sla`: use `{ "state": "commitment", "basis": "populos_standard", "value", "source", "template_version": <current template version> }`, without approver fields.
++  - The engine decides where the institutional SLA table applies. For an engagement type outside that list, the case needs an approved decision `sla_applicability` (a commitment whose `value` lists the engagement types). Without it, emission blocks as an internal decision; do not create it without an explicit approval in the source material.
+ 
+ ## Discovery and provenance
+ 
+@@ -29,22 +38,23 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
+ 
+ ## Solution
+ 
+-- `solution_decisions`: one entry per catalog product evaluated: `{ "product_id" (catalog id), "status": "recommended" | "optional" | "needs_information" | "excluded", "requirement_ids", "rationale", "client_summary", "capabilities" (up to 3 shown), "implementation_status" ("modality_pending" when applicable), "trigger" (optional products: business reason and prerequisite) }`.
++- `solution_decisions`: one entry per catalog product evaluated: `{ "product_id" (catalog id), "status": "recommended" | "optional" | "needs_information" | "excluded" | "already_contracted", "requirement_ids", "rationale", "client_summary", "capabilities" (up to 3 shown), "implementation_status" ("modality_pending" when applicable), "trigger" (optional products: business reason and prerequisite), "contract_ref" (already_contracted: the current contract it belongs to) }`. A product the client already has is `already_contracted`: it is shown as the current environment and is never offered again in `products` or in a wave.
+ - `products`: ids of recommended products.
+ - `architecture.summary`: one paragraph.
+ - `sections`: `[{ "title": "Resumo executivo", "paragraphs": [...] }]`.
+ 
+ ## Sizing, scope and delivery
+ 
+-- `dimensioning`: up to 3 rows `[item, quantity, planning basis, classification]`; classification `Confirmado`, `Pendente` or `Estimativa` (an estimate needs a technical owner).
++- `dimensioning`: 1 to 3 rows (required) `[item, quantity, planning basis, classification]`; classification `Confirmado`, `Pendente` or `Estimativa`. An `Estimativa` row needs an entry in `estimates` whose `item` is the same text as the row's item, with a technical owner.
+ - `estimates`: `[{ "item", "value", "owner", "owner_role": "arquiteto" | "engenharia" | "delivery" | "pré-vendas técnica" }]`.
+ - `assessment_items`: exactly 3 strings (section 5).
++- `client_roles`: 1 to 4 strings, the client-side roles this project needs (section 8.2).
+ - `scope`: `{ "included": [...], "deliverables": [...], "excluded": [...] }`.
+-- `delivery.phases`: committed phases, at most 4: `{ "name", "kind", "weeks": [min, max], "duration", "objective", "dependency", "outputs": [...] }`. Every week range written in client text must equal the sum of these phases.
+-- `delivery.responsibilities`: client-side parties; `populos_roles`: optional list of `[role, responsibility, commitment]` rows (table capacity 12 rows in total).
++- `delivery.phases`: committed phases, at most 4: `{ "name", "kind", "weeks": [min, max], "duration", "objective", "dependency", "outputs": [...] }`. A week range written in client text must equal the sum of these phases, or the range of one phase.
++- `delivery.responsibilities`: client-side parties, as `[{ "party", "responsibility" }]`; `populos_roles`: optional list of `[role, responsibility, commitment]` rows (table capacity 12 rows in total).
+ - `optional_phase` (optional): `{ "title", "intro", "conditions": [...], "waves": [{ "id", "name", "components": [product ids], "goes_to_production": bool, "activities", "acceptance", "milestone" }] }`. Each recommended product appears in exactly one wave.
+ - `fast_track` (optional): `{ "id", "title", "components", "production_change": bool, "controls": ["janela", "reversão", "aprovação"], "deadline_reference": "freeze", "first_question", "paragraphs", "items", "schedule_row", "lead_times": { "licenciamento": { "weeks", "source" } } }`. When the license lead time is unknown, use `{ "weeks": null, "pending_question": <question> }` instead of estimating.
+-- `assumptions` (up to 8), `restrictions` (exactly 4), `risks`: `[{ "risk", "impact", "mitigation" }]`.
++- `assumptions` (up to 8), `restrictions` (exactly 4, required), `risks`: `[{ "risk", "impact", "mitigation" }]`.
+ - `acceptance_criteria`: `[{ "requirement_id", "phase": "committed" | "optional", "option_id" (for optional: the id of the wave or fast track), "criterion" }]`. Every option that touches production has at least one criterion of its own.
+ 
+ ## Critical events
+@@ -53,6 +63,6 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
+ - `critical_events`: `[{ "name", "date" (YYYY-MM-DD or null), "source", "pending_question" (when date is null) }]`.
+ - `event_feasibility`: for each event with a date: `{ "event", "reference_date", "phase1_end_earliest", "phase1_end_latest", "classification": "fits" | "partially_fits" | "does_not_fit", "path", "reason", "summary_marker", "lead_times": { "licenciamento": { "weeks", "source" } or { "weeks": null, "pending_question" } } }`. With an unknown lead time the classification cannot be `fits`. The end dates are the reference date plus the sum of committed phase weeks, and the summary states them.
+ 
+-## Client text overrides
++## Client text
+ 
+-`document_text`: optional object with case-specific paragraphs for fixed template slots: `about_akamai`, `about_solution`, `partnership`, `coverage`, `readiness_intro`, `dimensioning_intro`, `heading_6`, `methodology_intro`, `knowledge_transfer`, `tests`, `schedule_intro`, `schedule_sequence`, `acceptance_intro`, `acceptance_optional_intro`, `warranty_intro`, `closing`, `callout_limits`, `callout_migration`, `callout_milestones`, `license_prefix`, `diagram_origins_title`, `diagram_origins`. Omitted keys fall back to generic wording.
++`document_text`: case-specific paragraphs for fixed template slots. The compositor has no default text for these slots, so each one is required: `about_solution`, `coverage`, `dimensioning_intro`, `methodology_intro`, `tests`, `schedule_intro`, `schedule_sequence`, `closing`, `callout_migration`, `callout_milestones`, `diagram_users` and `diagram_users_detail` (who uses the service and through what), `diagram_origins_title` and `diagram_origins` (where the client's applications run). Optional keys: `about_akamai`, `partnership`, `readiness_intro`, `dimensioning_note`, `heading_6`, `knowledge_transfer`, `acceptance_intro`, `acceptance_optional_intro`, `warranty_intro`, `callout_limits`, `license_prefix`; omitted optional keys use neutral wording. `sections` must contain the `Resumo executivo`.
+diff --git a/tests/fixtures/lumina_gemini_aprovacao_inventada.json b/tests/fixtures/lumina_gemini_aprovacao_inventada.json
+new file mode 100644
+index 0000000..63b46b5
+--- /dev/null
++++ b/tests/fixtures/lumina_gemini_aprovacao_inventada.json
+@@ -0,0 +1,439 @@
++{
++  "rules_version": 8,
++  "data_mode": "test",
++  "client_name": "Lumina Seguros",
++  "opportunity": "Implantação de Bot Manager Premier",
++  "code": "proposta_lumina_bot_manager",
++  "opportunity_id": "OPP-LUMINA-2026-02",
++  "input_assessment": {
++    "status": "sufficient",
++    "missing": [],
++    "reason": "O insumo detalha o cliente, a dor com raspagem de cotações de seguro auto, os produtos atuais e a necessidade de Bot Manager Premier."
++  },
++  "catalog_fit": {
++    "status": "fits",
++    "requested": [
++      "Bot Manager Premier"
++    ],
++    "reason": "O produto solicitado consta no catálogo e atende diretamente ao requisito de mitigação de automação maliciosa."
++  },
++  "client_scope": {
++    "type": "implementation",
++    "excludes_implementation": false,
++    "source": "Transcrição da reunião de 23/09/2026 e registro interno POPULOS (engagement_type = implementation)",
++    "forbidden_in_committed": []
++  },
++  "governance": {
++    "engagement_type": {
++      "state": "commitment",
++      "value": "implementation",
++      "approved_value": "implementation",
++      "source": "E-mail interno de aprovação de 24/09/2026",
++      "approved_by": "Vitor (dono comercial)",
++      "approved_at": "2026-09-24",
++      "approval_record": "E-mail interno",
++      "mode": "test",
++      "engagement_ref": "implementation"
++    },
++    "warranty": {
++      "state": "commitment",
++      "value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final.",
++      "approved_value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final.",
++      "source": "E-mail interno de aprovação de 24/09/2026",
++      "approved_by": "Vitor (dono comercial)",
++      "approved_at": "2026-09-24",
++      "approval_record": "E-mail interno",
++      "mode": "test",
++      "engagement_ref": "implementation"
++    },
++    "license_supply": {
++      "state": "commitment",
++      "value": "Licenciamento direto fornecido pelo fabricante",
++      "approved_value": "Licenciamento direto fornecido pelo fabricante",
++      "source": "E-mail interno de aprovação de 24/09/2026",
++      "approved_by": "Vitor (dono comercial)",
++      "approved_at": "2026-09-24",
++      "approval_record": "E-mail interno",
++      "mode": "test",
++      "engagement_ref": "implementation"
++    },
++    "sla": {
++      "state": "commitment",
++      "basis": "populos_standard",
++      "value": "Tabela institucional do template POPULOS",
++      "approved_value": "Tabela institucional do template POPULOS",
++      "source": "Template POPULOS vigente",
++      "approved_by": null,
++      "approved_at": null,
++      "approval_record": null,
++      "mode": "test",
++      "engagement_ref": "implementation",
++      "template_version": "2026.09.24-1"
++    },
++    "esforco_estimate": {
++      "state": "commitment",
++      "value": "4 a 5 semanas",
++      "approved_value": "4 a 5 semanas",
++      "source": "E-mail interno de aprovação de 24/09/2026",
++      "approved_by": "Ana (arquiteta responsável)",
++      "approved_at": "2026-09-24",
++      "approval_record": "E-mail interno",
++      "mode": "test",
++      "engagement_ref": "implementation",
++      "approver_role": "arquiteto"
++    }
++  },
++  "discovery": {
++    "business_goals": [
++      "Mitigar a raspagem de dados no simulador de cotação de seguro auto (REQ-01)",
++      "Reduzir custos operacionais com consultas a bureaus de dados geradas por robôs (REQ-02)",
++      "Implementar o Bot Manager antes do lançamento do novo seguro auto em 15/01/2027 (REQ-03)"
++    ]
++  },
++  "traceability": [
++    {
++      "requirement_id": "REQ-01",
++      "requirement": "Mitigar raspagem de dados no simulador de cotação de seguro auto",
++      "solution": "Bot Manager Premier",
++      "evidence": "Milhares de cotações por hora vindas de robôs copiando tabela de preços",
++      "source": "transcrição [Camila Reis]",
++      "speakers": [
++        "client"
++      ],
++      "hypothesis": false
++    },
++    {
++      "requirement_id": "REQ-02",
++      "requirement": "Reduzir custo com consultas a bureaus de dados em cotações automatizadas",
++      "solution": "Bot Manager Premier",
++      "evidence": "2,1 milhões de cotações no mês passado com estimativa de metade por robôs",
++      "source": "transcrição [Camila Reis]",
++      "speakers": [
++        "client"
++      ],
++      "hypothesis": false
++    },
++    {
++      "requirement_id": "REQ-03",
++      "requirement": "Colocar o Bot Manager em produção antes de 15/01/2027",
++      "solution": "Bot Manager Premier",
++      "evidence": "Lançamento do novo seguro auto em 15/01/2027 com campanha de mídia",
++      "source": "transcrição [Diego Martins]",
++      "speakers": [
++        "client"
++      ],
++      "hypothesis": false
++    }
++  ],
++  "source_coverage": [
++    {
++      "ref": "Contexto da conta",
++      "statement": "Cliente POPULOS desde 2024 com produtos Akamai contratados diretamente e suporte POPULOS 8x5 até 31/03/2027",
++      "status": "coberto",
++      "targets": [
++        "sumário",
++        "escopo"
++      ]
++    },
++    {
++      "ref": "Transcrição Camila Reis",
++      "statement": "Simulador de cotação de seguro auto está sendo raspado por robôs de concorrentes e comparadores, aumentando custo com bureaus de dados (2,1 milhões de cotações no mês passado, metade robôs)",
++      "status": "coberto",
++      "targets": [
++        "REQ-01",
++        "REQ-02",
++        "sumário"
++      ]
++    },
++    {
++      "ref": "Transcrição Diego Martins",
++      "statement": "WAF atual não pega os robôs. Queremos o Bot Manager. Lançamento do novo seguro auto em 15/01/2027. Congelamento de fim de ano de 15/12/2026 a 05/01/2027",
++      "status": "coberto",
++      "targets": [
++        "REQ-03",
++        "premissas",
++        "dimensionamento"
++      ]
++    },
++    {
++      "ref": "Licenciamento",
++      "statement": "Licenciamento resolvido por aprovação interna direta.",
++      "status": "coberto",
++      "targets": [
++        "engajamento"
++      ]
++    }
++  ],
++  "client_numbers": [
++    {
++      "quote": "2,1 milhões de cotações",
++      "ref": "transcrição [Camila Reis]",
++      "destination": "meta",
++      "summary_marker": "volume de 2,1 milhões de cotações mensais com alta incidência de automação indesejada",
++      "reason": "Evidencia o impacto financeiro e o volume de requisições no simulador."
++    }
++  ],
++  "open_questions": [],
++  "solution_decisions": [
++    {
++      "product_id": "bot_manager",
++      "status": "recommended",
++      "requirement_ids": [
++        "REQ-01",
++        "REQ-02",
++        "REQ-03"
++      ],
++      "rationale": "Identificada raspagem massiva de cotações e tráfego automatizado simulando comportamento humano no simulador de seguro auto.",
++      "client_summary": "Implementação do Bot Manager Premier para detecção e mitigação de robôs e automações maliciosas na borda.",
++      "capabilities": [
++        "detecção de bots",
++        "resposta adaptativa",
++        "segmentação"
++      ],
++      "implementation_status": "modality_pending"
++    },
++    {
++      "product_id": "ion",
++      "status": "already_contracted",
++      "requirement_ids": [],
++      "rationale": "Produto já contratado pela Lumina Seguros no ambiente atual.",
++      "client_summary": "Entrega e otimização web em produção.",
++      "capabilities": [
++        "aceleração dinâmica"
++      ],
++      "contract_ref": "Contrato direto Akamai atual"
++    },
++    {
++      "product_id": "app_api_protector",
++      "status": "already_contracted",
++      "requirement_ids": [],
++      "rationale": "Produto já contratado pela Lumina Seguros no ambiente atual.",
++      "client_summary": "Proteção de WAF e APIs em produção.",
++      "capabilities": [
++        "WAF",
++        "DDoS L7"
++      ],
++      "contract_ref": "Contrato direto Akamai atual"
++    },
++    {
++      "product_id": "edge_dns",
++      "status": "already_contracted",
++      "requirement_ids": [],
++      "rationale": "Produto já contratado pela Lumina Seguros no ambiente atual.",
++      "client_summary": "DNS autoritativo em produção.",
++      "capabilities": [
++        "DNS autoritativo",
++        "Anycast"
++      ],
++      "contract_ref": "Contrato direto Akamai atual"
++    }
++  ],
++  "products": [
++    "bot_manager"
++  ],
++  "architecture.summary": "A solução integra o Bot Manager Premier às propriedades web existentes da Lumina Seguros (Ion, App & API Protector e Edge DNS), analisando sinais comportamentais na borda para bloquear robôs de raspagem de cotações sem impactar usuários legítimos.",
++  "sections": [
++    {
++      "title": "Resumo executivo",
++      "paragraphs": [
++        "A Lumina Seguros apresenta volumes expressivos de requisições automatizadas em seu simulador de cotação de seguro auto, gerando custos operacionais indesejados com consultas a bureaus de dados e exposição de tabelas de preços.",
++        "Para endereçar este cenário, considerando o volume de 2,1 milhões de cotações mensais com alta incidência de automação indesejada, esta proposta contempla a implementação do Bot Manager Premier da Akamai, integrando-se à arquitetura existente para classificar e mitigar tráfego malicioso de forma transparente antes do lançamento do novo seguro auto."
++      ]
++    }
++  ],
++  "dimensioning": [
++    [
++      "Bot Manager Premier",
++      "Propriedades web in scope (simulador de cotação)",
++      "Análise de tráfego e requisições do simulador",
++      "Confirmado"
++    ],
++    [
++      "Serviços de Implantação POPULOS",
++      "4 a 5 semanas",
++      "Cronograma aprovado internamente",
++      "Confirmado"
++    ]
++  ],
++  "estimates": [
++    {
++      "item": "Esforço de Implantação do Bot Manager",
++      "value": "4 a 5 semanas",
++      "owner": "Ana",
++      "owner_role": "arquiteto"
++    }
++  ],
++  "assessment_items": [
++    "Revisão da telemetria atual e mapeamento de endpoints do simulador de cotação.",
++    "Configuração de políticas de detecção e desafio para tráfego automatizado.",
++    "Homologação e ajustes finos antes do congelamento de mudanças de fim de ano."
++  ],
++  "client_roles": [
++    "Arquiteto de Soluções / Tech Lead",
++    "Responsável por Aplicação / Desenvolvimento",
++    "Gestor de Segurança da Informação"
++  ],
++  "scope": {
++    "included": [
++      "Planejamento e desenho técnico da integração do Bot Manager Premier",
++      "Configuração de regras e políticas de detecção de bots",
++      "Testes de validação e acompanhamento da entrada em produção"
++    ],
++    "deliverables": [
++      "Documento de Desenho de Solução (HLD)",
++      "Runbook operacional do Bot Manager",
++      "Relatório de aceite técnico da implantação"
++    ],
++    "excluded": [
++      "Modificações no código-fonte das aplicações da Lumina",
++      "Licenciamento de software comercial",
++      "Gestão de incidentes de segurança de 2° e 3° nível fora do escopo de sustentação contratado"
++    ]
++  },
++  "delivery": {
++    "phases": [
++      {
++        "name": "Fase 1 - Alinhamento e Desenho",
++        "kind": "committed",
++        "weeks": [
++          1,
++          2
++        ],
++        "duration": "2 semanas",
++        "objective": "Mapear endpoints do simulador e definir estratégia de políticas.",
++        "dependency": "Disponibilidade da equipe técnica da Lumina",
++        "outputs": [
++          "Documento de Desenho Técnico aprovado"
++        ]
++      },
++      {
++        "name": "Fase 2 - Configuração e Ajustes",
++        "kind": "committed",
++        "weeks": [
++          3,
++          4
++        ],
++        "duration": "2 semanas",
++        "objective": "Implementação das políticas de Bot Manager e monitoramento em modo de observação.",
++        "dependency": "Acesso às propriedades Akamai",
++        "outputs": [
++          "Políticas configuradas na borda"
++        ]
++      },
++      {
++        "name": "Fase 3 - Homologação e Aceite",
++        "kind": "committed",
++        "weeks": [
++          5,
++          5
++        ],
++        "duration": "1 semana",
++        "objective": "Validação de eficácia, testes de falso positivo e encerramento do projeto.",
++        "dependency": "Aprovação do cliente",
++        "outputs": [
++          "Termo de Aceite Final assinado"
++        ]
++      }
++    ],
++    "responsibilities": [
++      [
++        "POPULOS",
++        "Conduzir a engenharia de implantação e configuração do Bot Manager",
++        "Compromisso"
++      ],
++      [
++        "Lumina Seguros",
++        "Disponibilizar acessos, engenheiros de suporte e validação de regras",
++        "Compromisso"
++      ]
++    ]
++  },
++  "assumptions": [
++    "A Lumina Seguros manterá equipe técnica disponível para reuniões de alinhamento e validação.",
++    "As propriedades afetadas já utilizam a plataforma Akamai (Ion e App & API Protector).",
++    "O licenciamento do Bot Manager será providenciado em tempo hábil para início da Fase 2.",
++    "O período de congelamento de mudanças da Lumina (15/12/2026 a 05/01/2027) será respeitado no planejamento."
++  ],
++  "restrictions": [
++    "A POPULOS não possui acesso direto ao código-fonte das aplicações da Lumina Seguros.",
++    "Alterações estruturais em fluxos de autenticação ou regras de negócio fogem ao escopo de implantação.",
++    "A execução da implantação está limitada ao prazo acordado de 4 a 5 semanas úteis.",
++    "O fornecimento de licenças de software ocorre diretamente pelo fabricante."
++  ],
++  "risks": [
++    {
++      "risk": "Falsos positivos bloqueando usuários legítimos no simulador de cotação.",
++      "impact": "Alto, pois pode impactar conversões de vendas de seguros.",
++      "mitigation": "Operar inicialmente em modo de monitoramento e ajuste de sensibilidade antes de ativar o bloqueio ativo."
++    },
++    {
++      "risk": "Indisponibilidade de licença Akamai antes do início da execução.",
++      "impact": "Médio, podendo atrasar o cronograma em relação à data de lançamento do novo seguro.",
++      "mitigation": "Tratar o modelo de licenciamento como ponto prioritário junto à Lumina."
++    }
++  ],
++  "acceptance_criteria": [
++    {
++      "requirement_id": "REQ-01",
++      "phase": "committed",
++      "criterion": "Evidência de funcionamento do Bot Manager identificando e mitigando requisições automatizadas de raspagem no simulador de cotação."
++    },
++    {
++      "requirement_id": "REQ-02",
++      "phase": "committed",
++      "criterion": "Redução mensurável no volume de tráfego automatizado direcionado aos endpoints de cotação validada em relatório."
++    },
++    {
++      "requirement_id": "REQ-03",
++      "phase": "committed",
++      "criterion": "Conclusão da implantação e aceite técnico formal emitidos antes da data de lançamento de 15/01/2027."
++    }
++  ],
++  "event_readiness": [
++    "Revisão de capacidade e telemetria do Bot Manager em cenários de pico de acesso.",
++    "Validação de runbooks de contingência e reversão rápida de regras.",
++    "Alinhamento de janelas de manutenção respeitando o congelamento de fim de ano."
++  ],
++  "critical_events": [
++    {
++      "name": "Lançamento do novo seguro auto e campanha de mídia",
++      "date": "2027-01-15",
++      "source": "Transcrição da reunião [Diego Martins]",
++      "pending_question": null
++    }
++  ],
++  "event_feasibility": [
++    {
++      "event": "Lançamento do novo seguro auto e campanha de mídia",
++      "reference_date": "2027-01-15",
++      "phase1_end_earliest": "2026-10-22",
++      "phase1_end_latest": "2026-10-29",
++      "classification": "fits",
++      "path": "Cronograma de 4 a 5 semanas finaliza muito antes de janeiro de 2027.",
++      "reason": "O prazo de execução estimado garante a entrega antes do congelamento de fim de ano e da data de lançamento.",
++      "summary_marker": "conclusão da implantação prevista bem antes do lançamento em 15/01/2027",
++      "lead_times": {
++        "licenciamento": {
++          "weeks": 1,
++          "source": "Padrão de aprovação interna"
++        }
++      }
++    }
++  ],
++  "document_text": {
++    "about_solution": "A solução de Bot Manager Premier da Akamai protege o ecossistema digital da Lumina Seguros contra fraudes automatizadas, raspagem de dados e abuso de APIs.",
++    "coverage": "A cobertura abrange o simulador de cotação e propriedades web críticas, garantindo visibilidade e controle sobre o tráfego de bots.",
++    "dimensioning_intro": "O dimensionamento considera as propriedades web em produção e o esforço técnico necessário para a implantação.",
++    "methodology_intro": "A metodologia POPULOS baseia-se em fases estruturadas para garantir entrega com qualidade e mitigação de riscos.",
++    "tests": "Os testes englobam homologação de regras, validação de telemetria e verificação de mitigação de robôs.",
++    "schedule_intro": "O cronograma foi planejado para atender ao prazo crítico de lançamento da Lumina Seguros.",
++    "schedule_sequence": "As fases estruturam-se sequencialmente desde o desenho técnico até o aceite final.",
++    "closing": "A POPULOS reafirma seu compromisso com o sucesso digital da Lumina Seguros.",
++    "callout_migration": "A integração ocorre sem interrupção do ambiente produtivo atual.",
++    "callout_milestones": "Marcos de entrega alinhados ao planejamento estratégico do cliente.",
++    "diagram_users": "Usuários legítimos e robôs acessam o simulador de cotação na borda.",
++    "diagram_users_detail": "O tráfego passa pela infraestrutura Akamai onde o Bot Manager classifica as requisições.",
++    "diagram_origins_title": "Origens Lumina Seguros",
++    "diagram_origins": "Aplicações de cotação e backend de serviços da Lumina Seguros."
++  }
++}
+\ No newline at end of file
+diff --git a/tests/fixtures/lumina_gemini_falso_padrao_institucional.json b/tests/fixtures/lumina_gemini_falso_padrao_institucional.json
+new file mode 100644
+index 0000000..a84ab5f
+--- /dev/null
++++ b/tests/fixtures/lumina_gemini_falso_padrao_institucional.json
+@@ -0,0 +1,385 @@
++{
++  "rules_version": 9,
++  "data_mode": "test",
++  "client_name": "Lumina Seguros",
++  "opportunity": "Implantação de Bot Manager",
++  "code": "prop_lumina_bot_manager",
++  "opportunity_id": "OPP-2026-0924",
++  "input_assessment": {
++    "status": "sufficient",
++    "missing": [],
++    "reason": "O insumo traz claramente a necessidade de proteção contra bots para o simulador de cotação da Lumina Seguros."
++  },
++  "catalog_fit": {
++    "status": "fits",
++    "requested": "Bot Manager",
++    "reason": "O catálogo cobre o Bot Manager Premier, perfeitamente adequado para o cenário de raspagem e requisições automatizadas relatado."
++  },
++  "client_scope": {
++    "type": "implementation",
++    "excludes_implementation": false,
++    "source": "Transcrição da reunião de 23/09/2026 e registro interno POPULOS",
++    "forbidden_in_committed": []
++  },
++  "governance": {
++    "engagement_type": {
++      "state": "commitment",
++      "value": "implementation",
++      "approved_value": "implementation",
++      "source": "E-mail interno de aprovação de 24/09/2026",
++      "approved_by": "Vitor",
++      "approved_at": "2026-09-24",
++      "approval_record": "E-mail interno de aprovação de 24/09/2026",
++      "mode": "test",
++      "engagement_ref": "implementation",
++      "approver_role": "dono comercial",
++      "approval_quote": "engagement_type | implementation | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
++    },
++    "warranty": {
++      "state": "commitment",
++      "value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final.",
++      "approved_value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final.",
++      "source": "E-mail interno de aprovação de 24/09/2026",
++      "approved_by": "Vitor",
++      "approved_at": "2026-09-24",
++      "approval_record": "E-mail interno de aprovação de 24/09/2026",
++      "mode": "test",
++      "engagement_ref": "implementation",
++      "approver_role": "dono comercial",
++      "approval_quote": "Garantia | A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
++    },
++    "license_supply": {
++      "state": "commitment",
++      "basis": "populos_standard",
++      "value": "Cliente Lumina mantém contrato direto com a Akamai; POPULOS realiza a implantação e prestação de serviços.",
++      "source": "Contexto da conta (registro interno POPULOS)",
++      "template_version": "2026.09.24-1"
++    },
++    "sla": {
++      "state": "commitment",
++      "basis": "populos_standard",
++      "value": "Tabela institucional do template POPULOS",
++      "source": "Template POPULOS vigente",
++      "template_version": "2026.09.24-1"
++    },
++    "effort_estimate": {
++      "state": "commitment",
++      "value": "4 a 5 semanas",
++      "approved_value": "4 a 5 semanas",
++      "source": "E-mail interno de aprovação de 24/09/2026",
++      "approved_by": "Ana",
++      "approved_at": "2026-09-24",
++      "approval_record": "E-mail interno de aprovação de 24/09/2026",
++      "mode": "test",
++      "engagement_ref": "implementation",
++      "approver_role": "arquiteta responsável",
++      "approval_quote": "Estimativa de esforço | 4 a 5 semanas | Ana (arquiteta responsável) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
++    }
++  },
++  "discovery": {
++    "business_goals": [
++      "Mitigar a raspagem de dados no simulador de cotação de seguro auto e reduzir custos com consultas indevidas a bureaus de dados (REQ-01)"
++    ]
++  },
++  "traceability": [
++    {
++      "requirement_id": "REQ-01",
++      "requirement": "Mitigar raspagem de cotações por robôs no simulador de seguro auto",
++      "solution": "Bot Manager Premier",
++      "evidence": "Milhares de cotações por hora vindas de robôs no simulador",
++      "source": "Transcrição da reunião de 23/09/2026",
++      "speakers": [
++        "client"
++      ],
++      "hypothesis": false
++    }
++  ],
++  "source_coverage": [
++    {
++      "ref": "Contexto da conta",
++      "statement": "Cliente POPULOS desde 2024. Produtos Akamai contratados hoje: Ion, App & API Protector e Edge DNS.",
++      "status": "coberto",
++      "targets": [
++        "sumário",
++        "escopo"
++      ]
++    },
++    {
++      "ref": "Transcrição Camila Reis",
++      "statement": "O simulador de cotação de seguro auto está sendo raspado por robôs.",
++      "status": "coberto",
++      "targets": [
++        "REQ-01",
++        "sumário"
++      ]
++    },
++    {
++      "ref": "Transcrição Camila Reis",
++      "statement": "No mês passado foram cerca de 2,1 milhões de cotações, e estimamos que metade seja de robôs.",
++      "status": "coberto",
++      "targets": [
++        "dimensionamento"
++      ]
++    },
++    {
++      "ref": "Transcrição Diego Martins",
++      "statement": "Lançamento do novo seguro auto em 15/01/2027, com congelamento de fim de ano de 15/12/2026 a 05/01/2027.",
++      "status": "coberto",
++      "targets": [
++        "premissas",
++        "engajamento"
++      ]
++    }
++  ],
++  "client_numbers": [
++    {
++      "quote": "2,1 milhões de cotações",
++      "ref": "Transcrição Camila Reis",
++      "destination": "dimensionamento",
++      "summary_marker": "volume mensal de cotações",
++      "reason": "Dimensão do volume de tráfego avaliado no simulador."
++    }
++  ],
++  "open_questions": [],
++  "solution_decisions": [
++    {
++      "product_id": "ion",
++      "status": "already_contracted",
++      "requirement_ids": [],
++      "rationale": "Produto já contratado e em produção no ambiente atual do cliente.",
++      "client_summary": "Produto existente na arquitetura atual.",
++      "capabilities": [
++        "aceleração dinâmica"
++      ],
++      "implementation_status": "modality_pending",
++      "contract_ref": "Contrato direto Lumina-Akamai"
++    },
++    {
++      "product_id": "app_api_protector",
++      "status": "already_contracted",
++      "requirement_ids": [],
++      "rationale": "Produto já contratado e em produção no ambiente atual do cliente.",
++      "client_summary": "WAF existente na arquitetura atual.",
++      "capabilities": [
++        "WAF"
++      ],
++      "implementation_status": "modality_pending",
++      "contract_ref": "Contrato direto Lumina-Akamai"
++    },
++    {
++      "product_id": "edge_dns",
++      "status": "already_contracted",
++      "requirement_ids": [],
++      "rationale": "Produto já contratado e em produção no ambiente atual do cliente.",
++      "client_summary": "DNS autoritativo existente na arquitetura atual.",
++      "capabilities": [
++        "DNS autoritativo"
++      ],
++      "implementation_status": "modality_pending",
++      "contract_ref": "Contrato direto Lumina-Akamai"
++    },
++    {
++      "product_id": "bot_manager",
++      "status": "recommended",
++      "requirement_ids": [
++        "REQ-01"
++      ],
++      "rationale": "Identificado alto volume de raspagem automatizada no simulador de cotações, impactando custos operacionais com consultas a bureaus de dados.",
++      "client_summary": "Implementação do Bot Manager Premier para detecção e mitigação de tráfego automatizado e robôs maliciosos.",
++      "capabilities": [
++        "detecção de bots",
++        "resposta adaptativa",
++        "segmentação"
++      ],
++      "implementation_status": "modality_pending"
++    }
++  ],
++  "products": [
++    "bot_manager"
++  ],
++  "architecture": {
++    "summary": "A solução consiste na ativação e configuração do Akamai Bot Manager Premier integrado à plataforma de borda existente da Lumina Seguros, protegendo o simulador de cotação contra raspagem automatizada e mitigando o impacto financeiro das consultas indevidas a bureaus de dados."
++  },
++  "sections": [
++    {
++      "title": "Resumo executivo",
++      "paragraphs": [
++        "A Lumina Seguros identificou um volume expressivo de acessos automatizados (robôs) em seu simulador de cotação de seguro auto, gerando custos operacionais adicionais com consultas a bureaus de dados e riscos de cópia de tabelas de preços.",
++        "Para endereçar este desafio, a POPULOS apresenta esta proposta técnica para a implantação do Akamai Bot Manager Premier, garantindo visibilidade e controle preciso sobre o tráfego automatizado na borda, com entrega planejada antes do lançamento do novo seguro auto e antes do congelamento de mudanças."
++      ]
++    }
++  ],
++  "dimensioning": [
++    [
++      "Simulador de cotação auto",
++      "2,1 milhões de requisições mensais",
++      "Informado pela Lumina Seguros",
++      "Confirmado"
++    ]
++  ],
++  "estimates": [
++    {
++      "item": "Esforço total de implantação",
++      "value": "4 a 5 semanas",
++      "owner": "Ana",
++      "owner_role": "arquiteto"
++    }
++  ],
++  "assessment_items": [
++    "Ambiente de borda atual operando com Ion, App & API Protector e Edge DNS.",
++    "Simulador de cotação de seguro auto exposto e alvo de raspagem de dados.",
++    "Necessidade de proteção contra bots antes do lançamento comercial em 15/01/2027."
++  ],
++  "client_roles": [
++    "Arquiteto de Soluções",
++    "Gestor de Canais Digitais",
++    "Equipe de Desenvolvimento / Sustentação"
++  ],
++  "scope": {
++    "included": [
++      "Desenho de arquitetura de integração do Bot Manager",
++      "Configuração de políticas de detecção de bots",
++      "Testes assistidos e validação em staging",
++      "Homologação e passagem para produção"
++    ],
++    "deliverables": [
++      "Documento de HLD (High-Level Design)",
++      "Regras de Bot Manager configuradas",
++      "Relatório de entrega e validação"
++    ],
++    "excluded": [
++      "Alterações no código da aplicação de origem",
++      "Contratação direta de licenças Akamai (gerenciadas em contrato pré-existente)"
++    ]
++  },
++  "delivery": {
++    "phases": [
++      {
++        "name": "Planejamento e Desenho",
++        "kind": "implementation",
++        "weeks": [
++          1,
++          1
++        ],
++        "duration": "1 semana",
++        "objective": "Alinhamento de requisitos e desenho técnico da solução.",
++        "dependency": "Nenhuma",
++        "outputs": [
++          "HLD aprovado"
++        ]
++      },
++      {
++        "name": "Configuração e Staging",
++        "kind": "implementation",
++        "weeks": [
++          2,
++          3
++        ],
++        "duration": "2 semanas",
++        "objective": "Implementação das políticas de Bot Manager no ambiente de teste.",
++        "dependency": "HLD aprovado",
++        "outputs": [
++          "Políticas aplicadas em staging"
++        ]
++      },
++      {
++        "name": "Validação e Produção",
++        "kind": "implementation",
++        "weeks": [
++          4,
++          5
++        ],
++        "duration": "2 semanas",
++        "objective": "Testes de aceite, ajuste fino e publicação em produção.",
++        "dependency": "Validação em staging",
++        "outputs": [
++          "Ambiente em produção com aceite final"
++        ]
++      }
++    ],
++    "responsibilities": [
++      [
++        "POPULOS",
++        "Condução técnica da implantação",
++        "Comprometimento"
++      ],
++      [
++        "Lumina Seguros",
++        "Disponibilização de acessos e validação funcional",
++        "Comprometimento"
++      ]
++    ]
++  },
++  "assumptions": [
++    "A Lumina Seguros disponibilizará os pontos de contato técnicos necessários durante o período de implantação.",
++    "O contrato de licenciamento vigente junto à Akamai cobre a utilização do Bot Manager Premier ou o termo comercial correspondente será aditado diretamente entre as partes.",
++    "As janelas de mudança respeitarão o calendário de congelamento corporativo da Lumina.",
++    "Os testes de aceite serão conduzidos nas datas acordadas no cronograma."
++  ],
++  "restrictions": [
++    "Escopo restrito à implantação do Bot Manager Premier para o escopo acordado.",
++    "Não inclui refatoração de código fonte na origem da aplicação.",
++    "Intervenções em produção devem respeitar estritamente as janelas de manutenção autorizadas.",
++    "Apoio operacional continuado regido pelo contrato de sustentação 8x5 existente."
++  ],
++  "risks": [
++    {
++      "risk": "Indisponibilidade de homologação por parte da equipe cliente durante as janelas críticas.",
++      "impact": "Médio",
++      "mitigation": "Planejamento prévio e alinhamento de agendas de testes."
++    }
++  ],
++  "acceptance_criteria": [
++    {
++      "requirement_id": "REQ-01",
++      "phase": "committed",
++      "criterion": "Demonstração de bloqueio ou desafio efetivo de requisições automatizadas (bots) no simulador de cotação em ambiente de produção com emissão do termo de aceite."
++    }
++  ],
++  "event_readiness": [
++    "Revisão de capacidade e telemetria prévia ao lançamento do seguro auto em 15/01/2027.",
++    "Respeito absoluto ao congelamento de mudanças entre 15/12/2026 e 05/01/2027."
++  ],
++  "critical_events": [
++    {
++      "name": "Lançamento do novo seguro auto",
++      "date": "2027-01-15",
++      "source": "Transcrição da reunião de 23/09/2026",
++      "pending_question": null
++    }
++  ],
++  "event_feasibility": [
++    {
++      "event": "Lançamento do novo seguro auto",
++      "reference_date": "2027-01-15",
++      "phase1_end_earliest": "2026-10-15",
++      "phase1_end_latest": "2026-10-22",
++      "classification": "fits",
++      "path": "Implantação concluída semanas antes do congelamento e da data de lançamento.",
++      "reason": "O cronograma de 4 a 5 semanas, com início simulado em meados de outubro de 2026, permite concluir a implantação bem antes do congelamento de fim de ano (15/12/2026) e da data de lançamento em 15/01/2027.",
++      "summary_marker": "lançamento do novo seguro auto em 15/01/2027 (concluindo entre 2026-10-15 e 2026-10-22, antes do congelamento de 15/12/2026, classificando-se como fits)",
++      "lead_times": {
++        "licenciamento": {
++          "weeks": 0,
++          "source": "Tratativa comercial em andamento"
++        }
++      }
++    }
++  ],
++  "document_text": {
++    "about_solution": "A solução de Bot Manager Premier oferece proteção avançada contra tráfego automatizado e robôs maliciosos, integrando-se perfeitamente à infraestrutura Akamai já utilizada pela Lumina Seguros.",
++    "coverage": "A cobertura abrange o escopo de requisições direcionadas ao simulador de cotação de seguro auto, identificando comportamentos anômalos e mitigando raspagens indesejadas.",
++    "dimensioning_intro": "O dimensionamento considera o volume médio mensal informado pelo cliente, garantindo capacidade adequada de processamento na borda.",
++    "methodology_intro": "A metodologia da POPULOS assegura uma transição controlada, desde a fase de desenho até a homologação final em produção.",
++    "tests": "Os testes serão realizados em ambiente de staging e posteriormente validados com tráfego real em produção durante a janela de aceite.",
++    "schedule_intro": "O macro cronograma foi estruturado para atender ao prazo desejado pelo cliente, mitigando riscos associados ao período de festas e ao congelamento de mudanças.",
++    "schedule_sequence": "O projeto está dividido em fases sequenciais de planejamento, configuração e validação, garantindo a conclusão da implantação em 4 a 5 semanas, com término em meados de outubro e novembro de 2026 (entre 2026-10-15 e 2026-10-22), ou seja, plenamente antes do início do congelamento de fim de ano em 15/12/2026 e do lançamento de 15/01/2027, classificando-se como fits.",
++    "closing": "A POPULOS reafirma seu compromisso com a excelência técnica e o sucesso contínuo da Lumina Seguros.",
++    "callout_migration": "A implantação do Bot Manager integra-se aos serviços Akamai já contratados e em produção.",
++    "callout_milestones": "O marco principal é a homologação do Bot Manager antes do congelamento de fim de ano e do lançamento em janeiro.",
++    "diagram_users": "Usuários legítimos e robôs maliciosos acessando os canais digitais da Lumina Seguros.",
++    "diagram_users_detail": "Tráfego direcionado através da plataforma Akamai para inspeção na borda.",
++    "diagram_origins_title": "Infraestrutura de Origem Lumina",
++    "diagram_origins": "Servidores de aplicação e bases de dados que hospedam o simulador de cotações."
++  }
++}
+\ No newline at end of file
+diff --git a/tests/fixtures/lumina_insumo.md b/tests/fixtures/lumina_insumo.md
+new file mode 100644
+index 0000000..35f1cd3
+--- /dev/null
++++ b/tests/fixtures/lumina_insumo.md
+@@ -0,0 +1,30 @@
++# Lumina Seguros (cliente existente)
++
++## Contexto da conta (registro interno POPULOS)
++- Cliente POPULOS desde 2024.
++- Produtos Akamai contratados hoje: Ion, App & API Protector e Edge DNS.
++- O contrato Akamai atual foi firmado **diretamente entre a Lumina e a Akamai**. A POPULOS presta os serviços de implantação e suporte.
++- Vigência do contrato Akamai atual: até 31/03/2027.
++- Propriedades Ion em produção: www.lumina.com.br, cotacao.lumina.com.br, api.lumina.com.br.
++- Suporte POPULOS em vigor: contrato de sustentação 8x5 até 31/03/2027.
++
++## Transcrição da reunião de 23/09/2026 (resumida)
++**Camila Reis (Head de Canais Digitais):** O simulador de cotação de seguro auto está sendo raspado. Vemos milhares de cotações por hora vindas de robôs, provavelmente de concorrentes e comparadores, que copiam nossa tabela de preços. Isso também aumenta o custo com as consultas que fazemos aos bureaus de dados a cada cotação.
++
++**Diego Martins (Arquiteto de Soluções da Lumina):** O WAF atual pega ataque, mas não pega esses robôs, eles parecem navegador normal. Queremos o Bot Manager.
++
++**Camila:** Também vimos alguns logins suspeitos na área do cliente, mas nada confirmado ainda.
++
++**Diego:** Estamos lançando o novo seguro auto em 15/01/2027, com campanha de mídia forte. Queremos o Bot Manager funcionando antes disso. Nosso congelamento de fim de ano vai de 15/12/2026 a 05/01/2027.
++
++**Camila:** Cada cotação consulta dois bureaus, e pagamos por consulta. No mês passado foram cerca de 2,1 milhões de cotações, e estimamos que pelo menos metade seja de robôs.
++
++## Decisões internas POPULOS fornecidas para este caso
++| Campo | Registro | Aprovado por | Data | Onde foi aprovado |
++|---|---|---|---|---|
++| engagement_type | implementation | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |
++| Garantia | A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |
++| SLA | Tabela institucional do template POPULOS | populos_standard | — | Template POPULOS vigente |
++| Estimativa de esforço | 4 a 5 semanas | Ana (arquiteta responsável) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |
++
++Licenciamento: não informado.
+diff --git a/tests/fixtures/vertice_insumo.md b/tests/fixtures/vertice_insumo.md
+new file mode 100644
+index 0000000..5b63bb1
+--- /dev/null
++++ b/tests/fixtures/vertice_insumo.md
+@@ -0,0 +1,32 @@
++# Vértice Educação
++
++## Material recebido
++
++### E-mail recebido em 22/09/2026
++**De:** Paulo Andrade — Coordenador de Infraestrutura, Vértice Educação
++**Para:** comercial@populos
++**Assunto:** Migração de DNS
++
++Olá, tudo bem?
++
++Somos uma rede de faculdades particulares com 14 unidades. Hoje o DNS dos nossos domínios fica no painel do registrador, e já tivemos dois episódios este ano em que o painel ficou fora do ar e não conseguimos alterar registros. Queremos migrar o DNS autoritativo para a Akamai (Edge DNS), com DNSSEC.
++
++São 4 zonas: vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br. Juntas, somam cerca de 380 registros. Não usamos nenhum recurso exótico, só A, AAAA, CNAME, MX, TXT e alguns SRV do e-mail.
++
++O período de matrículas começa em 11/01/2027, e a migração precisa estar concluída e estável antes disso. Não podemos ter indisponibilidade no portal do aluno.
++
++O site principal e o portal do aluno rodam num único servidor em um provedor de hospedagem. No futuro talvez a gente pense em melhorar a segurança do site, mas não é o momento e não temos orçamento para isso agora.
++
++Precisamos de uma proposta de implantação.
++
++Abraço,
++Paulo
++
++## Decisões internas POPULOS fornecidas para este caso
++| Campo | Registro | Aprovado por | Data | Onde foi aprovado |
++|---|---|---|---|---|
++| engagement_type | implementation | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |
++| Garantia | A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |
++| Licenciamento | As licenças Akamai serão adquiridas diretamente pela Vértice Educação junto à Akamai. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |
++| SLA | Tabela institucional do template POPULOS | populos_standard | — | Template POPULOS vigente |
++| Estimativa de esforço | 3 a 4 semanas | Ana (arquiteta responsável) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |
+diff --git a/tests/fixtures/vertice_v9.json b/tests/fixtures/vertice_v9.json
+new file mode 100644
+index 0000000..fc9bfd2
+--- /dev/null
++++ b/tests/fixtures/vertice_v9.json
+@@ -0,0 +1,634 @@
++{
++ "rules_version": 9,
++ "data_mode": "test",
++ "client_name": "Vértice Educação",
++ "opportunity": "Migração de DNS autoritativo para Edge DNS",
++ "code": "VERTICE-EDGEDNS-2026",
++ "opportunity_id": "VERTICE-DNS-2026-09",
++ "client_scope": {
++  "type": "implementation",
++  "excludes_implementation": false,
++  "source": "E-mail de Paulo Andrade, 22/09/2026: \"Queremos migrar o DNS autoritativo para a Akamai (Edge DNS), com DNSSEC.\" e \"Precisamos de uma proposta de implantação.\"",
++  "forbidden_in_committed": [
++   "alteração no servidor de hospedagem",
++   "proteção de aplicações web"
++  ]
++ },
++ "governance": {
++  "engagement_type": {
++   "state": "commitment",
++   "value": "implementation",
++   "approved_value": "implementation",
++   "source": "Insumo, tabela de decisões POPULOS do caso, linha engagement_type; coerente com o pedido do cliente (e-mail de 22/09/2026: proposta de implantação)",
++   "approved_by": "Vitor (dono comercial)",
++   "approved_at": "2026-09-24",
++   "approval_record": "E-mail interno de aprovação de 24/09/2026",
++   "mode": "test",
++   "approval_quote": "engagement_type | implementation | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
++  },
++  "warranty": {
++   "state": "commitment",
++   "value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final.",
++   "approved_value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final.",
++   "source": "Insumo, tabela de decisões POPULOS do caso, linha Garantia",
++   "approved_by": "Vitor (dono comercial)",
++   "approved_at": "2026-09-24",
++   "approval_record": "E-mail interno de aprovação de 24/09/2026",
++   "mode": "test",
++   "engagement_ref": "implementation",
++   "approval_quote": "Garantia | A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
++  },
++  "license_supply": {
++   "state": "commitment",
++   "value": "As licenças Akamai serão adquiridas diretamente pela Vértice Educação junto à Akamai.",
++   "approved_value": "As licenças Akamai serão adquiridas diretamente pela Vértice Educação junto à Akamai.",
++   "source": "Insumo, tabela de decisões POPULOS do caso, linha Licenciamento",
++   "approved_by": "Vitor (dono comercial)",
++   "approved_at": "2026-09-24",
++   "approval_record": "E-mail interno de aprovação de 24/09/2026",
++   "mode": "test",
++   "engagement_ref": "implementation",
++   "approval_quote": "Licenciamento | As licenças Akamai serão adquiridas diretamente pela Vértice Educação junto à Akamai. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
++  },
++  "sla": {
++   "state": "commitment",
++   "basis": "populos_standard",
++   "value": "Tabela institucional de SLA do template POPULOS vigente",
++   "source": "Template POPULOS vigente (insumo, tabela de decisões POPULOS do caso, linha SLA)",
++   "template_version": "2026.09.24-1",
++   "engagement_ref": "implementation"
++  },
++  "effort_estimate": {
++   "state": "commitment",
++   "value": "3 a 4 semanas",
++   "approved_value": "3 a 4 semanas",
++   "source": "Insumo, tabela de decisões POPULOS do caso, linha Estimativa de esforço",
++   "approved_by": "Ana (arquiteta responsável)",
++   "approver_role": "arquiteta",
++   "approved_at": "2026-09-24",
++   "approval_record": "E-mail interno de aprovação de 24/09/2026",
++   "mode": "test",
++   "engagement_ref": "implementation",
++   "approval_quote": "Estimativa de esforço | 3 a 4 semanas | Ana (arquiteta responsável) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
++  }
++ },
++ "discovery": {
++  "business_goals": [
++   "Eliminar a dependência do painel do registrador para a gestão dos registros DNS das quatro zonas (REQ-01, REQ-05)",
++   "Proteger a integridade das respostas DNS com assinatura DNSSEC (REQ-02)",
++   "Concluir a migração sem interrupção da resolução de nomes do portal do aluno (REQ-03)",
++   "Chegar ao período de matrículas de 11/01/2027 com o DNS migrado e estabilizado (REQ-04)"
++  ]
++ },
++ "traceability": [
++  {
++   "requirement_id": "REQ-01",
++   "requirement": "Hospedar o DNS autoritativo das zonas vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br fora do painel do registrador, com gestão independente dele.",
++   "solution": "Edge DNS",
++   "evidence": "Consultas públicas às 4 zonas retornam os servidores de nomes Akamai como autoritativos.",
++   "source": "E-mail de 22/09/2026, parágrafos 2 e 3",
++   "speakers": [
++    "client"
++   ],
++   "hypothesis": false
++  },
++  {
++   "requirement_id": "REQ-02",
++   "requirement": "Ativar DNSSEC nas quatro zonas migradas.",
++   "solution": "Edge DNS",
++   "evidence": "Cadeia DNSSEC validada em resolvedores com validação, sem erros de assinatura.",
++   "source": "E-mail de 22/09/2026, parágrafo 2",
++   "speakers": [
++    "client"
++   ],
++   "hypothesis": false
++  },
++  {
++   "requirement_id": "REQ-03",
++   "requirement": "Migrar sem indisponibilidade de resolução de nomes para o portal do aluno.",
++   "solution": "Edge DNS",
++   "evidence": "Registro de consultas antes, durante e depois da troca de delegação com respostas idênticas nos servidores atuais e nos servidores Akamai.",
++   "source": "E-mail de 22/09/2026, parágrafo 4",
++   "speakers": [
++    "client"
++   ],
++   "hypothesis": false
++  },
++  {
++   "requirement_id": "REQ-04",
++   "requirement": "Ter a migração concluída e estável antes do início das matrículas em 11/01/2027.",
++   "solution": "Edge DNS",
++   "evidence": "Relatório de estabilização e aceite formal da migração.",
++   "source": "E-mail de 22/09/2026, parágrafo 4",
++   "speakers": [
++    "client"
++   ],
++   "hypothesis": false
++  },
++  {
++   "requirement_id": "REQ-05",
++   "requirement": "Reproduzir integralmente os cerca de 380 registros das quatro zonas, dos tipos A, AAAA, CNAME, MX, TXT e SRV, incluindo os registros de e-mail.",
++   "solution": "Edge DNS",
++   "evidence": "Comparação entre o inventário aprovado e as respostas dos servidores Akamai com 100% de correspondência.",
++   "source": "E-mail de 22/09/2026, parágrafo 3",
++   "speakers": [
++    "client"
++   ],
++   "hypothesis": false
++  }
++ ],
++ "source_coverage": [
++  {
++   "ref": "E-mail 22/09/2026, §1",
++   "statement": "Rede de faculdades particulares com 14 unidades.",
++   "status": "descartado",
++   "targets": [],
++   "reason": "Contexto institucional; o número de unidades não altera o dimensionamento das zonas DNS."
++  },
++  {
++   "ref": "E-mail 22/09/2026, §1",
++   "statement": "DNS dos domínios hospedado no painel do registrador.",
++   "status": "coberto",
++   "targets": [
++    "REQ-01",
++    "sumário"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §1",
++   "statement": "Dois episódios este ano de painel fora do ar, sem conseguir alterar registros.",
++   "status": "coberto",
++   "targets": [
++    "REQ-01",
++    "sumário"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §1",
++   "statement": "Migrar o DNS autoritativo para Edge DNS, com DNSSEC.",
++   "status": "coberto",
++   "targets": [
++    "REQ-01",
++    "REQ-02",
++    "escopo"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §2",
++   "statement": "Quatro zonas: vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br.",
++   "status": "coberto",
++   "targets": [
++    "REQ-01",
++    "dimensionamento"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §2",
++   "statement": "Cerca de 380 registros no total.",
++   "status": "coberto",
++   "targets": [
++    "REQ-05",
++    "dimensionamento"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §2",
++   "statement": "Somente registros A, AAAA, CNAME, MX, TXT e alguns SRV do e-mail.",
++   "status": "coberto",
++   "targets": [
++    "REQ-05",
++    "escopo"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §3",
++   "statement": "Matrículas começam em 11/01/2027; migração concluída e estável antes disso.",
++   "status": "coberto",
++   "targets": [
++    "REQ-04",
++    "sumário"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §3",
++   "statement": "Não pode haver indisponibilidade no portal do aluno.",
++   "status": "coberto",
++   "targets": [
++    "REQ-03",
++    "premissas"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §4",
++   "statement": "Site principal e portal do aluno rodam em um único servidor em provedor de hospedagem.",
++   "status": "coberto",
++   "targets": [
++    "dimensionamento",
++    "premissas"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §4",
++   "statement": "Melhoria de segurança do site talvez no futuro, sem orçamento agora.",
++   "status": "coberto",
++   "targets": [
++    "exclusões"
++   ]
++  },
++  {
++   "ref": "E-mail 22/09/2026, §5",
++   "statement": "Pedido de proposta de implantação.",
++   "status": "coberto",
++   "targets": [
++    "engajamento"
++   ]
++  },
++  {
++   "ref": "Decisões POPULOS do caso",
++   "statement": "Garantia, licenciamento, SLA institucional, tipo de engajamento e estimativa de esforço aprovados.",
++   "status": "coberto",
++   "targets": [
++    "engajamento",
++    "escopo"
++   ]
++  }
++ ],
++ "client_numbers": [
++  {
++   "quote": "14 unidades",
++   "ref": "E-mail 22/09/2026, §1",
++   "destination": "descartado_com_motivo",
++   "reason": "Número de unidades não influencia a quantidade de zonas ou registros DNS."
++  },
++  {
++   "quote": "dois episódios este ano",
++   "ref": "E-mail 22/09/2026, §1",
++   "destination": "contexto_de_dor",
++   "summary_marker": "dois episódios"
++  },
++  {
++   "quote": "4 zonas",
++   "ref": "E-mail 22/09/2026, §2",
++   "destination": "dimensionamento"
++  },
++  {
++   "quote": "cerca de 380 registros",
++   "ref": "E-mail 22/09/2026, §2",
++   "destination": "dimensionamento"
++  },
++  {
++   "quote": "11/01/2027",
++   "ref": "E-mail 22/09/2026, §3",
++   "destination": "meta"
++  },
++  {
++   "quote": "um único servidor",
++   "ref": "E-mail 22/09/2026, §4",
++   "destination": "dimensionamento"
++  }
++ ],
++ "open_questions": [
++  "Qual o prazo de fornecimento e ativação das licenças Edge DNS na compra direta da Vértice Educação junto à Akamai?",
++  "Existe congelamento de mudanças de infraestrutura antes do início das matrículas em 11/01/2027? A partir de qual data?",
++  "As zonas estão hoje assinadas com DNSSEC no registrador (existem registros DS publicados)?",
++  "Quem na Vértice Educação detém o acesso ao registrador para trocar os servidores de nomes e publicar os registros DS?",
++  "A zona portalaluno.vertice.edu.br é delegada a partir de vertice.edu.br ou gerenciada no mesmo painel do registrador?",
++  "É possível exportar o arquivo completo de cada zona do painel atual?",
++  "Quais janelas de mudança estão aprovadas para a troca de delegação?"
++ ],
++ "solution_decisions": [
++  {
++   "product_id": "edge_dns",
++   "status": "recommended",
++   "requirement_ids": [
++    "REQ-01",
++    "REQ-02",
++    "REQ-03",
++    "REQ-04",
++    "REQ-05"
++   ],
++   "rationale": "O cliente pediu explicitamente a migração do DNS autoritativo das quatro zonas para o Edge DNS com DNSSEC, após indisponibilidades do painel do registrador.",
++   "client_summary": "O Edge DNS passa a responder de forma autoritativa pelas quatro zonas da Vértice Educação em uma rede distribuída, com assinatura DNSSEC e gestão de registros independente do painel do registrador.",
++   "capabilities": [
++    "DNS autoritativo",
++    "DNSSEC",
++    "API de gestão"
++   ],
++   "confidence": "alta"
++  },
++  {
++   "product_id": "app_api_protector",
++   "status": "excluded",
++   "requirement_ids": [],
++   "rationale": "O cliente declarou que a melhoria de segurança do site não é prioridade agora e não há orçamento."
++  },
++  {
++   "product_id": "malware_protection",
++   "status": "excluded",
++   "requirement_ids": [],
++   "rationale": "Não há fluxo de upload de arquivos no material recebido."
++  },
++  {
++   "product_id": "alb",
++   "status": "excluded",
++   "requirement_ids": [],
++   "rationale": "Existe um único servidor de origem."
++  },
++  {
++   "product_id": "gtm",
++   "status": "excluded",
++   "requirement_ids": [],
++   "rationale": "Existe um único servidor de origem; não há múltiplos provedores ou data centers."
++  },
++  {
++   "product_id": "ion",
++   "status": "excluded",
++   "requirement_ids": [],
++   "rationale": "Nenhum objetivo de desempenho foi informado."
++  },
++  {
++   "product_id": "prolexic",
++   "status": "excluded",
++   "requirement_ids": [],
++   "rationale": "Nenhuma evidência de ataques volumétricos ou exposição de faixas de IP."
++  },
++  {
++   "product_id": "account_protector",
++   "status": "excluded",
++   "requirement_ids": [],
++   "rationale": "Nenhum risco de abuso de contas foi relatado."
++  },
++  {
++   "product_id": "ip_accelerator",
++   "status": "excluded",
++   "requirement_ids": [],
++   "rationale": "Nenhuma aplicação TCP/UDP não cacheável no escopo."
++  },
++  {
++   "product_id": "bot_manager",
++   "status": "excluded",
++   "requirement_ids": [],
++   "rationale": "Nenhum caso de automação abusiva foi relatado."
++  }
++ ],
++ "products": [
++  "edge_dns"
++ ],
++ "architecture": {
++  "summary": "As quatro zonas da Vértice Educação passam a ser servidas de forma autoritativa pelo Edge DNS. O registrador continua responsável apenas pelo registro dos domínios e pela delegação aos servidores de nomes Akamai; os registros A, AAAA, CNAME, MX, TXT e SRV são mantidos na plataforma Akamai, assinados com DNSSEC e administrados por console ou API. O site principal e o portal do aluno continuam no servidor atual do provedor de hospedagem, sem alteração de endereço."
++ },
++ "sections": [
++  {
++   "title": "Resumo executivo",
++   "paragraphs": [
++    "A Vértice Educação mantém hoje o DNS dos seus domínios no painel do registrador e registrou dois episódios em 2026 em que o painel ficou fora do ar e não foi possível alterar registros. Esta proposta migra as 4 zonas (vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br), com cerca de 380 registros, para o Edge DNS da Akamai, com DNSSEC e sem interrupção da resolução de nomes do portal do aluno.",
++    "A implantação está estimada entre 3 e 4 semanas a partir da reunião de início. Se o início ocorresse na data desta proposta (24/09/2026), o término ficaria entre 15/10/2026 e 22/10/2026, com margem ampla até o início das matrículas em 11/01/2027. A viabilidade frente às matrículas fica condicionada ao prazo de licenciamento, ainda não informado: as licenças são adquiridas diretamente pela Vértice Educação junto à Akamai, e a data real de início depende dessa ativação e de eventual congelamento de mudanças antes das matrículas.",
++    "A troca de delegação será feita em janela aprovada, com os registros já publicados e conferidos na Akamai, TTLs reduzidos previamente e plano de reversão para os servidores atuais. A assinatura DNSSEC é ativada somente após a estabilização da nova delegação."
++   ]
++  }
++ ],
++ "dimensioning": [
++  [
++   "Zonas DNS autoritativas",
++   "4 zonas",
++   "vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br, informadas pelo cliente",
++   "Confirmado"
++  ],
++  [
++   "Registros DNS",
++   "Cerca de 380 registros",
++   "Tipos A, AAAA, CNAME, MX, TXT e SRV, informados pelo cliente; contagem exata validada na exportação das zonas",
++   "Pendente"
++  ],
++  [
++   "Servidor de aplicação (site e portal do aluno)",
++   "1 servidor",
++   "Provedor de hospedagem atual, sem alteração nesta proposta",
++   "Confirmado"
++  ]
++ ],
++ "estimates": [
++  {
++   "item": "Esforço total de implantação",
++   "value": "3 a 4 semanas",
++   "owner": "Ana (arquiteta responsável)",
++   "owner_role": "arquiteto"
++  }
++ ],
++ "assessment_items": [
++  "Exportação e revisão do inventário das 4 zonas, com conferência dos cerca de 380 registros e dos tipos em uso;",
++  "Levantamento da delegação atual, dos TTLs, da situação DNSSEC e do acesso ao registrador;",
++  "Identificação dos registros críticos do portal do aluno e do e-mail (MX, TXT e SRV) e da janela de mudança."
++ ],
++ "scope": {
++  "included": [
++   "Criação e configuração das 4 zonas no Edge DNS com os registros do inventário aprovado;",
++   "Conferência automatizada dos registros publicados na Akamai contra o inventário antes da troca de delegação;",
++   "Redução prévia de TTLs, acompanhamento da troca de servidores de nomes e plano de reversão;",
++   "Ativação da assinatura DNSSEC nas 4 zonas e entrega dos registros DS para publicação no registrador;",
++   "Monitoramento da resolução durante a estabilização assistida."
++  ],
++  "deliverables": [
++   "Plano de migração aprovado, com sequência, janela e procedimento de reversão;",
++   "Relatório de conferência de registros e de validação DNSSEC;",
++   "Documentação final das zonas e dos procedimentos de gestão de registros e DNSSEC."
++  ],
++  "excluded": [
++   "Proteção do site e do portal do aluno contra ataques a aplicações, adiada pelo cliente;",
++   "Alterações no servidor de hospedagem, no conteúdo do site ou no serviço de e-mail;",
++   "Registro, transferência ou renovação de domínios junto ao registrador;",
++   "Operação continuada do DNS após o aceite final."
++  ]
++ },
++ "delivery": {
++  "phases": [
++   {
++    "name": "Fase 1 — Levantamento e desenho",
++    "kind": "assessment",
++    "weeks": [
++     1,
++     1
++    ],
++    "duration": "1 semana",
++    "objective": "Exportar e validar o inventário das 4 zonas e aprovar o plano de migração, a redução de TTLs e o procedimento de reversão.",
++    "dependency": "Exportação das zonas e acesso ao registrador",
++    "outputs": [
++     "inventário aprovado",
++     "plano de migração"
++    ]
++   },
++   {
++    "name": "Fase 2 — Implantação e troca de delegação",
++    "kind": "implementation",
++    "weeks": [
++     1,
++     2
++    ],
++    "duration": "1 a 2 semanas",
++    "objective": "Configurar as zonas no Edge DNS, conferir os registros e acompanhar a troca de servidores de nomes executada pela Vértice Educação na janela aprovada.",
++    "dependency": "Licenças ativas e janela de mudança aprovada",
++    "outputs": [
++     "relatório de conferência",
++     "delegação ativa"
++    ]
++   },
++   {
++    "name": "Fase 3 — DNSSEC, estabilização e aceite",
++    "kind": "implementation",
++    "weeks": [
++     1,
++     1
++    ],
++    "duration": "1 semana",
++    "objective": "Ativar a assinatura DNSSEC, acompanhar a publicação dos registros DS, monitorar a resolução e obter o aceite final.",
++    "dependency": "Publicação dos registros DS pela Vértice Educação",
++    "outputs": [
++     "relatório de validação DNSSEC",
++     "documentação final",
++     "aceite"
++    ]
++   }
++  ],
++  "responsibilities": [
++   {
++    "party": "Vértice Educação — licenciamento",
++    "responsibility": "Adquirir e ativar as licenças Edge DNS junto à Akamai."
++   },
++   {
++    "party": "Vértice Educação — infraestrutura",
++    "responsibility": "Exportar as zonas, trocar os servidores de nomes e publicar os registros DS no registrador."
++   }
++  ]
++ },
++ "assumptions": [
++  "Premissa de dimensionamento: as 4 zonas somam cerca de 380 registros dos tipos A, AAAA, CNAME, MX, TXT e SRV; divergência relevante na exportação será tratada na Fase 1.",
++  "A Vértice Educação executa as alterações no registrador (servidores de nomes e registros DS) na janela aprovada, com o acompanhamento da POPULOS.",
++  "Os endereços do servidor de hospedagem não mudam durante a migração; a disponibilidade do próprio servidor permanece com o provedor de hospedagem.",
++  "As licenças Edge DNS estão ativas antes do início da Fase 2."
++ ],
++ "restrictions": [
++  "O cronograma depende da ativação das licenças, da exportação das zonas e da aprovação das janelas de mudança;",
++  "O tempo de propagação da nova delegação segue os TTLs definidos pelos registros de domínio .br e .com.br, fora do controle da POPULOS;",
++  "A proposta não inclui alteração em aplicações, hospedagem ou serviço de e-mail;",
++  "A faixa de 3 a 4 semanas pressupõe acessos disponíveis no início de cada fase e ausência de alteração material no inventário."
++ ],
++ "risks": [
++  {
++   "risk": "Registro omitido ou divergente na exportação das zonas",
++   "impact": "Falha de resolução de um serviço, inclusive e-mail",
++   "mitigation": "Conferência automatizada de 100% dos registros contra o inventário antes da troca de delegação"
++  },
++  {
++   "risk": "Painel do registrador indisponível na janela de mudança",
++   "impact": "Adiamento da troca de delegação",
++   "mitigation": "Janela principal e janela reserva definidas bem antes das matrículas"
++  },
++  {
++   "risk": "Inconsistência entre registros DS e chaves DNSSEC",
++   "impact": "Falha de resolução em resolvedores com validação",
++   "mitigation": "Ativar DNSSEC somente após a delegação estável, validar a cadeia antes do aceite e manter procedimento de reversão do DS"
++  },
++  {
++   "risk": "Prazo de licenciamento desconhecido",
++   "impact": "Início da implantação posterior ao previsto",
++   "mitigation": "Iniciar a Fase 1 em paralelo à compra das licenças e acompanhar o prazo com a Akamai"
++  }
++ ],
++ "acceptance_criteria": [
++  {
++   "requirement_id": "REQ-05",
++   "phase": "committed",
++   "criterion": "Relatório de conferência mostra 100% dos registros do inventário aprovado das 4 zonas publicados nos servidores Akamai com mesmo nome, tipo e valor, antes da troca de delegação."
++  },
++  {
++   "requirement_id": "REQ-01",
++   "phase": "committed",
++   "criterion": "Após a troca executada pela Vértice Educação no registrador, consultas públicas às 4 zonas retornam os servidores de nomes Akamai como autoritativos."
++  },
++  {
++   "requirement_id": "REQ-03",
++   "phase": "committed",
++   "criterion": "Registro de consultas antes, durante e depois da janela mostra respostas idênticas para os nomes do site e do portal do aluno nos servidores atuais e nos servidores Akamai."
++  },
++  {
++   "requirement_id": "REQ-02",
++   "phase": "committed",
++   "criterion": "Após a publicação dos registros DS pela Vértice Educação, as 4 zonas validam a cadeia DNSSEC em resolvedores com validação, sem erros de assinatura."
++  },
++  {
++   "requirement_id": "REQ-04",
++   "phase": "committed",
++   "criterion": "Relatório de estabilização da Fase 3 sem falhas de resolução atribuíveis à configuração no Edge DNS e documentação final aceita."
++  }
++ ],
++ "event_readiness": [
++  "Concluir a troca de delegação e a ativação do DNSSEC com antecedência ao início das matrículas;",
++  "Respeitar eventual congelamento de mudanças definido pela Vértice Educação antes das matrículas;",
++  "Manter procedimento de reversão documentado para a delegação e para o DNSSEC;",
++  "Monitorar a resolução dos nomes do portal do aluno e do vestibular durante a estabilização assistida."
++ ],
++ "critical_events": [
++  {
++   "name": "Início das matrículas",
++   "date": "2027-01-11",
++   "source": "E-mail de 22/09/2026, parágrafo 4"
++  }
++ ],
++ "event_feasibility": [
++  {
++   "event": "Início das matrículas",
++   "reference_date": "2026-09-24",
++   "phase1_end_earliest": "2026-10-15",
++   "phase1_end_latest": "2026-10-22",
++   "classification": "partially_fits",
++   "path": "Implantação completa de 3 a 4 semanas a partir do início",
++   "reason": "O esforço de serviços cabe com ampla margem antes de 11/01/2027, mas o prazo de licenciamento na compra direta junto à Akamai e eventual congelamento de mudanças são desconhecidos, o que impede classificar como cabe.",
++   "summary_marker": "condicionada ao prazo de licenciamento",
++   "lead_times": {
++    "licenciamento": {
++     "weeks": null,
++     "pending_question": "Qual o prazo de fornecimento e ativação das licenças Edge DNS na compra direta da Vértice Educação junto à Akamai?"
++    }
++   }
++  }
++ ],
++ "document_text": {
++  "about_akamai": "A Akamai opera uma plataforma distribuída de serviços de internet. Nesta proposta, é utilizado exclusivamente o serviço de DNS autoritativo Edge DNS.",
++  "about_solution": "Para a Vértice Educação, a solução transfere o DNS autoritativo das quatro zonas do painel do registrador para o Edge DNS, com DNSSEC, gestão de registros por console ou API e migração sem interrupção da resolução de nomes.",
++  "partnership": "A POPULOS responde pelo desenho, pela implantação, pelos testes e pela documentação da migração. As credenciais nominais da equipe serão apresentadas na mobilização.",
++  "coverage": "Abrangência: zonas vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br.",
++  "readiness_intro": "O início das matrículas em 11/01/2027 orienta a sequência da migração, que deve estar concluída e estável antes dessa data.",
++  "dimensioning_intro": "O dimensionamento considera as quatro zonas e os cerca de 380 registros informados pela Vértice Educação. A contagem exata será confirmada na exportação das zonas durante a Fase 1.",
++  "methodology_intro": "A POPULOS conduzirá a migração em três fases: levantamento e desenho, implantação com troca de delegação e ativação do DNSSEC com estabilização e aceite. Cada fase tem entregas e evidências próprias.",
++  "knowledge_transfer": "A passagem de conhecimento abrangerá a gestão de zonas e registros no Edge DNS por console e API, a rotina de DNSSEC e o procedimento de reversão.",
++  "tests": "Os testes cobrirão a conferência de todos os registros, a resolução durante a troca de delegação e a validação da cadeia DNSSEC, conforme os critérios de aceite.",
++  "schedule_intro": "A implantação está estimada entre 3 e 4 semanas, contadas a partir da reunião de início, condicionada à ativação das licenças, à exportação das zonas e à aprovação da janela de mudança.",
++  "schedule_sequence": "A sequência inclui levantamento e desenho, implantação com troca de delegação e ativação do DNSSEC com estabilização assistida.",
++  "acceptance_intro": "A aceitação seguirá os critérios abaixo, vinculados aos requisitos da matriz de rastreabilidade:",
++  "warranty_intro": "A garantia técnica cobre a correção de defeitos diretamente atribuíveis aos serviços executados pela POPULOS, no prazo indicado no quadro Garantia e vigência.",
++  "closing": "O projeto encerra-se após o aceite final. Operação continuada do DNS e suporte gerenciado exigem contratação específica.",
++  "callout_limits": "A frente cobre a configuração das zonas no Edge DNS e a migração da delegação. Servidor de hospedagem, aplicações e e-mail permanecem fora do escopo.",
++  "callout_migration": "Migração por zona com registros conferidos antes da troca, TTLs reduzidos, janela aprovada e reversão para os servidores atuais; DNSSEC ativado após a delegação estável.",
++  "callout_milestones": "Plano de migração aprovado, delegação ativa nas quatro zonas, cadeia DNSSEC validada e documentação final aceita.",
++  "license_prefix": "Licenciamento:",
++  "diagram_origins_title": "Hospedagem atual",
++  "diagram_origins": "Servidor do site e portal",
++  "diagram_users": "Alunos e candidatos",
++  "diagram_users_detail": "Site, portal e e-mail"
++ },
++ "input_assessment": {
++  "status": "sufficient",
++  "missing": [],
++  "reason": "Cliente identificado, zonas, registros, prazo e decisões internas informados."
++ },
++ "catalog_fit": {
++  "status": "fits",
++  "requested": "Migração do DNS autoritativo para o Edge DNS com DNSSEC",
++  "reason": "Edge DNS consta do catálogo aprovado."
++ },
++ "client_roles": [
++  "Coordenação de infraestrutura: decisões, acessos ao registrador e janelas de mudança;",
++  "Hospedagem: confirmação dos endereços do servidor e apoio nos testes;",
++  "E-mail: validação dos registros MX, TXT e SRV após cada troca."
++ ]
++}
+\ No newline at end of file
+diff --git a/tests/test_v7_engine.py b/tests/test_v7_engine.py
+index d0bc02c..6854143 100644
+--- a/tests/test_v7_engine.py
++++ b/tests/test_v7_engine.py
+@@ -14,6 +14,17 @@ from sales_engineer.case_runner import read_source_material, record_attempt, ski
+ from sales_engineer.proposal_rules import validate_proposal_rules
+ from tests.test_v6_rules import resolved_v6
+ 
++FIXTURES = Path(__file__).resolve().parent / "fixtures"
++
++
++def vertice_latest() -> dict:
++    """A real authoring output (diverse-case round, case 01), upgraded to the latest contract."""
++    return json.loads((FIXTURES / "vertice_v9.json").read_text(encoding="utf-8"))
++
++
++def vertice_source() -> str:
++    return (FIXTURES / "vertice_insumo.md").read_text(encoding="utf-8")
++
+ 
+ def resolved_v7() -> dict:
+     """The closed NexusPay V6 state upgraded to the v7 contract (regression fixture only, never an authoring example)."""
+@@ -145,31 +156,33 @@ class CaseRunnerTests(unittest.TestCase):
+         self.tmp.cleanup()
+ 
+     def _submit(self, state) -> dict:
++        self.run_dir.mkdir(parents=True, exist_ok=True)
++        (self.run_dir / "insumo.md").write_text(vertice_source(), encoding="utf-8")
+         path = Path(self.tmp.name) / "state.json"
+         path.write_text(state if isinstance(state, str) else json.dumps(state, ensure_ascii=False), encoding="utf-8")
+         return record_attempt(self.run_dir, path)
+ 
+     def test_clean_attempt_is_composed(self) -> None:
+-        result = self._submit(resolved_v7())
++        result = self._submit(vertice_latest())
+         self.assertEqual(result["status"], "ok")
+-        self.assertEqual(result["composition"]["status"], "emitted")
++        self.assertEqual(result["composition"]["status"], "emitted", result["composition"])
+         text = " ".join(p.text for p in Document(result["composition"]["docx"]).paragraphs)
+-        self.assertIn("Critérios de aceite — Trilha rápida opcional", text)
++        self.assertIn("Vértice Educação", text)
+         self.assertTrue((self.run_dir / "final" / "relatorio-cobertura.md").exists())
+ 
+     def test_iteration_limit_is_enforced(self) -> None:
+         with mock.patch.object(case_runner, "engine_config", return_value={"max_iterations": 2}):
+             self.assertEqual(self._submit("{").get("status"), "violations")
+-            self.assertEqual(self._submit({"rules_version": 7}).get("status"), "violations")
+-            self.assertEqual(self._submit(resolved_v7())["status"], "limit_reached")
++            self.assertEqual(self._submit({"rules_version": 9}).get("status"), "violations")
++            self.assertEqual(self._submit(vertice_latest())["status"], "limit_reached")
+         log = json.loads((self.run_dir / "attempts.json").read_text(encoding="utf-8"))
+         self.assertEqual([a["attempt"] for a in log["attempts"]], [1, 2])
+         self.assertTrue((self.run_dir / "pass1.json").exists())
+ 
+     def test_malformed_and_old_states_come_back_as_feedback(self) -> None:
+         self.assertIn("não é um objeto JSON", validate_state([])[0])
+-        self.assertIn("rules_version deve ser 7", validate_state({"rules_version": 6})[0])
+-        self.assertTrue(validate_state({"rules_version": 7, "governance": "x"})[0].startswith("estado malformado"))
++        self.assertIn("rules_version deve ser 9", validate_state({"rules_version": 8})[0])
++        self.assertTrue(validate_state({"rules_version": 9, "input_assessment": "x"})[0].startswith("estado malformado"))
+ 
+     def test_source_extraction_reads_text_and_docx(self) -> None:
+         source = Path(self.tmp.name) / "insumo"
+@@ -188,7 +201,7 @@ class CaseRunnerTests(unittest.TestCase):
+         import subprocess, sys
+         source = Path(self.tmp.name) / "caso"
+         source.mkdir()
+-        (source / "material.md").write_text("Pedido do cliente", encoding="utf-8")
++        (source / "material.md").write_text(vertice_source(), encoding="utf-8")
+         workspace = Path(self.tmp.name) / "ws"
+         run_dir = case_runner.make_workspace(workspace, source, "2026-09-24", "test", "B")
+         files = {p.relative_to(workspace).as_posix() for p in workspace.rglob("*") if p.is_file()}
+@@ -198,12 +211,29 @@ class CaseRunnerTests(unittest.TestCase):
+         self.assertEqual(request["template_version"], "2026.09.24-1")
+         self.assertEqual(request["skill_sha256"], case_runner.skill_hash())
+         state = Path(self.tmp.name) / "estado.json"
+-        state.write_text(json.dumps(resolved_v7(), ensure_ascii=False), encoding="utf-8")
++        state.write_text(json.dumps(vertice_latest(), ensure_ascii=False), encoding="utf-8")
+         result = subprocess.run([sys.executable, "scripts/validate_attempt.py", "execucao", str(state)],
+                                 cwd=workspace, capture_output=True, text=True, encoding="utf-8")
+         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+         self.assertTrue((run_dir / "final" / "relatorio-cobertura.md").exists())
+ 
++    def test_sealed_workspace_has_no_engine_code_and_still_validates(self) -> None:
++        import subprocess, sys
++        source = Path(self.tmp.name) / "caso"
++        source.mkdir()
++        (source / "material.md").write_text(vertice_source(), encoding="utf-8")
++        workspace = Path(self.tmp.name) / "ws"
++        run_dir = case_runner.make_workspace(workspace, source, "2026-09-24", "test", "B", sealed=True)
++        files = {p.relative_to(workspace).as_posix() for p in workspace.rglob("*") if p.is_file()}
++        self.assertEqual([f for f in files if f.endswith(".py")], ["scripts/validate_attempt.py"])
++        self.assertFalse([f for f in files if f.startswith(("sales_engineer/", "assets/", "engine_config"))])
++        state = run_dir / "estado.json"
++        state.write_text(json.dumps(vertice_latest(), ensure_ascii=False), encoding="utf-8")
++        result = subprocess.run([sys.executable, "scripts/validate_attempt.py", "execucao", "execucao/estado.json"],
++                                cwd=workspace, capture_output=True, text=True, encoding="utf-8")
++        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
++        self.assertTrue(list((run_dir / "final").glob("*.docx")))
++
+     def test_author_bundle_carries_no_case_material(self) -> None:
+         bundle = skill_bundle()
+         self.assertIn("state-schema.md", bundle)
+diff --git a/tests/test_v8_engine.py b/tests/test_v8_engine.py
+new file mode 100644
+index 0000000..e500669
+--- /dev/null
++++ b/tests/test_v8_engine.py
+@@ -0,0 +1,256 @@
++from __future__ import annotations
++
++import json
++import tempfile
++import unittest
++from copy import deepcopy
++from pathlib import Path
++
++from docx import Document
++
++from sales_engineer.document_validation import (
++    CASE_RESIDUE_PATH, extract_docx_text, find_case_residue,
++)
++from sales_engineer.neutral_template_builder import _diagram_boxes, build_neutral_template_docx
++from sales_engineer.proposal_rules import REQUIRED_DOCUMENT_TEXT, validate_proposal_rules
++from tests.test_v7_engine import vertice_latest as vertice_v8
++
++ROOT = Path(__file__).resolve().parents[1]
++TEMPLATE = ROOT / "assets" / "proposal_neutral_template.docx"
++
++
++def errors_of(proposal: dict) -> str:
++    return " | ".join(validate_proposal_rules(proposal))
++
++
++class ComposerWithoutInheritedTextTests(unittest.TestCase):
++    """Achado 1 da rodada de casos diversos: texto fixo de um caso anterior chegava ao cliente."""
++
++    def _compose(self, proposal: dict) -> str:
++        with tempfile.TemporaryDirectory() as tmp:
++            output = Path(tmp) / "p.docx"
++            build_neutral_template_docx(proposal, TEMPLATE, output)
++            return extract_docx_text(output)
++
++    def test_fixture_is_clean_and_composes_without_previous_case_text(self) -> None:
++        proposal = vertice_v8()
++        self.assertEqual(validate_proposal_rules(proposal), [])
++        text = self._compose(proposal)
++        for phrase in ("nuvens e origens", "Segurança/SOC", "validada durante o Assessment", "lojistas", "oito a doze"):
++            self.assertNotIn(phrase, text)
++        self.assertIn("Coordenação de infraestrutura", text)
++
++    def test_diagram_uses_case_text(self) -> None:
++        boxes = _diagram_boxes(vertice_v8())
++        self.assertEqual(boxes[0], ("Alunos e candidatos", "Site, portal e e-mail"))
++        self.assertNotIn("Cloud A", " ".join(" ".join(box) for box in boxes))
++
++    def test_every_case_slot_is_required(self) -> None:
++        for key in REQUIRED_DOCUMENT_TEXT:
++            proposal = vertice_v8()
++            del proposal["document_text"][key]
++            self.assertIn(f"document_text.{key} ausente", errors_of(proposal))
++            with self.assertRaisesRegex(ValueError, key):
++                self._compose(proposal)
++
++    def test_case_lists_are_required(self) -> None:
++        for key in ("client_roles", "restrictions", "assessment_items", "dimensioning"):
++            proposal = vertice_v8()
++            proposal[key] = []
++            self.assertIn(f"{key} deve ter", errors_of(proposal))
++
++    def test_residue_detector(self) -> None:
++        proposal = vertice_v8()
++        self.assertEqual(sorted(find_case_residue("Segurança/SOC e checkout", proposal)), ["SOC", "checkout"])
++        proposal["document_text"]["tests"] += " O SOC acompanhará os testes."
++        self.assertEqual(find_case_residue("Segurança/SOC", proposal), [])
++
++    def test_residue_terms_are_not_template_text(self) -> None:
++        self.assertTrue(json.loads(CASE_RESIDUE_PATH.read_text(encoding="utf-8"))["terms"])
++        self.assertEqual(find_case_residue(extract_docx_text(TEMPLATE), {}), [])
++
++
++class PreProposalGateTests(unittest.TestCase):
++    """Achado 2: bloquear pelo motivo certo, antes de montar uma proposta."""
++
++    def test_insufficient_input_returns_only_the_gate(self) -> None:
++        proposal = {"rules_version": 8, "input_assessment": {"status": "insufficient", "missing": ["empresa", "ativos"]},
++                    "open_questions": ["Qual é a empresa?", "Qual site proteger?"]}
++        errors = validate_proposal_rules(proposal)
++        self.assertEqual(errors, ["GATE insumo_insuficiente: não gerar proposta; devolver as perguntas de qualificação"])
++
++    def test_insufficient_input_limits_questions(self) -> None:
++        proposal = {"rules_version": 8, "input_assessment": {"status": "insufficient", "missing": ["empresa"]},
++                    "open_questions": [f"Pergunta {i}?" for i in range(10)]}
++        self.assertIn("de 1 a 8 perguntas", errors_of(proposal))
++
++    def test_sufficient_needs_client_and_client_requirement(self) -> None:
++        proposal = vertice_v8()
++        for item in proposal["traceability"]:
++            item["speakers"] = ["vendor"]
++            item["hypothesis"] = True
++        self.assertIn("use input_assessment.status 'insufficient'", errors_of(proposal))
++
++    def test_assessment_is_mandatory(self) -> None:
++        proposal = vertice_v8()
++        del proposal["input_assessment"]
++        self.assertEqual(validate_proposal_rules(proposal), ["input_assessment.status ausente ou inválido (sufficient | insufficient)"])
++
++    def test_no_catalog_blocks_with_its_own_reason(self) -> None:
++        proposal = vertice_v8()
++        proposal["catalog_fit"] = {"status": "no_catalog", "requested": "Desktops virtuais Citrix", "reason": "Catálogo disponível cobre só Akamai."}
++        self.assertEqual(validate_proposal_rules(proposal),
++                         ["GATE sem_catalogo: pedido fora do catálogo disponível (Desktops virtuais Citrix); requer pacote do fabricante"])
++
++    def test_catalog_fit_without_any_evaluated_product_blocks(self) -> None:
++        proposal = vertice_v8()
++        for decision in proposal["solution_decisions"]:
++            decision["status"] = "excluded"
++        self.assertIn("use catalog_fit 'no_catalog'", errors_of(proposal))
++
++
++class ExistingContractTests(unittest.TestCase):
++    """Achado 3: produto já contratado é ambiente atual, não oferta nem exclusão."""
++
++    def _with_contracted(self) -> dict:
++        proposal = vertice_v8()
++        for decision in proposal["solution_decisions"]:
++            if decision["product_id"] == "ion":
++                decision.update({"status": "already_contracted", "contract_ref": "Contrato Akamai direto vigente até 31/03/2027"})
++        return proposal
++
++    def test_contracted_product_is_valid_and_rendered_as_current_environment(self) -> None:
++        proposal = self._with_contracted()
++        self.assertEqual(validate_proposal_rules(proposal), [])
++        with tempfile.TemporaryDirectory() as tmp:
++            output = Path(tmp) / "p.docx"
++            build_neutral_template_docx(proposal, TEMPLATE, output)
++            self.assertIn("Já contratado — ambiente atual", extract_docx_text(output))
++
++    def test_contracted_product_needs_contract_ref_and_cannot_be_offered(self) -> None:
++        proposal = self._with_contracted()
++        next(d for d in proposal["solution_decisions"] if d["product_id"] == "ion").pop("contract_ref")
++        proposal["products"].append("ion")
++        errors = errors_of(proposal)
++        self.assertIn("sem referência ao contrato vigente (contract_ref): ion", errors)
++        self.assertIn("produto já contratado oferecido de novo: ion", errors)
++
++
++class SlaApplicabilityTests(unittest.TestCase):
++    """Achado 4: a aplicabilidade do SLA institucional é da instituição, não do autor."""
++
++    def test_implementation_is_institutional(self) -> None:
++        proposal = vertice_v8()
++        self.assertNotIn("applies_to", proposal["governance"]["sla"])
++        self.assertEqual(validate_proposal_rules(proposal), [])
++
++    def test_other_engagements_need_an_approved_case_decision(self) -> None:
++        proposal = vertice_v8()
++        for decision in proposal["governance"].values():
++            if "engagement_ref" in decision:
++                decision["engagement_ref"] = "phased"
++        proposal["governance"]["engagement_type"].update({"value": "phased", "approved_value": "phased"})
++        self.assertIn("decisão interna aberta: sla_applicability", errors_of(proposal))
++        approved = deepcopy(proposal["governance"]["warranty"])
++        approved.update({"value": ["phased"], "approved_value": ["phased"], "source": "decisão do caso sobre o SLA"})
++        proposal["governance"]["sla_applicability"] = approved
++        self.assertNotIn("sla_applicability", errors_of(proposal))
++
++
++if __name__ == "__main__":
++    unittest.main()
++
++
++class ApprovalQuoteTests(unittest.TestCase):
++    """v9 (rodada v8, config A): o autor escreveu aprovações que não existem no insumo."""
++
++    FIXTURES = ROOT / "tests" / "fixtures"
++
++    def _source(self, name: str) -> str:
++        return (self.FIXTURES / name).read_text(encoding="utf-8")
++
++    def _row(self, source: str, start: str) -> str:
++        return next(line for line in source.splitlines() if line.startswith(f"| {start}")).strip(" |")
++
++    def test_clean_fixture_quotes_the_source(self) -> None:
++        self.assertEqual(validate_proposal_rules(vertice_v8(), self._source("vertice_insumo.md")), [])
++
++    def test_quote_is_mandatory(self) -> None:
++        proposal = vertice_v8()
++        del proposal["governance"]["warranty"]["approval_quote"]
++        self.assertIn("aprovação sem citação literal do insumo (approval_quote): warranty",
++                      " | ".join(validate_proposal_rules(proposal, self._source("vertice_insumo.md"))))
++
++    def test_quote_absent_from_source_blocks(self) -> None:
++        proposal = vertice_v8()
++        proposal["governance"]["warranty"]["approval_quote"] = "Garantia de 90 dias aprovada por Vitor (dono comercial) em 24/09/2026"
++        self.assertIn("aprovação citada não existe no insumo (approval_quote): warranty",
++                      " | ".join(validate_proposal_rules(proposal, self._source("vertice_insumo.md"))))
++
++    def test_quote_of_another_decision_blocks(self) -> None:
++        source = self._source("vertice_insumo.md")
++        proposal = vertice_v8()
++        proposal["governance"]["warranty"]["approval_quote"] = self._row(source, "Licenciamento")
++        errors = " | ".join(validate_proposal_rules(proposal, source))
++        self.assertIn("citação da aprovação não trata desta decisão (garantia): warranty", errors)
++        self.assertIn("valor aprovado não aparece na citação do insumo: warranty", errors)
++
++    def test_real_quote_with_changed_value_blocks(self) -> None:
++        proposal = vertice_v8()
++        for field in ("value", "approved_value"):
++            proposal["governance"]["warranty"][field] = proposal["governance"]["warranty"][field].replace("30 dias", "90 dias")
++        self.assertIn("valor aprovado não aparece na citação do insumo: warranty",
++                      " | ".join(validate_proposal_rules(proposal, self._source("vertice_insumo.md"))))
++
++    def test_gemini_invented_license_approval_is_blocked(self) -> None:
++        """Estado real do Gemini (caso 04): a licença 'aprovada por Vitor' não existe no insumo."""
++        source = self._source("lumina_insumo.md")
++        proposal = json.loads((self.FIXTURES / "lumina_gemini_aprovacao_inventada.json").read_text(encoding="utf-8"))
++        proposal["rules_version"] = 9
++        governance = proposal["governance"]
++        for key, start in (("engagement_type", "engagement_type"), ("warranty", "Garantia"), ("esforco_estimate", "Estimativa de esforço")):
++            governance[key]["approval_quote"] = self._row(source, start)
++        # Melhor citação disponível para a licença: a linha real do insumo, que não traz aprovação.
++        governance["license_supply"]["approval_quote"] = "Licenciamento: não informado."
++        errors = [e for e in validate_proposal_rules(proposal, source) if "citação" in e or "approval_quote" in e]
++        self.assertTrue(errors)
++        self.assertTrue(all("license_supply" in e for e in errors), errors)
++        self.assertIn("valor aprovado não aparece na citação do insumo: license_supply", errors)
++        self.assertIn("citação da aprovação não nomeia o aprovador (Vitor (dono comercial)): license_supply", errors)
++
++
++class SealedRoundFixesTests(unittest.TestCase):
++    """Rodada v9 em modo selado: a skill dizia uma coisa e o validador fazia outra."""
++
++    def test_estimate_row_with_technical_owner_is_accepted(self) -> None:
++        proposal = vertice_v8()
++        proposal["dimensioning"].append(["Esforço de implantação", "3 a 4 semanas", "Estimativa da arquiteta", "Estimativa"])
++        self.assertIn("dimensionamento estimado sem premissa de responsável", errors_of(proposal))
++        proposal["estimates"].append({"item": "Esforço de implantação", "value": "3 a 4 semanas", "owner": "Ana", "owner_role": "arquiteta"})
++        self.assertNotIn("dimensionamento estimado", errors_of(proposal))
++
++    def test_single_phase_range_is_accepted_other_ranges_are_not(self) -> None:
++        proposal = vertice_v8()
++        phase = next(p for p in proposal["delivery"]["phases"] if p["weeks"][0] != p["weeks"][1])
++        low, high = phase["weeks"]
++        proposal["document_text"]["schedule_sequence"] += f" A fase {phase['name']} leva de {low} a {high} semanas."
++        self.assertNotIn("diverge da soma das fases", errors_of(proposal))
++        proposal["document_text"]["schedule_sequence"] += " A estabilização leva de 9 a 11 semanas."
++        self.assertIn("faixa 9–11 semanas diverge", errors_of(proposal))
++
++    def test_composer_shapes_are_validated(self) -> None:
++        proposal = vertice_v8()
++        proposal["delivery"]["responsibilities"] = ["Cliente: acessos ao registrador"]
++        proposal["populos_roles"] = [["Arquiteto", "Desenho"]]
++        errors = errors_of(proposal)
++        self.assertIn("delivery.responsibilities deve ser lista de {party, responsibility}", errors)
++        self.assertIn("populos_roles deve ser lista de [papel, responsabilidade, dedicação]", errors)
++
++    def test_case_decision_cannot_claim_institutional_standard(self) -> None:
++        """Estado real do Gemini (rodada v9, caso 04): licença marcada como padrão institucional para pular a aprovação."""
++        fixtures = ROOT / "tests" / "fixtures"
++        proposal = json.loads((fixtures / "lumina_gemini_falso_padrao_institucional.json").read_text(encoding="utf-8"))
++        self.assertEqual(proposal["governance"]["license_supply"].get("basis"), "populos_standard")
++        errors = validate_proposal_rules(proposal, (fixtures / "lumina_insumo.md").read_text(encoding="utf-8"))
++        self.assertIn("decisão do caso marcada como padrão institucional (só sla pode): license_supply", errors)
++        self.assertNotIn("decisão do caso marcada como padrão institucional (só sla pode): sla", errors)

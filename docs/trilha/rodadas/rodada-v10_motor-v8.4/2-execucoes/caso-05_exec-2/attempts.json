@@ -1,0 +1,20 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:00:38.274156+00:00",
+      "errors_count": 1,
+      "errors": [
+        "insumo declarado suficiente sem cliente identificado ou sem requisito do cliente: use input_assessment.status 'insufficient'"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:00:45.998647+00:00",
+      "errors_count": 1,
+      "errors": [
+        "GATE sem_catalogo: pedido fora do catálogo disponível (Assessment, desenho e estimativa de implantação de desktops virtuais (VDI) com Citrix para cerca de 1.100 estações, substituindo desktops físicos com Windows 10, com acesso ao prontuário eletrônico a partir de thin clients.); requer pacote do fabricante"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:22:18.254734+00:00",
+      "errors_count": 4,
+      "errors": [
+        "decisão sem modo de dado (test/production): engagement_type",
+        "decisão sem modo de dado (test/production): warranty",
+        "decisão sem modo de dado (test/production): license_supply",
+        "decisão sem modo de dado (test/production): effort_estimate"
+      ],
+      "codes": [
+        "APROVACAO-CAMPOS"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:22:20.713200+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "codes": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb11/w-989190d4/execucao/final/POPULOS-VERTICE-EDGEDNS-2026.docx"
+      }
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "rules_version": 9,
+  "data_mode": "test",
+  "input_assessment": {
+    "status": "insufficient",
+    "missing": [
+      "razão social ou nome da empresa do cliente",
+      "contato completo do solicitante (cargo, e-mail ou telefone)",
+      "identificação do site ou dos ativos a proteger (domínios, aplicações, APIs)",
+      "ameaças ou incidentes que motivam o pedido",
+      "requisitos concretos, volumes e ambiente de hospedagem"
+    ],
+    "reason": "O material é uma mensagem de formulário com o texto 'Quero proteger meu site. Me mandem uma proposta.', assinada apenas por 'Ricardo', sem empresa, telefone, domínio, aplicação ou necessidade concreta sobre ativos identificáveis. Não há decisões POPULOS para o caso."
+  },
+  "catalog_fit": {
+    "status": "fits",
+    "requested": "Proteção de site (pedido genérico de segurança web)",
+    "reason": "O pedido genérico de proteção de site está no domínio coberto pelo catálogo, mas nenhum produto pode ser avaliado sem os ativos e requisitos concretos."
+  },
+  "open_questions": [
+    "Qual é o nome da empresa e quais são o cargo, o e-mail e o telefone de contato do Ricardo?",
+    "Qual site ou quais domínios, aplicações e APIs precisam de proteção?",
+    "Que problema motivou o pedido: ataques DDoS, invasões, bots, fraude em contas, indisponibilidade ou outro incidente recente?",
+    "Onde o site está hospedado hoje (nuvem, data center próprio, provedor) e há uma ou mais origens?",
+    "O site recebe envio de arquivos ou possui login e cadastro de usuários?",
+    "Qual é o volume de acesso aproximado (visitas, requisições ou tráfego mensal) e há datas ou eventos críticos?",
+    "O que já existe de proteção ou de serviços contratados (WAF, CDN, DNS gerenciado)?",
+    "O que se espera da proposta: avaliação, projeto ou implantação, e há prazo ou orçamento de referência?"
+  ]
+}

@@ -1,0 +1,302 @@
+{
+  "rules_version": 10,
+  "data_mode": "test",
+  "client_name": "Lumina Seguros",
+  "opportunity": "Proteção contra automação no simulador de cotação de seguro auto",
+  "code": "LUMINA-BOTMANAGER-2026",
+  "opportunity_id": "caso-04-lumina-bot-manager",
+  "input_assessment": {
+    "status": "sufficient",
+    "missing": [],
+    "reason": "O material identifica o cliente (Lumina Seguros), o ativo afetado (simulador de cotação de seguro auto) e uma necessidade concreta (raspagem por robôs que imitam navegador), com data de lançamento e janela de congelamento."
+  },
+  "catalog_fit": {
+    "status": "fits",
+    "requested": "Bot Manager para conter a raspagem automatizada do simulador de cotação de seguro auto",
+    "reason": "O catálogo contém o Bot Manager Premier, indicado quando há scraping evidenciado."
+  },
+  "client_scope": {
+    "type": "implementation",
+    "excludes_implementation": false,
+    "source": "Transcrição de 23/09/2026, Diego Martins: \"Queremos o Bot Manager funcionando antes disso.\"",
+    "forbidden_in_committed": []
+  },
+  "governance": {
+    "engagement_type": {
+      "state": "commitment",
+      "value": "implementation",
+      "approved_value": "implementation",
+      "source": "Decisões internas POPULOS fornecidas para este caso",
+      "approved_by": "Vitor (dono comercial)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "| engagement_type | implementation | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |"
+    },
+    "warranty": {
+      "state": "commitment",
+      "value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final.",
+      "approved_value": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final.",
+      "source": "Decisões internas POPULOS fornecidas para este caso",
+      "approved_by": "Vitor (dono comercial)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approval_quote": "| Garantia | A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite final. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |"
+    },
+    "license_supply": {
+      "state": "populos_internal_decision",
+      "value": null,
+      "source": "Material do caso: \"Licenciamento: não informado.\" O contrato Akamai vigente foi firmado diretamente entre a Lumina e a Akamai, mas não há decisão registrada sobre o modelo de fornecimento da licença do Bot Manager Premier.",
+      "approved_by": null,
+      "approved_at": null,
+      "approval_record": null,
+      "approval_quote": null,
+      "mode": "test",
+      "engagement_ref": "implementation"
+    },
+    "sla": {
+      "state": "commitment",
+      "basis": "populos_standard",
+      "value": "Tabela institucional do template POPULOS",
+      "source": "Template POPULOS vigente",
+      "template_version": "2026.09.24-1"
+    },
+    "effort_estimate": {
+      "state": "commitment",
+      "value": "4 a 5 semanas",
+      "approved_value": "4 a 5 semanas",
+      "source": "Decisões internas POPULOS fornecidas para este caso",
+      "approved_by": "Ana (arquiteta responsável)",
+      "approved_at": "2026-09-24",
+      "approval_record": "E-mail interno de aprovação de 24/09/2026",
+      "mode": "test",
+      "engagement_ref": "implementation",
+      "approver_role": "arquiteto",
+      "approval_quote": "| Estimativa de esforço | 4 a 5 semanas | Ana (arquiteta responsável) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026 |"
+    }
+  },
+  "discovery": {
+    "business_goals": [
+      "Conter a raspagem automatizada do simulador de cotação de seguro auto, que copia a tabela de preços e gera consultas pagas aos bureaus de dados (REQ-01)",
+      "Ter a proteção contra robôs em operação antes do lançamento do novo seguro auto em 15/01/2027, respeitando o congelamento de fim de ano (REQ-02)",
+      "Confirmar se os logins suspeitos na área do cliente configuram abuso de conta antes de definir controle específico (REQ-03)"
+    ]
+  },
+  "traceability": [
+    {
+      "requirement_id": "REQ-01",
+      "requirement": "Detectar e mitigar robôs que imitam navegador e raspam o simulador de cotação de seguro auto.",
+      "solution": "Bot Manager Premier",
+      "evidence": "Milhares de cotações por hora vindas de robôs que copiam a tabela de preços; o WAF atual não identifica esses robôs.",
+      "source": "transcrição 23/09/2026 [Camila Reis, 1ª fala; Diego Martins, 1ª fala]",
+      "speakers": ["client"],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-02",
+      "requirement": "Colocar a proteção contra robôs em operação antes do lançamento de 15/01/2027, fora do congelamento de 15/12/2026 a 05/01/2027.",
+      "solution": "Bot Manager Premier, com ativação em produção antes do congelamento",
+      "evidence": "Lançamento do novo seguro auto em 15/01/2027 com campanha de mídia; congelamento de 15/12/2026 a 05/01/2027.",
+      "source": "transcrição 23/09/2026 [Diego Martins, 2ª fala]",
+      "speakers": ["client"],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-03",
+      "requirement": "Avaliar logins suspeitos na área do cliente, ainda não confirmados.",
+      "solution": "Account Protector em avaliação, dependente de confirmação do abuso de conta",
+      "evidence": "Logins suspeitos observados na área do cliente, sem confirmação.",
+      "source": "transcrição 23/09/2026 [Camila Reis, 2ª fala]",
+      "speakers": ["client"],
+      "hypothesis": false
+    }
+  ],
+  "source_coverage": [
+    {"ref": "registro da conta [cliente desde 2024]", "statement": "Cliente POPULOS desde 2024.", "status": "descartado", "targets": [], "reason": "Contexto de relacionamento sem efeito no escopo técnico."},
+    {"ref": "registro da conta [produtos contratados]", "statement": "Produtos Akamai contratados hoje: Ion, App & API Protector e Edge DNS.", "status": "coberto", "targets": ["sumário", "exclusões"]},
+    {"ref": "registro da conta [modelo contratual]", "statement": "O contrato Akamai atual foi firmado diretamente entre a Lumina e a Akamai; a POPULOS presta implantação e suporte.", "status": "pendente", "targets": ["premissas"]},
+    {"ref": "registro da conta [vigência]", "statement": "Vigência do contrato Akamai atual até 31/03/2027.", "status": "coberto", "targets": ["premissas"]},
+    {"ref": "registro da conta [propriedades Ion]", "statement": "Propriedades Ion em produção: www.lumina.com.br, cotacao.lumina.com.br, api.lumina.com.br.", "status": "coberto", "targets": ["dimensionamento", "escopo"]},
+    {"ref": "registro da conta [sustentação]", "statement": "Suporte POPULOS em vigor: sustentação 8x5 até 31/03/2027.", "status": "coberto", "targets": ["exclusões"]},
+    {"ref": "transcrição 23/09/2026 [Camila Reis, 1ª fala]", "statement": "O simulador de cotação de seguro auto está sendo raspado por robôs, com milhares de cotações por hora, e isso aumenta o custo de consultas aos bureaus.", "status": "coberto", "targets": ["REQ-01", "sumário"]},
+    {"ref": "transcrição 23/09/2026 [Diego Martins, 1ª fala]", "statement": "O WAF atual pega ataque, mas não pega esses robôs; queremos o Bot Manager.", "status": "coberto", "targets": ["REQ-01", "sumário"]},
+    {"ref": "transcrição 23/09/2026 [Camila Reis, 2ª fala]", "statement": "Logins suspeitos na área do cliente, nada confirmado.", "status": "pendente", "targets": ["REQ-03"]},
+    {"ref": "transcrição 23/09/2026 [Diego Martins, 2ª fala]", "statement": "Lançamento do novo seguro auto em 15/01/2027; congelamento de 15/12/2026 a 05/01/2027.", "status": "coberto", "targets": ["REQ-02", "sumário", "engajamento"]},
+    {"ref": "transcrição 23/09/2026 [Camila Reis, 3ª fala]", "statement": "Cada cotação consulta dois bureaus; cerca de 2,1 milhões de cotações no mês passado, pelo menos metade de robôs.", "status": "coberto", "targets": ["sumário", "dimensionamento"]},
+    {"ref": "decisões internas [engagement_type]", "statement": "Engajamento de implementação.", "status": "coberto", "targets": ["engajamento"]},
+    {"ref": "decisões internas [garantia]", "statement": "Garantia de 90 dias corridos após o aceite final.", "status": "coberto", "targets": ["escopo"]},
+    {"ref": "decisões internas [SLA]", "statement": "Tabela institucional do template POPULOS.", "status": "coberto", "targets": ["escopo"]},
+    {"ref": "decisões internas [estimativa]", "statement": "Estimativa de esforço de 4 a 5 semanas.", "status": "coberto", "targets": ["dimensionamento", "engajamento"]},
+    {"ref": "material do caso [licenciamento]", "statement": "Licenciamento: não informado.", "status": "pendente", "targets": ["premissas"]}
+  ],
+  "client_numbers": [
+    {"quote": "milhares de cotações por hora", "ref": "transcrição 23/09/2026 [Camila Reis, 1ª fala]", "destination": "contexto_de_dor", "summary_marker": "milhares de cotações por hora"},
+    {"quote": "cerca de 2,1 milhões de cotações", "ref": "transcrição 23/09/2026 [Camila Reis, 3ª fala]", "destination": "contexto_de_dor", "summary_marker": "2,1 milhões de cotações"},
+    {"quote": "pelo menos metade seja de robôs", "ref": "transcrição 23/09/2026 [Camila Reis, 3ª fala]", "destination": "contexto_de_dor", "summary_marker": "pelo menos metade"},
+    {"quote": "Cada cotação consulta dois bureaus", "ref": "transcrição 23/09/2026 [Camila Reis, 3ª fala]", "destination": "contexto_de_dor", "summary_marker": "dois bureaus"},
+    {"quote": "15/01/2027", "ref": "transcrição 23/09/2026 [Diego Martins, 2ª fala]", "destination": "meta"},
+    {"quote": "15/12/2026 a 05/01/2027", "ref": "transcrição 23/09/2026 [Diego Martins, 2ª fala]", "destination": "meta"}
+  ],
+  "open_questions": [
+    "Qual é o modelo de fornecimento da licença do Bot Manager Premier: aditivo ao contrato direto entre a Lumina e a Akamai ou fornecimento pela POPULOS?",
+    "Qual é o prazo de ativação da licença do Bot Manager Premier após a assinatura?",
+    "Qual propriedade e quais endpoints atendem o simulador de cotação de seguro auto (por exemplo, cotacao.lumina.com.br e chamadas em api.lumina.com.br)?",
+    "Os logins suspeitos na área do cliente foram confirmados como tentativas automatizadas ou uso indevido de credenciais?",
+    "Qual ação a Lumina prefere para robôs identificados no simulador (bloqueio, desafio, atraso ou resposta alternativa)?"
+  ],
+  "standard_conflicts": [
+    {"category": "deadline", "requirement_id": "REQ-02", "status": "compatible", "reason": "A estimativa aprovada de 4 a 5 semanas termina antes do congelamento de 15/12/2026 quando a licença estiver ativa até o prazo indicado; a data depende da ativação da licença, tratada como pendência."}
+  ],
+  "solution_decisions": [
+    {"product_id": "bot_manager", "status": "recommended", "requirement_ids": ["REQ-01", "REQ-02"], "rationale": "Scraping do simulador de cotação evidenciado pela Lumina, com robôs que imitam navegador e não são identificados pelo WAF atual.", "client_summary": "Detecção de robôs que imitam navegador no simulador de cotação e resposta configurável por tipo de automação, com telemetria para acompanhar o volume de cotações automatizadas.", "capabilities": ["detecção de bots", "resposta adaptativa", "telemetria"]},
+    {"product_id": "account_protector", "status": "needs_information", "requirement_ids": ["REQ-03"], "rationale": "Logins suspeitos relatados, mas não confirmados; a inclusão depende da confirmação de abuso ligado a login.", "client_summary": "Avaliação de risco de login, considerada somente se a Lumina confirmar abuso na área do cliente."},
+    {"product_id": "ion", "status": "already_contracted", "requirement_ids": [], "rationale": "Já contratado pela Lumina; entrega as propriedades web onde o Bot Manager Premier será ativado.", "contract_ref": "Contrato Akamai atual entre Lumina e Akamai, vigente até 31/03/2027"},
+    {"product_id": "app_api_protector", "status": "already_contracted", "requirement_ids": [], "rationale": "Já contratado pela Lumina; mantém a proteção WAF atual.", "contract_ref": "Contrato Akamai atual entre Lumina e Akamai, vigente até 31/03/2027"},
+    {"product_id": "edge_dns", "status": "already_contracted", "requirement_ids": [], "rationale": "Já contratado pela Lumina; sem mudança neste projeto.", "contract_ref": "Contrato Akamai atual entre Lumina e Akamai, vigente até 31/03/2027"},
+    {"product_id": "malware_protection", "status": "excluded", "requirement_ids": [], "rationale": "Nenhum fluxo de upload foi mencionado."},
+    {"product_id": "alb", "status": "excluded", "requirement_ids": [], "rationale": "Nenhuma necessidade de roteamento entre origens foi mencionada."},
+    {"product_id": "gtm", "status": "excluded", "requirement_ids": [], "rationale": "Nenhuma necessidade de continuidade entre múltiplas origens foi mencionada."},
+    {"product_id": "prolexic", "status": "excluded", "requirement_ids": [], "rationale": "Não há evidência de DDoS volumétrico L3/L4."},
+    {"product_id": "ip_accelerator", "status": "excluded", "requirement_ids": [], "rationale": "Não há aplicação TCP ou UDP fora da entrega web no escopo."}
+  ],
+  "products": ["bot_manager"],
+  "architecture": {
+    "summary": "O Bot Manager Premier é ativado sobre a entrega web que a Lumina já possui com o Ion, na propriedade que atende o simulador de cotação de seguro auto. As requisições ao simulador passam a ser classificadas na borda entre navegação humana e automação, e as cotações automatizadas recebem a ação definida pela Lumina antes de chegar à origem e às consultas aos bureaus. O WAF atual do App & API Protector permanece como está."
+  },
+  "sections": [
+    {
+      "title": "Resumo executivo",
+      "paragraphs": [
+        "A Lumina Seguros identificou que o simulador de cotação de seguro auto recebe milhares de cotações por hora vindas de robôs que imitam navegador e copiam a tabela de preços. No mês passado foram cerca de 2,1 milhões de cotações, e a Lumina estima que pelo menos metade seja automatizada. Como cada cotação consulta dois bureaus pagos por consulta, a automação também eleva o custo operacional.",
+        "A POPULOS propõe a implantação do Bot Manager Premier sobre a entrega web já existente, para classificar e responder à automação no simulador sem alterar o WAF atual. A estimativa aprovada é de 4 a 5 semanas de serviços.",
+        "Viabilidade frente ao lançamento de 15/01/2027: contadas a partir de 24/09/2026, as fases previstas terminariam entre 22/10 e 29/10, antes do congelamento de 15/12/2026 a 05/01/2027. O prazo de ativação da licença ainda não foi informado; para cumprir a data do lançamento, a licença precisa estar ativa até 11/12, e a ativação em produção precisa ocorrer antes do início do congelamento. O cronograma em calendário é condicional à data de ativação da licença e à janela de mudança da Lumina.",
+        "Os logins suspeitos na área do cliente ainda não foram confirmados e permanecem como ponto de levantamento antes de qualquer controle específico."
+      ]
+    }
+  ],
+  "dimensioning": [
+    ["Propriedade do simulador de cotação protegida", "1 (a confirmar entre as propriedades web em produção)", "Registro da conta: www.lumina.com.br, cotacao.lumina.com.br e api.lumina.com.br", "Pendente"],
+    ["Volume mensal de cotações", "cerca de 2,1 milhões no mês passado", "Informado pela Lumina em 23/09/2026", "Confirmado"],
+    ["Esforço de serviços", "4 a 5 semanas", "Estimativa da arquiteta responsável", "Estimativa"]
+  ],
+  "estimates": [
+    {"item": "Esforço de serviços", "value": "4 a 5 semanas", "owner": "Ana (arquiteta responsável)", "owner_role": "arquiteto"}
+  ],
+  "assessment_items": [
+    "Mapeamento dos endpoints do simulador de cotação e das chamadas que disparam consultas aos bureaus.",
+    "Revisão da configuração atual do Ion e do App & API Protector nas propriedades envolvidas.",
+    "Levantamento do padrão de tráfego do simulador para definir as ações por categoria de automação."
+  ],
+  "client_roles": [
+    "Responsável de canais digitais para validar as ações sobre robôs e o impacto na jornada de cotação",
+    "Arquiteto de soluções para aprovar mudanças e janelas de produção",
+    "Equipe de aplicação para validar o comportamento do simulador em testes"
+  ],
+  "team_competencies": [
+    "Arquitetura e configuração de Bot Manager Premier",
+    "Operação de propriedades de entrega web Akamai",
+    "Gestão de mudanças em produção com plano de reversão"
+  ],
+  "scope": {
+    "included": [
+      "Levantamento dos endpoints do simulador de cotação de seguro auto",
+      "Configuração do Bot Manager Premier na propriedade do simulador, primeiro em modo de monitoração",
+      "Ativação das ações acordadas com a Lumina em produção, com janela de mudança e plano de reversão",
+      "Transferência de conhecimento para a equipe da Lumina"
+    ],
+    "deliverables": [
+      "Documento de desenho da política de bots do simulador",
+      "Relatório de tráfego classificado do período de monitoração",
+      "Documentação as-built da configuração em produção"
+    ],
+    "excluded": [
+      "Alterações no código do simulador de cotação ou nas integrações com os bureaus",
+      "Mudanças na configuração do Edge DNS",
+      "Controles de risco de login na área do cliente",
+      "Sustentação contínua, já coberta pelo contrato de sustentação 8x5 vigente"
+    ]
+  },
+  "delivery": {
+    "phases": [
+      {"name": "Levantamento e desenho", "kind": "assessment", "weeks": [1, 1], "duration": "1 semana", "objective": "Mapear os endpoints do simulador e desenhar a política de bots.", "dependency": "Licença do Bot Manager Premier ativa e acesso à conta Akamai da Lumina", "outputs": ["Documento de desenho da política de bots do simulador"]},
+      {"name": "Configuração em monitoração", "kind": "implementation", "weeks": [2, 2], "duration": "2 semanas", "objective": "Configurar o Bot Manager Premier em modo de monitoração e observar o tráfego classificado.", "dependency": "Aprovação do desenho pela Lumina", "outputs": ["Relatório de tráfego classificado do período de monitoração"]},
+      {"name": "Ativação em produção e aceite", "kind": "implementation", "weeks": [1, 2], "duration": "1 a 2 semanas", "objective": "Ativar as ações acordadas em produção antes do congelamento e obter o aceite.", "dependency": "Janela de mudança aprovada pela Lumina antes de 15/12/2026", "outputs": ["Documentação as-built da configuração em produção"]}
+    ],
+    "responsibilities": [
+      {"party": "Lumina — Canais Digitais", "responsibility": "Definir as ações para robôs e validar o impacto na jornada de cotação"},
+      {"party": "Lumina — Arquitetura", "responsibility": "Aprovar desenho, janelas de mudança e reversão"},
+      {"party": "Lumina — Contratação", "responsibility": "Providenciar a ativação da licença do Bot Manager Premier"}
+    ]
+  },
+  "populos_roles": [
+    ["Arquiteta responsável", "Desenho da política de bots e revisão técnica", "Durante todo o projeto"],
+    ["Engenheiro de implantação", "Configuração, monitoração e ativação em produção", "Fases 2 e 3"]
+  ],
+  "assumptions": [
+    "A licença do Bot Manager Premier estará ativa até 11/12/2026; a validar na assinatura, com a confirmação do prazo de ativação.",
+    "O simulador de cotação é servido por uma das propriedades web já entregues pelo Ion; a validar no levantamento.",
+    "A Lumina aprovará uma janela de mudança em produção antes de 15/12/2026; a validar no desenho."
+  ],
+  "restrictions": [
+    "Nenhuma mudança em produção será feita entre 15/12/2026 e 05/01/2027.",
+    "O projeto não altera o código do simulador de cotação nem as integrações com os bureaus.",
+    "As ações sobre robôs dependem da definição da Lumina para cada categoria de automação.",
+    "O início dos trabalhos depende da licença do Bot Manager Premier ativa."
+  ],
+  "risks": [
+    {"risk": "Licença ativada após 11/12/2026", "impact": "A ativação em produção pode não ocorrer antes do congelamento nem do lançamento de 15/01/2027", "mitigation": "Confirmar o modelo e o prazo de ativação da licença na assinatura"},
+    {"risk": "Classificação indevida de clientes legítimos como automação", "impact": "Perda de cotações legítimas no simulador", "mitigation": "Período de monitoração antes da ativação das ações e plano de reversão"}
+  ],
+  "acceptance_criteria": [
+    {"requirement_id": "REQ-01", "phase": "committed", "criterion": "O Bot Manager Premier está ativo na propriedade do simulador de cotação, com as ações acordadas aplicadas, e o relatório de tráfego classificado entre navegação humana e automação do período de monitoração foi entregue e aceito pela Lumina."},
+    {"requirement_id": "REQ-02", "phase": "committed", "criterion": "A ativação em produção foi concluída antes de 15/12/2026, com janela de mudança, plano de reversão e aprovação da Lumina registrados."}
+  ],
+  "event_readiness": [
+    "Ativação em produção concluída antes do congelamento de mudanças de 15/12/2026",
+    "Plano de reversão documentado para as ações sobre robôs",
+    "Monitoração do tráfego classificado do simulador durante a campanha de lançamento"
+  ],
+  "critical_events": [
+    {"name": "Lançamento do novo seguro auto", "date": "2027-01-15", "source": "transcrição 23/09/2026 [Diego Martins, 2ª fala]"}
+  ],
+  "event_feasibility": [
+    {
+      "event": "Lançamento do novo seguro auto",
+      "reference_date": "2026-09-24",
+      "phase1_end_earliest": "2026-10-22",
+      "phase1_end_latest": "2026-10-29",
+      "classification": "fits",
+      "path": "Implantação completa antes do congelamento de 15/12/2026",
+      "reason": "As fases somam 4 a 5 semanas e terminam antes do congelamento, desde que a licença esteja ativa até o prazo indicado.",
+      "summary_marker": "Viabilidade frente ao lançamento",
+      "license_deadline": "2026-12-11",
+      "lead_times": {"licenciamento": {"weeks": null, "pending_question": "Qual é o prazo de ativação da licença do Bot Manager Premier após a assinatura?"}}
+    }
+  ],
+  "document_text": {
+    "about_akamai": "A Akamai opera uma plataforma distribuída de entrega e segurança na borda, usada pela Lumina hoje para entrega web, proteção de aplicações e DNS.",
+    "about_solution": "O Bot Manager Premier identifica automação que imita navegação humana e permite definir respostas por categoria de robô, com telemetria para acompanhar o resultado.",
+    "partnership": "A POPULOS presta à Lumina os serviços de implantação e suporte do ambiente Akamai atual.",
+    "coverage": "Esta proposta cobre a contenção de robôs no simulador de cotação de seguro auto. Os logins suspeitos na área do cliente permanecem em levantamento.",
+    "dimensioning_intro": "O dimensionamento parte das propriedades web já em produção e do volume de cotações informado pela Lumina.",
+    "assessment_outcome": "O levantamento entrega o mapa dos endpoints do simulador e a política de bots aprovada pela Lumina.",
+    "methodology_intro": "A implantação segue três etapas: levantamento e desenho, configuração em monitoração e ativação em produção com aceite.",
+    "knowledge_transfer": "A POPULOS conduz sessões com a equipe da Lumina sobre a leitura da telemetria e o ajuste das ações sobre robôs.",
+    "tests": "As ações são validadas primeiro em modo de monitoração, comparando o tráfego classificado com o comportamento esperado do simulador.",
+    "schedule_intro": "O cronograma soma 4 a 5 semanas de serviços e, em calendário, é condicional à ativação da licença e ao congelamento de 15/12/2026 a 05/01/2027.",
+    "schedule_sequence": "Levantamento e desenho (1 semana), configuração em monitoração (2 semanas) e ativação em produção e aceite (1 a 2 semanas).",
+    "closing": "A POPULOS permanece à disposição para confirmar as pendências e iniciar a implantação dentro da janela anterior ao congelamento.",
+    "callout_qualifications": "A POPULOS já implanta e sustenta o ambiente Akamai da Lumina.",
+    "callout_limits": "O projeto não altera o simulador, as integrações com os bureaus nem o Edge DNS.",
+    "callout_migration": "O Bot Manager Premier entra em monitoração antes de qualquer ação, com plano de reversão para a ativação.",
+    "callout_milestones": "O marco de aceite é a ativação em produção antes de 15/12/2026.",
+    "diagram_users": "Visitantes e robôs",
+    "diagram_users_detail": "Acessos ao simulador de cotação de seguro auto",
+    "diagram_origins_title": "Origem da Lumina",
+    "diagram_origins": "Simulador de cotação e integrações com os bureaus",
+    "front_titles": {"automation": "Contenção de robôs no simulador de cotação"}
+  }
+}

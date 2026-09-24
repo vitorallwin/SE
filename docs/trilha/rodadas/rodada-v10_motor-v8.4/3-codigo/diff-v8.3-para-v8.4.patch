@@ -1,0 +1,1156 @@
+diff --git a/GUIA_TECNICO_E_RELATORIO_V4.md b/GUIA_TECNICO_E_RELATORIO_V4.md
+index 98c965b..3ff76f9 100644
+--- a/GUIA_TECNICO_E_RELATORIO_V4.md
++++ b/GUIA_TECNICO_E_RELATORIO_V4.md
+@@ -565,6 +565,20 @@ O `make_workspace --sealed` cria um workspace sem o código do motor: só brief,
+ - v8.2: na rodada selada (autor sem acesso ao código) apareceram três divergências entre skill e validador. A linha "Estimativa" era sempre recusada; a faixa de semanas de uma fase isolada era tratada como total; o formato de `delivery.responsibilities` passava no validador e derrubava o compositor. As três foram alinhadas.
+ - v8.3: o Gemini marcou a decisão de licença como `populos_standard` para pular a aprovação. Agora só as decisões listadas em `institutional_decisions` na whitelist (hoje, `sla`) podem usar essa base.
+ 
++### Motor v8.4 (regras v10), após a auditoria externa da v8.3
++
++| Item da auditoria | Correção |
++|---|---|
++| 2. ID interno (`edge_dns`) na proposta | O validador recusa id de catálogo em qualquer texto do cliente; o compositor traduz por defesa em profundidade; o DOCX final é varrido. |
++| 3. Coluna "Evidência de aceite" com a origem do requisito | A coluna mostra os critérios de aceite do requisito. A origem fica no relatório de cobertura. |
++| 4. Texto fixo do template fora do contexto | Parceria, competências da equipe, passagem de conhecimento, qualificações, limite da frente, resultado do levantamento (o antigo "future state") e títulos das frentes vêm do estado. |
++| 5. Plano de evento desproporcional | Sala de crise, teste de carga e revisão de capacidade só com produto no caminho do tráfego. |
++| 6. "Viabilidade parcial" com folga | Prazo de licença desconhecido vira `license_deadline`, declarada no sumário; a classificação não é rebaixada. |
++| 7. Conflito com padrão POPULOS | Nas categorias SLA, garantia, qualificação e prazo, o código obriga a classificar (`standard_conflicts`); conflito aponta decisão de governança. Fora delas, é regra de autor. |
++| 8. Compositor quebrando com erro Python | JSON Schema formal (`state.schema.json`, na skill) roda antes das regras; erro de formato volta como `formato (<caminho>): ...`. |
++
++Também: a citação de aprovação tolera marcadores de e-mail (`>`) e quebras de linha; o QA visual (`scripts/render_pdf.py`) encontrou e corrigiu colunas estreitas no cronograma, texto ilegível no diagrama fora do Windows e texto justificado em tabelas.
++
+ ## 19. Arquivos de trabalho fora da aplicação
+ 
+ Estes arquivos ajudaram na geração e auditoria, mas não são necessários para executar a aplicação:
+diff --git a/authoring/AUTHOR_BRIEF.md b/authoring/AUTHOR_BRIEF.md
+index 458fade..716061f 100644
+--- a/authoring/AUTHOR_BRIEF.md
++++ b/authoring/AUTHOR_BRIEF.md
+@@ -5,7 +5,7 @@ Você é o autor da proposta técnica. Transforme o material do cliente em um es
+ ## Entradas
+ 
+ - `insumo.md`: o material do cliente, já extraído em texto. É a única fonte sobre o cliente.
+-- A skill de autoria: `skills/akamai-proposal-authoring/SKILL.md` e os arquivos em `skills/akamai-proposal-authoring/references/` (`global-rules.md`, `solution-gating.md`, `section-model.md`, `state-schema.md`, `lexicon.json`).
++- A skill de autoria: `skills/akamai-proposal-authoring/SKILL.md` e os arquivos em `skills/akamai-proposal-authoring/references/` (`global-rules.md`, `solution-gating.md`, `section-model.md`, `state-schema.md`, `state.schema.json`, `lexicon.json`).
+ - O catálogo de produtos permitidos: `catalog.json` (ids, nomes e capacidades).
+ - O pedido (`request.json`): data da proposta, modo dos dados e versão vigente do template.
+ 
+@@ -13,7 +13,7 @@ Não consulte nenhum arquivo fora desta pasta de trabalho.
+ 
+ ## Saída
+ 
+-Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 9` e o `data_mode` informado no pedido.
++Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 10` e o `data_mode` informado no pedido.
+ 
+ Antes de escrever a proposta, avalie o insumo (`input_assessment`) e o encaixe no catálogo (`catalog_fit`). Quando o insumo não basta ou o pedido está fora do catálogo, o resultado correto é o bloqueio, com as perguntas ou a lacuna declaradas, e não uma proposta.
+ 
+diff --git a/engine_config.json b/engine_config.json
+index 2a3362b..f7318af 100644
+--- a/engine_config.json
++++ b/engine_config.json
+@@ -1,6 +1,6 @@
+ {
+-  "engine_version": "motor-v8.3",
+-  "rules_version": 9,
++  "engine_version": "motor-v8.4",
++  "rules_version": 10,
+   "max_iterations": 3,
+   "template": "assets/proposal_neutral_template.docx",
+   "template_version": "2026.09.24-1",
+diff --git a/requirements.txt b/requirements.txt
+index f7ba14a..0ea5618 100644
+--- a/requirements.txt
++++ b/requirements.txt
+@@ -1,2 +1,4 @@
+ python-docx==1.2.0
+ Pillow>=10
++jsonschema>=4.18
++pymupdf>=1.24  # opcional: QA visual (scripts/render_pdf.py)
+diff --git a/sales_engineer/case_runner.py b/sales_engineer/case_runner.py
+index 6a52eee..379024d 100644
+--- a/sales_engineer/case_runner.py
++++ b/sales_engineer/case_runner.py
+@@ -229,9 +229,9 @@ def coverage_report(state: dict[str, Any]) -> str:
+     lines += ["", "## Cobertura do insumo", "", "| Referência | Trecho | Status | Destino |", "|---|---|---|---|"]
+     for entry in state.get("source_coverage", []):
+         lines.append(f"| {entry.get('ref')} | {entry.get('statement')} | {entry.get('status')} | {', '.join(entry.get('targets', [])) or entry.get('reason', '')} |")
+-    lines += ["", "## Requisitos", "", "| REQ | Requisito | Origem | Falantes |", "|---|---|---|---|"]
++    lines += ["", "## Requisitos", "", "| REQ | Requisito | Origem | Evidência no insumo | Falantes |", "|---|---|---|---|---|"]
+     for item in state.get("traceability", []):
+-        lines.append(f"| {item.get('requirement_id')} | {item.get('requirement')} | {item.get('source')} | {', '.join(item.get('speakers', []))} |")
++        lines.append(f"| {item.get('requirement_id')} | {item.get('requirement')} | {item.get('source')} | {item.get('evidence', '')} | {', '.join(item.get('speakers', []))} |")
+     lines += ["", "## Números do cliente", ""]
+     lines += [f"- {n.get('ref')}: {n.get('quote')} → {n.get('destination')}" for n in state.get("client_numbers", [])] or ["- nenhum"]
+     lines += ["", "## Perguntas abertas", ""]
+diff --git a/sales_engineer/neutral_template_builder.py b/sales_engineer/neutral_template_builder.py
+index 5d3b896..25bffc8 100644
+--- a/sales_engineer/neutral_template_builder.py
++++ b/sales_engineer/neutral_template_builder.py
+@@ -19,7 +19,7 @@ from PIL import Image, ImageDraw, ImageFont
+ from .catalog import PRODUCTS
+ from .document_validation import detect_skill_leakage, find_case_residue, find_vocabulary_violations, validate_state_against_docx
+ from .institutional_policy import validate_institutional_whitelist
+-from .proposal_rules import assert_proposal_rules
++from .proposal_rules import FRONT_GROUPS, assert_proposal_rules
+ 
+ 
+ def _text(value: Any) -> str:
+@@ -124,6 +124,7 @@ def _format_added_table(table, widths: list[float]) -> None:
+             _set_cell_shading(cell, "1F2A5E" if row_index == 0 else ("F3F4F6" if row_index % 2 == 0 else "FFFFFF"))
+             for paragraph in cell.paragraphs:
+                 paragraph.paragraph_format.space_after = Pt(2)
++                paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                 for run in paragraph.runs:
+                     run.font.name = "Lato"
+                     run.font.size = Pt(7.5)
+@@ -165,21 +166,21 @@ def _v8(proposal: dict[str, Any]) -> bool:
+     return int(proposal.get("rules_version", 0) or 0) >= 8
+ 
+ 
+-def _slot(proposal: dict[str, Any], key: str, legacy_default: str) -> str:
+-    """Case-dependent slot. From v8 on there is no default: the old defaults carried a previous case."""
++def _slot(proposal: dict[str, Any], key: str, legacy_default: str, since: int = 8) -> str:
++    """Case-dependent slot. From `since` on there is no default: the old defaults carried a previous case."""
+     value = _text(proposal.get("document_text", {}).get(key))
+     if value:
+         return value
+-    if _v8(proposal):
++    if int(proposal.get("rules_version", 0) or 0) >= since:
+         raise ValueError(f"Slot do documento sem texto do caso: document_text.{key}")
+     return legacy_default
+ 
+ 
+-def _state_list(proposal: dict[str, Any], key: str, legacy_default: list) -> list:
++def _state_list(proposal: dict[str, Any], key: str, legacy_default: list, since: int = 8) -> list:
+     value = proposal.get(key)
+     if value:
+         return list(value)
+-    if _v8(proposal):
++    if int(proposal.get("rules_version", 0) or 0) >= since:
+         raise ValueError(f"Lista do documento sem conteúdo do caso: {key}")
+     return legacy_default
+ 
+@@ -203,25 +204,49 @@ def _diagram_boxes(proposal: dict[str, Any]) -> list[tuple[str, str]]:
+     ]
+ 
+ 
++# Fontes por sistema: Windows primeiro, depois as livres do Linux/macOS. O fallback do Pillow tem
++# tamanho fixo e deixa o diagrama ilegível, então só é usado se nenhuma fonte real existir.
++REGULAR_FONTS = ("C:/Windows/Fonts/arial.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
++                 "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf", "/Library/Fonts/Arial.ttf")
++BOLD_FONTS = ("C:/Windows/Fonts/arialbd.ttf", "C:/Windows/Fonts/calibrib.ttf", "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
++              "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf", "/Library/Fonts/Arial Bold.ttf")
++
++
++def _font(paths: Iterable[str], size: int):
++    for path in paths:
++        try:
++            return ImageFont.truetype(path, size)
++        except OSError:
++            continue
++    return ImageFont.load_default(size=size)
++
++
++def _fit(draw, text: str, paths: Iterable[str], size: int, max_width: int):
++    """Largest font size (down to 16) whose rendering of `text` fits in `max_width` pixels."""
++    for candidate in range(size, 15, -1):
++        font = _font(paths, candidate)
++        box = draw.textbbox((0, 0), text, font=font)
++        if box[2] - box[0] <= max_width:
++            return font
++    return _font(paths, 16)
++
++
+ def _architecture_diagram(proposal: dict[str, Any]) -> BytesIO:
+     width, height = 1800, 560
+     image = Image.new("RGB", (width, height), "white")
+     draw = ImageDraw.Draw(image)
+-    font_path = "C:/Windows/Fonts/arial.ttf"
+-    bold_path = "C:/Windows/Fonts/arialbd.ttf"
+-    try:
+-        font = ImageFont.truetype(font_path, 30)
+-        bold = ImageFont.truetype(bold_path, 32)
+-    except OSError:
+-        font = bold = ImageFont.load_default()
++    font = _font(REGULAR_FONTS, 30)
++    bold = _font(BOLD_FONTS, 32)
+     boxes = _diagram_boxes(proposal)
+     x_positions = [40, 480, 930, 1380]
+     for index, ((title, sub), x) in enumerate(zip(boxes, x_positions)):
+         draw.rounded_rectangle((x, 125, x + 360, 405), radius=24, fill="#F3F4F6", outline="#6B46C1", width=4)
+-        tb = draw.textbbox((0, 0), title, font=bold)
+-        draw.text((x + (360 - (tb[2] - tb[0])) / 2, 205), title, font=bold, fill="#1F2A5E")
+-        sb = draw.textbbox((0, 0), sub, font=font)
+-        draw.text((x + (360 - (sb[2] - sb[0])) / 2, 285), sub, font=font, fill="#3F4A6B")
++        title_font = _fit(draw, title, BOLD_FONTS, 32, 330)
++        tb = draw.textbbox((0, 0), title, font=title_font)
++        draw.text((x + (360 - (tb[2] - tb[0])) / 2, 205), title, font=title_font, fill="#1F2A5E")
++        sub_font = _fit(draw, sub, REGULAR_FONTS, 30, 330)
++        sb = draw.textbbox((0, 0), sub, font=sub_font)
++        draw.text((x + (360 - (sb[2] - sb[0])) / 2, 285), sub, font=sub_font, fill="#3F4A6B")
+         if index < len(boxes) - 1:
+             draw.line((x + 370, 265, x_positions[index + 1] - 10, 265), fill="#6B46C1", width=7)
+             draw.polygon([(x_positions[index + 1] - 10, 265), (x_positions[index + 1] - 34, 251), (x_positions[index + 1] - 34, 279)], fill="#6B46C1")
+@@ -287,6 +312,18 @@ def _product_name(product_id: str) -> str:
+     return str(PRODUCTS.get(product_id, {}).get("name", product_id))
+ 
+ 
++def _product_names_in(text: Any) -> str:
++    """Replace internal catalog ids (edge_dns) by commercial names (Edge DNS) in client text."""
++    value = str(text or "")
++    for product_id in sorted(PRODUCTS, key=len, reverse=True):
++        value = re.sub(rf"(?<![\w-]){re.escape(product_id)}(?![\w-])", _product_name(product_id), value)
++    return value
++
++
++def _v10(proposal: dict[str, Any]) -> bool:
++    return int(proposal.get("rules_version", 0) or 0) >= 10
++
++
+ _FRONT_SENTENCES = {
+     "edge_dns": "Edge DNS mantém a camada autoritativa distribuída.",
+     "gtm": "Global Traffic Management decide o destino entre as origens com base em saúde e política.",
+@@ -302,10 +339,15 @@ _FRONT_SENTENCES = {
+ def _fronts(proposal: dict[str, Any]) -> list[dict[str, Any]]:
+     """Front text is composed only from recommended products, so options never read as part of the solution."""
+     decisions = [d for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended"]
++    legacy_titles = {
++        "continuity": "Continuidade e desempenho das jornadas digitais",
++        "protection": "Proteção de aplicações, APIs e infraestrutura",
++        "automation": "Proteção contra automação e abuso de contas",
++    }
++    titles = proposal.get("document_text", {}).get("front_titles") or {}
+     groups = [
+-        ("Continuidade e desempenho das jornadas digitais", ["edge_dns", "gtm", "alb", "ion"]),
+-        ("Proteção de aplicações, APIs e infraestrutura", ["app_api_protector", "prolexic"]),
+-        ("Proteção contra automação e abuso de contas", ["bot_manager", "account_protector"]),
++        (_text(titles.get(group)) if int(proposal.get("rules_version", 0) or 0) >= 10 else legacy_titles[group], list(members))
++        for group, members in FRONT_GROUPS.items()
+     ]
+     fronts: list[dict[str, Any]] = []
+     for title, ids in groups:
+@@ -327,15 +369,7 @@ def _fronts(proposal: dict[str, Any]) -> list[dict[str, Any]]:
+ def _client_mark(client: str) -> bytes:
+     canvas = Image.new("RGB", (900, 900), "#F7F7FC")
+     draw = ImageDraw.Draw(canvas)
+-    fonts = ["C:/Windows/Fonts/arialbd.ttf", "C:/Windows/Fonts/calibrib.ttf"]
+-    font = None
+-    for path in fonts:
+-        try:
+-            font = ImageFont.truetype(path, 78)
+-            break
+-        except OSError:
+-            pass
+-    font = font or ImageFont.load_default()
++    font = _font(BOLD_FONTS, 78)
+     words = client.upper().split()
+     lines = [" ".join(words[: max(1, len(words) // 2)]), " ".join(words[max(1, len(words) // 2):])]
+     lines = [line for line in lines if line]
+@@ -405,11 +439,11 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+     _replace_paragraph(p[13], f"| {month.upper()} {datetime.now().year} |")
+ 
+     _replace_paragraph(p[19], "Sobre a Akamai")
+-    _replace_paragraph(p[20], _doc_text(proposal, "about_akamai", f"A Akamai oferece serviços distribuídos de entrega, desempenho, proteção e observabilidade para aplicações, APIs e infraestrutura exposta à internet. A arquitetura desta proposta combina apenas as capacidades ligadas às jornadas e riscos priorizados por {client}."))
++    _replace_paragraph(p[20], _slot(proposal, "about_akamai", since=10, legacy_default=f"A Akamai oferece serviços distribuídos de entrega, desempenho, proteção e observabilidade para aplicações, APIs e infraestrutura exposta à internet. A arquitetura desta proposta combina apenas as capacidades ligadas às jornadas e riscos priorizados por {client}."))
+     _replace_paragraph(p[21], _slot(proposal, "about_solution", f"Para {client}, a solução integra continuidade multi-cloud, proteção de aplicações e APIs, defesa contra abuso automatizado e otimização das jornadas de checkout e cadastro. Cada frente possui escopo de configuração, evidência de teste e responsável definidos."))
+     _replace_paragraph(p[22], "Parceria POPULOS e Akamai")
+-    _replace_paragraph(p[23], _doc_text(proposal, "partnership", "A POPULOS responde pela arquitetura, implantação, testes e documentação do projeto, com profissionais qualificados nas tecnologias previstas. As credenciais nominais da equipe serão apresentadas na mobilização, conforme os requisitos formais da contratação."))
+-    _set_rows(p, range(24, 28), ["Arquitetura e segurança de aplicações Akamai;", "DNS, gestão global de tráfego e entrega de aplicações;", "Gestão de projeto, testes e documentação técnica."])
++    _replace_paragraph(p[23], _slot(proposal, "partnership", since=10, legacy_default="A POPULOS responde pela arquitetura, implantação, testes e documentação do projeto, com profissionais qualificados nas tecnologias previstas. As credenciais nominais da equipe serão apresentadas na mobilização, conforme os requisitos formais da contratação."))
++    _set_rows(p, range(24, 28), _state_list(proposal, "team_competencies", ["Arquitetura e segurança de aplicações Akamai;", "DNS, gestão global de tráfego e entrega de aplicações;", "Gestão de projeto, testes e documentação técnica."], since=10))
+     _replace_paragraph(p[28], "A composição final da equipe será confirmada no plano de projeto, preservando as competências exigidas para cada frente.")
+ 
+     if summary:
+@@ -497,14 +531,24 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+     trace_heading._p.addnext(trace_table._tbl)
+     trace_headers = ["Requisito", "Necessidade", "Componente", "Evidência de aceite"]
+     for c, value in zip(trace_table.rows[0].cells, trace_headers): _replace_cell(c, value)
++    acceptance_by_req: dict[str, list[str]] = {}
++    for criterion in proposal.get("acceptance_criteria", []):
++        if criterion.get("phase", "committed") == "committed":
++            acceptance_by_req.setdefault(str(criterion.get("requirement_id")), []).append(_text(criterion.get("criterion")))
+     for item in proposal.get("traceability", []):
+         row = trace_table.add_row().cells
+-        values = [item.get("requirement_id", ""), item.get("requirement", ""), item.get("solution", ""), item.get("evidence", "")]
++        if _v10(proposal):
++            # A origem do requisito fica no relatório de cobertura; ao cliente vai o critério de aceite.
++            evidence = " ".join(acceptance_by_req.get(str(item.get("requirement_id")), [])) or "Critérios gerais da seção 10."
++        else:
++            evidence = item.get("evidence", "")
++        values = [item.get("requirement_id", ""), item.get("requirement", ""), _product_names_in(item.get("solution", "")), evidence]
+         for c, value in zip(row, values): _replace_cell(c, value)
+     _format_added_table(trace_table, [0.65, 2.2, 1.35, 2.4])
+     _repeat_table_header(trace_table.rows[0])
+ 
+     _replace_paragraph(p[68], "Como primeira etapa, a POPULOS realizará o levantamento detalhado do ambiente atual, contemplando no mínimo:")
++    _replace_paragraph(p[72], _slot(proposal, "assessment_outcome", p[72].text, since=10))
+     _set_rows(p, range(69, 72), _state_list(proposal, "assessment_items", [
+         "Inventário de domínios, aplicações, APIs e origens;",
+         "Métricas de tráfego, latência, disponibilidade e eventos de segurança;",
+@@ -553,7 +597,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+             phase4_body.paragraph_format.keep_with_next = True
+     _replace_paragraph(p[93], "A POPULOS conduzirá o planejamento, a gestão de riscos e dependências e os reportes periódicos, em alinhamento com o ponto focal do cliente.")
+ 
+-    _replace_paragraph(p[96], _doc_text(proposal, "knowledge_transfer", "A passagem de conhecimento abrangerá a arquitetura implantada, as configurações aprovadas, os procedimentos operacionais e a documentação final prevista no escopo."))
++    _replace_paragraph(p[96], _slot(proposal, "knowledge_transfer", since=10, legacy_default="A passagem de conhecimento abrangerá a arquitetura implantada, as configurações aprovadas, os procedimentos operacionais e a documentação final prevista no escopo."))
+     _replace_paragraph(p[98], _slot(proposal, "tests", "Os testes validarão decisão de tráfego, failover, políticas de segurança, classificação de automações, risco de conta, desempenho das jornadas e envio de eventos ao SIEM, conforme critérios da seção 10."))
+     _set_rows_dynamic(p, range(101, 106), proposal.get("scope", {}).get("excluded", []), p[106])
+     _set_rows_dynamic(p, range(110, 118), proposal.get("assumptions", []), p[118])
+@@ -578,6 +622,12 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+     _replace_paragraph(p[134], _slot(proposal, "schedule_sequence", "A sequência inclui levantamento, desenho, implementação, homologação, entrada em produção e estabilização assistida."))
+     _remove_paragraph(p[136])
+     _trim_table_columns(t[7], 5)
++    for index, width in enumerate((1.2, 2.1, 1.35, 0.9, 1.1)):  # colunas herdadas eram estreitas demais
++        for cell in t[7].columns[index].cells:
++            cell.width = Inches(width)
++    grid = t[7]._tbl.tblGrid
++    for column, width in zip(grid, (1.2, 2.1, 1.35, 0.9, 1.1)):
++        column.set(qn("w:w"), str(int(width * 1440)))
+     headers = ["Fase", "Atividade", "Dependência", "Duração", "Evidência"]
+     for c, value in zip(t[7].rows[0].cells, headers): _replace_cell(c, value)
+     _repeat_table_header(t[7].rows[0])
+@@ -598,6 +648,7 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+                 _replace_cell(c, value)
+                 _set_cell_shading(c, "FFFFFF" if row_index % 2 == 0 else "F3F4F6")
+                 for paragraph in c.paragraphs:
++                    paragraph.alignment = WD_ALIGN_PARAGRAPH.LEFT
+                     for run in paragraph.runs:
+                         run.font.color.rgb = RGBColor(31, 42, 94)
+                         run.font.size = Pt(7.5)
+@@ -691,9 +742,9 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+ 
+     for table_index, heading in ((0, "Aderência e qualificações"), (1, "Modelo de fornecimento"), (2, "Limite da frente"), (5, "Estratégia de migração"), (6, "Cláusulas não aplicáveis"), (8, "Marcos formais de aceite"), (9, "Garantia e vigência")):
+         title, body = {
+-            0: ("Aderência e qualificações", "A equipe será mobilizada com competências compatíveis com DNS, entrega, segurança de aplicações e gestão do projeto; as credenciais nominais serão apresentadas na mobilização."),
++            0: ("Aderência e qualificações", _slot(proposal, "callout_qualifications", since=10, legacy_default="A equipe será mobilizada com competências compatíveis com DNS, entrega, segurança de aplicações e gestão do projeto; as credenciais nominais serão apresentadas na mobilização.")),
+             1: ("Modelo de fornecimento", " ".join(filter(None, [_doc_text(proposal, "license_prefix", ""), str(license_supply)]))),
+-            2: ("Limite da frente", _doc_text(proposal, "callout_limits", "A solução cobre configuração e integração dos componentes recomendados. Alterações no código das aplicações e serviços de terceiros permanecem fora do escopo.")),
++            2: ("Limite da frente", _slot(proposal, "callout_limits", since=10, legacy_default="A solução cobre configuração e integração dos componentes recomendados. Alterações no código das aplicações e serviços de terceiros permanecem fora do escopo.")),
+             5: ("Estratégia de migração", _slot(proposal, "callout_migration", "Implantação em ondas: homologação, produção controlada e estabilização, com janela aprovada, critérios de avanço e plano de reversão.")),
+             6: ("Itens que exigem contratação específica", "Operação continuada, NOC 24x7, equipe residente, desenvolvimento de aplicações e serviços gerenciados adicionais não estão incluídos."),
+             8: ("Marcos formais de aceite", _slot(proposal, "callout_milestones", "Desenho aprovado, homologação concluída, produção validada e documentação final aceita.")),
+@@ -762,6 +813,10 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
+     leaked = detect_skill_leakage(client_text)
+     if leaked:
+         raise ValueError(f"Trechos copiados dos arquivos da skill: {'; '.join(leaked[:5])}")
++    if _v10(proposal):
++        internal_ids = sorted({pid for pid in PRODUCTS if "_" in pid and re.search(rf"(?<![\w-]){re.escape(pid)}(?![\w-])", client_text)})
++        if internal_ids:
++            raise ValueError(f"Identificador interno de produto no documento: {', '.join(internal_ids)}")
+     if _v8(proposal):
+         residue = find_case_residue(client_text, proposal)
+         if residue:
+diff --git a/sales_engineer/proposal_rules.py b/sales_engineer/proposal_rules.py
+index 19ac681..0789fc6 100644
+--- a/sales_engineer/proposal_rules.py
++++ b/sales_engineer/proposal_rules.py
+@@ -51,6 +51,9 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None =
+ 
+     `source_text` is the extracted source material; from rules v9 on, case approvals are checked against it.
+     """
++    shape = schema_violations(proposal)
++    if shape:
++        return shape
+     gate = _pre_proposal_gate(proposal)
+     if gate is not None:
+         return gate
+@@ -174,10 +177,28 @@ def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None =
+         errors.extend(_validate_rules_v8(proposal))
+     if int(proposal.get("rules_version", 0) or 0) >= 9 and source_text is not None:
+         errors.extend(_validate_approval_quotes(proposal, source_text))
++    if int(proposal.get("rules_version", 0) or 0) >= 10:
++        errors.extend(_validate_rules_v10(proposal))
+     return errors
+ 
+ 
+-LATEST_RULES_VERSION = 9
++LATEST_RULES_VERSION = 10
++STATE_SCHEMA = Path(__file__).resolve().parents[1] / "skills" / "akamai-proposal-authoring" / "references" / "state.schema.json"
++
++
++def schema_violations(proposal: Any) -> list[str]:
++    """v10: the formal JSON Schema runs before any rule. A shape error comes back as a readable
++    violation, so a state the validator accepts can always be read by the compositor."""
++    if not isinstance(proposal, dict) or int(proposal.get("rules_version", 0) or 0) < 10:
++        return []
++    from jsonschema import Draft202012Validator
++
++    validator = Draft202012Validator(json.loads(STATE_SCHEMA.read_text(encoding="utf-8")))
++    errors = []
++    for error in sorted(validator.iter_errors(proposal), key=lambda e: list(e.absolute_path)):
++        path = ".".join(str(part) for part in error.absolute_path) or "(raiz)"
++        errors.append(f"formato ({path}): {error.message[:160]}")
++    return errors
+ DATA_MODES = {"test", "production"}
+ # Prefixos normalizados (sem acento, minúsculos): aceitam "Arquiteto", "arquiteta", "Engenheira de redes"...
+ _TECHNICAL_ROLE_PREFIXES = ("arquitet", "engenh", "delivery", "pre-vendas tecnic", "pre vendas tecnic", "presales tecnic")
+@@ -278,7 +299,7 @@ def _validate_rules_v7(proposal: dict[str, Any]) -> list[str]:
+         problem = _license_lead_problem(item.get("lead_times"))
+         if problem:
+             errors.append(f"viabilidade {problem}: {item.get('event')}")
+-        elif _license_lead_unknown(item.get("lead_times")) and item.get("classification") == "fits":
++        elif _license_lead_unknown(item.get("lead_times")) and item.get("classification") == "fits" and _rules_version(proposal) < 10:
+             errors.append(f"viabilidade 'fits' com prazo de licenciamento desconhecido: {item.get('event')}")
+     track = proposal.get("fast_track")
+     if track and track.get("components"):
+@@ -559,6 +580,124 @@ def _validate_approval_quotes(proposal: dict[str, Any], source_text: str) -> lis
+     return errors
+ 
+ 
++# Frentes do documento: grupo -> produtos. O título de cada frente presente vem do estado.
++FRONT_GROUPS = {
++    "continuity": ("edge_dns", "gtm", "alb", "ion"),
++    "protection": ("app_api_protector", "prolexic"),
++    "automation": ("bot_manager", "account_protector"),
++}
++REQUIRED_DOCUMENT_TEXT_V10 = (
++    "about_akamai", "partnership", "knowledge_transfer", "callout_limits", "callout_qualifications", "assessment_outcome",
++)
++# Produtos que ficam no caminho do tráfego da aplicação. Sem nenhum deles recomendado, o plano de evento
++# não pode trazer sala de crise, teste de carga nem revisão de capacidade: seria superdimensionar o escopo.
++TRAFFIC_PATH_PRODUCTS = {"app_api_protector", "bot_manager", "account_protector", "prolexic", "ion", "gtm", "alb", "ip_accelerator", "malware_protection"}
++_HEAVY_READINESS = re.compile(r"sala de crise|war room|teste de carga|revis[aã]o de capacidade", re.IGNORECASE)
++# Exigências do cliente que costumam colidir com padrões POPULOS. O código obriga a classificá-las;
++# fora destas categorias, identificar o conflito é responsabilidade do autor.
++STANDARD_CATEGORIES = {
++    "sla": re.compile(r"\bsla\b|tempo (?:m[aá]ximo )?de (?:resolu[cç][aã]o|resposta|atendimento)|24x7|24 ?x ?7", re.IGNORECASE),
++    "warranty": re.compile(r"garantia", re.IGNORECASE),
++    "qualification": re.compile(r"certifica|atestado|qualifica[cç][aã]o t[eé]cnica", re.IGNORECASE),
++    "deadline": re.compile(r"prazo de (?:implanta|entrega|execu)|dias corridos|dias [uú]teis", re.IGNORECASE),
++}
++
++
++def _catalog_ids() -> set[str]:
++    from .catalog import PRODUCTS
++
++    return {product_id for product_id in PRODUCTS if "_" in product_id}
++
++
++def _client_texts_v10(proposal: dict[str, Any]) -> Iterable[tuple[str, str]]:
++    for key, value in (proposal.get("document_text") or {}).items():
++        values = value.values() if isinstance(value, dict) else [value]
++        for text in values:
++            yield f"document_text.{key}", str(text)
++    for section in proposal.get("sections", []):
++        for text in section.get("paragraphs", []):
++            yield "sections", str(text)
++    for item in proposal.get("traceability", []):
++        yield f"traceability.{item.get('requirement_id')}", f"{item.get('requirement', '')} {item.get('solution', '')}"
++    for field in ("assumptions", "restrictions", "event_readiness", "client_roles", "team_competencies", "assessment_items"):
++        for text in proposal.get(field) or []:
++            yield field, str(text)
++    for field, items in (proposal.get("scope") or {}).items():
++        for text in items or []:
++            yield f"scope.{field}", str(text)
++    for item in proposal.get("acceptance_criteria", []):
++        yield "acceptance_criteria", str(item.get("criterion", ""))
++    for item in proposal.get("risks", []):
++        yield "risks", " ".join(str(item.get(k, "")) for k in ("risk", "impact", "mitigation"))
++
++
++def _validate_rules_v10(proposal: dict[str, Any]) -> list[str]:
++    """Issues from the v8.3 audit: template text bound to the case, catalog ids never shown to the client,
++    proportional event plans, license deadlines instead of downgraded feasibility, and classified conflicts
++    between client demands and POPULOS standards."""
++    errors: list[str] = []
++    document_text = proposal.get("document_text") or {}
++    for key in REQUIRED_DOCUMENT_TEXT_V10:
++        if not _text_value(document_text.get(key)):
++            errors.append(f"document_text.{key} ausente: o compositor não usa texto padrão para este slot")
++    competencies = [c for c in proposal.get("team_competencies") or [] if c]
++    if not 1 <= len(competencies) <= 3:
++        errors.append(f"team_competencies deve ter de 1 a 3 itens (tem {len(competencies)})")
++    recommended = {d.get("product_id") for d in proposal.get("solution_decisions", []) if d.get("status") == "recommended"}
++    titles = document_text.get("front_titles") if isinstance(document_text.get("front_titles"), dict) else {}
++    for group, members in FRONT_GROUPS.items():
++        if recommended & set(members) and not _text_value(titles.get(group)):
++            errors.append(f"document_text.front_titles.{group} ausente: a frente existe e precisa de título do caso")
++
++    # Nome comercial, nunca o identificador interno.
++    ids = _catalog_ids()
++    for field, text in _client_texts_v10(proposal):
++        for product_id in sorted(ids):
++            if re.search(rf"(?<![\w-]){re.escape(product_id)}(?![\w-])", text):
++                errors.append(f"identificador interno de produto em texto do cliente ({product_id}): {field}")
++
++    # Plano de evento proporcional ao escopo.
++    if not recommended & TRAFFIC_PATH_PRODUCTS:
++        for item in proposal.get("event_readiness", []):
++            if _HEAVY_READINESS.search(str(item)):
++                errors.append(f"plano de evento desproporcional ao escopo (nenhum produto no caminho do tráfego): {str(item)[:70]}")
++
++    # Prazo de licença desconhecido vira data limite, não rebaixamento.
++    phases = proposal.get("delivery", {}).get("phases", [])
++    high = sum((phase.get("weeks") or [0, 0])[1] for phase in phases)
++    events = {e.get("name"): e for e in proposal.get("critical_events", [])}
++    summary = normalize_document_text(" ".join(p for s in proposal.get("sections", []) for p in s.get("paragraphs", [])))
++    for item in proposal.get("event_feasibility", []):
++        if not _license_lead_unknown(item.get("lead_times")) or item.get("classification") == "does_not_fit":
++            continue
++        event_date = (events.get(item.get("event")) or {}).get("date")
++        if not event_date:
++            continue
++        expected = (_date(event_date) - timedelta(weeks=high)).isoformat()
++        if item.get("license_deadline") != expected:
++            errors.append(f"prazo de licença desconhecido sem data limite (license_deadline = {expected}): {item.get('event')}")
++        elif normalize_document_text(f"{_date(expected):%d/%m}") not in summary:
++            errors.append(f"sumário não declara a data limite das licenças ({_date(expected):%d/%m}): {item.get('event')}")
++
++    # Exigência do cliente em categoria conhecida: classificada como conflito (decisão interna) ou compatível.
++    conflicts = {(c.get("category"), c.get("requirement_id")): c for c in proposal.get("standard_conflicts", [])}
++    governance = proposal.get("governance", {})
++    for item in proposal.get("traceability", []):
++        if not set(item.get("speakers", [])) & {"client", "input_document"}:
++            continue
++        for category, pattern in STANDARD_CATEGORIES.items():
++            if not pattern.search(str(item.get("requirement", ""))):
++                continue
++            entry = conflicts.get((category, item.get("requirement_id")))
++            if not entry:
++                errors.append(f"exigência do cliente em categoria de padrão POPULOS sem classificação (standard_conflicts, {category}): {item.get('requirement_id')}")
++            elif entry.get("status") == "conflict" and entry.get("decision_key") not in governance:
++                errors.append(f"conflito com padrão POPULOS sem decisão de governança (decision_key): {item.get('requirement_id')} {category}")
++            elif entry.get("status") == "compatible" and not entry.get("reason"):
++                errors.append(f"exigência declarada compatível com padrão POPULOS sem motivo: {item.get('requirement_id')} {category}")
++    return errors
++
++
+ def assert_proposal_rules(proposal: dict[str, Any]) -> None:
+     errors = validate_proposal_rules(proposal)
+     if errors:
+diff --git a/scripts/render_pdf.py b/scripts/render_pdf.py
+new file mode 100644
+index 0000000..feff2a5
+--- /dev/null
++++ b/scripts/render_pdf.py
+@@ -0,0 +1,39 @@
++"""Render an emitted DOCX to PDF (LibreOffice) and page images, for visual QA.
++
++Usage: python scripts/render_pdf.py PROPOSAL.docx [OUT_DIR]
++LibreOffice paginates differently from Word. The reference engine for the client is Word; this
++render is the portable check that catches layout defects (wrapped headers, unreadable diagrams).
++"""
++from __future__ import annotations
++
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++from pathlib import Path
++
++
++def render(docx: Path, out_dir: Path) -> Path:
++    out_dir.mkdir(parents=True, exist_ok=True)
++    with tempfile.TemporaryDirectory() as tmp:
++        # LibreOffice fails on some paths (e.g. a directory named "-x"), so it works on a plain copy.
++        source = Path(tmp) / "proposta.docx"
++        shutil.copy2(docx, source)
++        env = {**os.environ, "HOME": tmp}
++        subprocess.run(["soffice", "--headless", f"-env:UserInstallation=file://{tmp}/profile",
++                        "--convert-to", "pdf", "--outdir", tmp, str(source)],
++                       check=True, capture_output=True, env=env, timeout=240)
++        pdf = out_dir / f"{docx.stem}.pdf"
++        shutil.copy2(Path(tmp) / "proposta.pdf", pdf)
++    import pymupdf
++
++    document = pymupdf.open(pdf)
++    for index, page in enumerate(document, start=1):
++        page.get_pixmap(dpi=80).save(out_dir / f"{docx.stem}-p{index:02d}.png")
++    return pdf
++
++
++if __name__ == "__main__":
++    target = Path(sys.argv[1])
++    print(render(target, Path(sys.argv[2]) if len(sys.argv) > 2 else target.parent / "render"))
+diff --git a/skills/akamai-proposal-authoring/references/global-rules.md b/skills/akamai-proposal-authoring/references/global-rules.md
+index 7775fa2..cead372 100644
+--- a/skills/akamai-proposal-authoring/references/global-rules.md
++++ b/skills/akamai-proposal-authoring/references/global-rules.md
+@@ -52,6 +52,10 @@ The global state separates client facts, requirements, decisions, scope, commerc
+ - Products the client already has belong to the current environment. They are not offered again and are not treated as exclusions.
+ - Every case-dependent paragraph comes from the state. The compositor holds no text from any previous case.
+ 
++## Verification method
++
++- Test parameters defined by POPULOS (number of resolvers, observation windows, measurement frequency) are verification method, not a promised result. State them as how acceptance is checked, never as a service level.
++
+ ## Client-facing language
+ 
+ Never expose pipeline or drafting language. The single source for forbidden and untranslated terms is `lexicon.json`, consumed by code. Rewrite internal terms as proposal language such as `levantamento`, `premissa de dimensionamento`, `condição de contratação`, or a named requirement.
+diff --git a/skills/akamai-proposal-authoring/references/solution-gating.md b/skills/akamai-proposal-authoring/references/solution-gating.md
+index ab31148..41ff300 100644
+--- a/skills/akamai-proposal-authoring/references/solution-gating.md
++++ b/skills/akamai-proposal-authoring/references/solution-gating.md
+@@ -12,7 +12,7 @@ Do not claim that one layer covers another. If a requirement spans layers, recom
+ 
+ ## Critical-event trigger
+ 
+-When discovery names a seasonal or business-critical peak such as Black Friday or Pix Day, require an event-readiness block with load testing, capacity review, change freeze, monitoring, rollback/degradation runbook, and a POPULOS-led war room. Akamai participation may be stated only when the contracted support tier and escalation plan authorize it.
++When discovery names a seasonal or business-critical peak such as Black Friday or Pix Day, require an event-readiness block proportional to the scope: change freeze, monitoring and rollback always; load testing, capacity review and a POPULOS-led war room only when a recommended product sits in the application traffic path. Akamai participation may be stated only when the contracted support tier and escalation plan authorize it.
+ 
+ Evaluate products against explicit evidence from the discovery.
+ 
+diff --git a/skills/akamai-proposal-authoring/references/state-schema.md b/skills/akamai-proposal-authoring/references/state-schema.md
+index 812cefa..18707ac 100644
+--- a/skills/akamai-proposal-authoring/references/state-schema.md
++++ b/skills/akamai-proposal-authoring/references/state-schema.md
+@@ -1,4 +1,4 @@
+-# Proposal state schema (rules v9)
++# Proposal state schema (rules v10)
+ 
+ The author produces one JSON object. The validator (`scripts/validate_attempt.py`) checks the rules; the compositor maps the fields below into fixed slots of the approved template. Text fields are client-facing Portuguese unless noted. Values in angle brackets are placeholders, not examples to copy.
+ 
+@@ -6,10 +6,14 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
+ 
+ | Field | Type | Notes |
+ |---|---|---|
+-| `rules_version` | int | Must be `9`. |
++| `rules_version` | int | Must be `10`. |
+ | `data_mode` | `"test"` or `"production"` | Marks where the data comes from. It never relaxes a check. |
+ | `client_name`, `opportunity`, `code`, `opportunity_id` | string | `code` names the output file. |
+ 
++## Formal shape
++
++`state.schema.json` (same folder) is the formal JSON Schema of this state. The validator checks it before any rule; a shape error comes back as `formato (<path>): <message>`.
++
+ ## Before the proposal: input and catalog
+ 
+ Both fields are required and are checked before any other rule.
+@@ -35,6 +39,7 @@ Both fields are required and are checked before any other rule.
+ - `source_coverage`: every relevant statement of the source material: `{ "ref", "statement", "status": "coberto" | "pendente" | "descartado", "targets": [REQ ids or "sumário", "escopo", "exclusões", "premissas", "dimensionamento", "engajamento"], "reason" (when discarded) }`.
+ - `client_numbers`: every number the client said: `{ "quote", "ref", "destination": "meta" | "contexto_de_dor" | "dimensionamento" | "descartado_com_motivo", "summary_marker" (pain context: a phrase that appears in the executive summary), "reason" }`.
+ - `open_questions`: list of strings.
++- `standard_conflicts`: `[{ "category": "sla" | "warranty" | "qualification" | "deadline", "requirement_id", "status": "conflict" | "compatible", "decision_key" (conflict), "reason" (compatible) }]`. Every client requirement about service levels, warranty, qualification or certification, or delivery deadlines is classified here. A `conflict` with a POPULOS standard points to a governance decision (`decision_key`), which stays `populos_internal_decision` unless the source material approves it. The code only detects these four categories; recognizing any other conflict with a POPULOS standard remains the author's responsibility.
+ 
+ ## Solution
+ 
+@@ -49,6 +54,7 @@ Both fields are required and are checked before any other rule.
+ - `estimates`: `[{ "item", "value", "owner", "owner_role": "arquiteto" | "engenharia" | "delivery" | "pré-vendas técnica" }]`.
+ - `assessment_items`: exactly 3 strings (section 5).
+ - `client_roles`: 1 to 4 strings, the client-side roles this project needs (section 8.2).
++- `team_competencies`: 1 to 3 strings, the POPULOS team competencies this project needs (section 1).
+ - `scope`: `{ "included": [...], "deliverables": [...], "excluded": [...] }`.
+ - `delivery.phases`: committed phases, at most 4: `{ "name", "kind", "weeks": [min, max], "duration", "objective", "dependency", "outputs": [...] }`. A week range written in client text must equal the sum of these phases, or the range of one phase.
+ - `delivery.responsibilities`: client-side parties, as `[{ "party", "responsibility" }]`; `populos_roles`: optional list of `[role, responsibility, commitment]` rows (table capacity 12 rows in total).
+@@ -59,10 +65,10 @@ Both fields are required and are checked before any other rule.
+ 
+ ## Critical events
+ 
+-- `event_readiness`: list of strings.
++- `event_readiness`: list of strings, proportional to the scope. Heavy items (war room, load test, capacity review) only when a recommended product sits in the application traffic path; a DNS-only project uses change window, rollback and monitoring.
+ - `critical_events`: `[{ "name", "date" (YYYY-MM-DD or null), "source", "pending_question" (when date is null) }]`.
+-- `event_feasibility`: for each event with a date: `{ "event", "reference_date", "phase1_end_earliest", "phase1_end_latest", "classification": "fits" | "partially_fits" | "does_not_fit", "path", "reason", "summary_marker", "lead_times": { "licenciamento": { "weeks", "source" } or { "weeks": null, "pending_question" } } }`. With an unknown lead time the classification cannot be `fits`. The end dates are the reference date plus the sum of committed phase weeks, and the summary states them.
++- `event_feasibility`: for each event with a date: `{ "event", "reference_date", "phase1_end_earliest", "phase1_end_latest", "classification": "fits" | "partially_fits" | "does_not_fit", "path", "reason", "summary_marker", "lead_times": { "licenciamento": { "weeks", "source" } or { "weeks": null, "pending_question" } } }`. With an unknown license lead time, do not downgrade the classification: state `license_deadline` (YYYY-MM-DD), the date by which licenses must be active, equal to the event date minus the maximum committed weeks, and write that date (DD/MM) in the executive summary. The end dates are the reference date plus the sum of committed phase weeks, and the summary states them.
+ 
+ ## Client text
+ 
+-`document_text`: case-specific paragraphs for fixed template slots. The compositor has no default text for these slots, so each one is required: `about_solution`, `coverage`, `dimensioning_intro`, `methodology_intro`, `tests`, `schedule_intro`, `schedule_sequence`, `closing`, `callout_migration`, `callout_milestones`, `diagram_users` and `diagram_users_detail` (who uses the service and through what), `diagram_origins_title` and `diagram_origins` (where the client's applications run). Optional keys: `about_akamai`, `partnership`, `readiness_intro`, `dimensioning_note`, `heading_6`, `knowledge_transfer`, `acceptance_intro`, `acceptance_optional_intro`, `warranty_intro`, `callout_limits`, `license_prefix`; omitted optional keys use neutral wording. `sections` must contain the `Resumo executivo`.
++`document_text`: case-specific paragraphs for fixed template slots. The compositor has no default text for these slots, so each one is required: `about_akamai`, `about_solution`, `partnership`, `coverage`, `dimensioning_intro`, `assessment_outcome` (what the survey of section 5 delivers), `methodology_intro`, `knowledge_transfer`, `tests`, `schedule_intro`, `schedule_sequence`, `closing`, `callout_qualifications`, `callout_limits`, `callout_migration`, `callout_milestones`, `diagram_users` and `diagram_users_detail`, `diagram_origins_title` and `diagram_origins`, and `front_titles` (an object with one title for each front present: `continuity` for Edge DNS, GTM, ALB and Ion; `protection` for App & API Protector and Prolexic; `automation` for Bot Manager and Account Protector). Optional keys: `readiness_intro`, `dimensioning_note`, `heading_6`, `acceptance_intro`, `acceptance_optional_intro`, `warranty_intro`, `license_prefix`. `sections` must contain the `Resumo executivo`. No client-facing text may mention a capability, product or deliverable outside the decisions of this state, and products are always named by their commercial name, never by the catalog id.
+diff --git a/skills/akamai-proposal-authoring/references/state.schema.json b/skills/akamai-proposal-authoring/references/state.schema.json
+new file mode 100644
+index 0000000..caa49dd
+--- /dev/null
++++ b/skills/akamai-proposal-authoring/references/state.schema.json
+@@ -0,0 +1,177 @@
++{
++  "$schema": "https://json-schema.org/draft/2020-12/schema",
++  "$id": "populos/proposal-state/v10",
++  "title": "Estado da proposta (regras v10)",
++  "description": "Formato que o validador confere antes das regras. Um erro de formato volta como violação legível; o compositor só lê estados que passaram aqui.",
++  "type": "object",
++  "$defs": {
++    "text": {"type": "string"},
++    "texts": {"type": "array", "items": {"type": "string"}},
++    "decision": {
++      "type": "object",
++      "required": ["state"],
++      "properties": {
++        "state": {"enum": ["commitment", "populos_internal_decision"]},
++        "basis": {"type": "string"},
++        "source": {"type": "string"},
++        "approved_by": {"type": ["string", "null"]},
++        "approved_at": {"type": ["string", "null"]},
++        "approval_record": {"type": ["string", "null"]},
++        "approval_quote": {"type": ["string", "null"]},
++        "mode": {"type": ["string", "null"]},
++        "engagement_ref": {"type": ["string", "null"]},
++        "approver_role": {"type": ["string", "null"]},
++        "template_version": {"type": "string"}
++      }
++    }
++  },
++  "required": ["rules_version", "input_assessment"],
++  "properties": {
++    "rules_version": {"type": "integer"},
++    "data_mode": {"enum": ["test", "production"]},
++    "client_name": {"type": "string"},
++    "opportunity": {"type": "string"},
++    "code": {"type": "string"},
++    "opportunity_id": {"type": "string"},
++    "input_assessment": {
++      "type": "object",
++      "required": ["status"],
++      "properties": {"status": {"enum": ["sufficient", "insufficient"]}, "missing": {"$ref": "#/$defs/texts"}, "reason": {"type": "string"}}
++    },
++    "catalog_fit": {
++      "type": "object",
++      "required": ["status"],
++      "properties": {"status": {"enum": ["fits", "no_catalog"]}, "requested": {"type": "string"}, "reason": {"type": "string"}}
++    },
++    "open_questions": {"$ref": "#/$defs/texts"},
++    "client_scope": {
++      "type": "object",
++      "properties": {"type": {"type": ["string", "null"]}, "excludes_implementation": {"type": "boolean"}, "source": {"type": "string"}, "forbidden_in_committed": {"$ref": "#/$defs/texts"}}
++    },
++    "governance": {"type": "object", "additionalProperties": {"$ref": "#/$defs/decision"}},
++    "discovery": {"type": "object", "properties": {"business_goals": {"$ref": "#/$defs/texts"}}},
++    "traceability": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "required": ["requirement_id", "requirement", "solution"],
++        "properties": {
++          "requirement_id": {"type": "string"}, "requirement": {"type": "string"}, "solution": {"type": "string"},
++          "evidence": {"type": "string"}, "source": {"type": "string"},
++          "speakers": {"type": "array", "items": {"enum": ["client", "vendor", "input_document"]}},
++          "hypothesis": {"type": "boolean"}
++        }
++      }
++    },
++    "source_coverage": {
++      "type": "array",
++      "items": {"type": "object", "required": ["ref", "statement", "status"], "properties": {"targets": {"$ref": "#/$defs/texts"}}}
++    },
++    "client_numbers": {"type": "array", "items": {"type": "object", "required": ["quote", "destination"]}},
++    "solution_decisions": {
++      "type": "array",
++      "items": {
++        "type": "object",
++        "required": ["product_id", "status"],
++        "properties": {
++          "product_id": {"type": "string"},
++          "status": {"enum": ["recommended", "optional", "needs_information", "excluded", "already_contracted"]},
++          "requirement_ids": {"$ref": "#/$defs/texts"}, "rationale": {"type": "string"}, "client_summary": {"type": "string"},
++          "capabilities": {"$ref": "#/$defs/texts"}, "implementation_status": {"type": "string"},
++          "trigger": {"type": "string"}, "contract_ref": {"type": "string"}
++        }
++      }
++    },
++    "products": {"$ref": "#/$defs/texts"},
++    "architecture": {"type": "object", "properties": {"summary": {"type": "string"}}},
++    "sections": {
++      "type": "array",
++      "items": {"type": "object", "required": ["title", "paragraphs"], "properties": {"title": {"type": "string"}, "paragraphs": {"$ref": "#/$defs/texts"}}}
++    },
++    "dimensioning": {"type": "array", "items": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "string"}}},
++    "estimates": {
++      "type": "array",
++      "items": {"type": "object", "required": ["item", "value", "owner", "owner_role"], "properties": {"item": {"type": "string"}, "value": {"type": "string"}, "owner": {"type": "string"}, "owner_role": {"type": "string"}}}
++    },
++    "assessment_items": {"$ref": "#/$defs/texts"},
++    "client_roles": {"$ref": "#/$defs/texts"},
++    "team_competencies": {"$ref": "#/$defs/texts"},
++    "scope": {
++      "type": "object",
++      "properties": {"included": {"$ref": "#/$defs/texts"}, "deliverables": {"$ref": "#/$defs/texts"}, "excluded": {"$ref": "#/$defs/texts"}}
++    },
++    "delivery": {
++      "type": "object",
++      "properties": {
++        "phases": {
++          "type": "array",
++          "items": {
++            "type": "object",
++            "required": ["name", "weeks", "objective"],
++            "properties": {
++              "name": {"type": "string"}, "kind": {"type": "string"},
++              "weeks": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "integer", "minimum": 0}},
++              "duration": {"type": "string"}, "objective": {"type": "string"}, "dependency": {"type": "string"}, "outputs": {"$ref": "#/$defs/texts"}
++            }
++          }
++        },
++        "responsibilities": {
++          "type": "array",
++          "items": {"type": "object", "required": ["party", "responsibility"], "properties": {"party": {"type": "string"}, "responsibility": {"type": "string"}}}
++        }
++      }
++    },
++    "populos_roles": {"type": "array", "items": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "string"}}},
++    "optional_phase": {
++      "type": ["object", "null"],
++      "properties": {
++        "title": {"type": "string"}, "intro": {"type": "string"}, "conditions": {"$ref": "#/$defs/texts"},
++        "waves": {
++          "type": "array",
++          "items": {
++            "type": "object", "required": ["name", "components"],
++            "properties": {"id": {"type": "string"}, "name": {"type": "string"}, "components": {"$ref": "#/$defs/texts"}, "goes_to_production": {"type": "boolean"},
++                           "activities": {"type": "string"}, "acceptance": {"type": "string"}, "milestone": {"type": "string"}, "dependency": {"type": "string"}, "duration": {"type": "string"}}
++          }
++        }
++      }
++    },
++    "fast_track": {
++      "type": ["object", "null"],
++      "properties": {
++        "id": {"type": "string"}, "title": {"type": "string"}, "components": {"$ref": "#/$defs/texts"}, "production_change": {"type": "boolean"},
++        "controls": {"$ref": "#/$defs/texts"}, "paragraphs": {"$ref": "#/$defs/texts"}, "items": {"$ref": "#/$defs/texts"},
++        "schedule_row": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"type": "string"}}
++      }
++    },
++    "assumptions": {"$ref": "#/$defs/texts"},
++    "restrictions": {"$ref": "#/$defs/texts"},
++    "risks": {
++      "type": "array",
++      "items": {"type": "object", "required": ["risk", "impact", "mitigation"], "properties": {"risk": {"type": "string"}, "impact": {"type": "string"}, "mitigation": {"type": "string"}}}
++    },
++    "acceptance_criteria": {
++      "type": "array",
++      "items": {"type": "object", "required": ["requirement_id", "phase", "criterion"], "properties": {"requirement_id": {"type": "string"}, "phase": {"enum": ["committed", "optional"]}, "option_id": {"type": "string"}, "criterion": {"type": "string"}}}
++    },
++    "event_readiness": {"$ref": "#/$defs/texts"},
++    "critical_events": {"type": "array", "items": {"type": "object", "required": ["name"], "properties": {"name": {"type": "string"}, "date": {"type": ["string", "null"]}}}},
++    "event_feasibility": {
++      "type": "array",
++      "items": {"type": "object", "required": ["event", "classification"], "properties": {"license_deadline": {"type": ["string", "null"]}}}
++    },
++    "standard_conflicts": {
++      "type": "array",
++      "items": {
++        "type": "object", "required": ["category", "requirement_id", "status"],
++        "properties": {"category": {"enum": ["sla", "warranty", "qualification", "deadline"]}, "requirement_id": {"type": "string"},
++                       "status": {"enum": ["conflict", "compatible"]}, "decision_key": {"type": "string"}, "reason": {"type": "string"}}
++      }
++    },
++    "document_text": {
++      "type": "object",
++      "properties": {"front_titles": {"type": "object", "additionalProperties": {"type": "string"}}},
++      "additionalProperties": {"type": "string"}
++    }
++  }
++}
+diff --git a/tests/fixtures/vertice_v9.json b/tests/fixtures/vertice_v10.json
+similarity index 96%
+rename from tests/fixtures/vertice_v9.json
+rename to tests/fixtures/vertice_v10.json
+index fc9bfd2..e586434 100644
+--- a/tests/fixtures/vertice_v9.json
++++ b/tests/fixtures/vertice_v10.json
+@@ -1,5 +1,5 @@
+ {
+- "rules_version": 9,
++ "rules_version": 10,
+  "data_mode": "test",
+  "client_name": "Vértice Educação",
+  "opportunity": "Migração de DNS autoritativo para Edge DNS",
+@@ -383,7 +383,8 @@
+    "paragraphs": [
+     "A Vértice Educação mantém hoje o DNS dos seus domínios no painel do registrador e registrou dois episódios em 2026 em que o painel ficou fora do ar e não foi possível alterar registros. Esta proposta migra as 4 zonas (vertice.edu.br, vertice.com.br, portalaluno.vertice.edu.br e vestibularvertice.com.br), com cerca de 380 registros, para o Edge DNS da Akamai, com DNSSEC e sem interrupção da resolução de nomes do portal do aluno.",
+     "A implantação está estimada entre 3 e 4 semanas a partir da reunião de início. Se o início ocorresse na data desta proposta (24/09/2026), o término ficaria entre 15/10/2026 e 22/10/2026, com margem ampla até o início das matrículas em 11/01/2027. A viabilidade frente às matrículas fica condicionada ao prazo de licenciamento, ainda não informado: as licenças são adquiridas diretamente pela Vértice Educação junto à Akamai, e a data real de início depende dessa ativação e de eventual congelamento de mudanças antes das matrículas.",
+-    "A troca de delegação será feita em janela aprovada, com os registros já publicados e conferidos na Akamai, TTLs reduzidos previamente e plano de reversão para os servidores atuais. A assinatura DNSSEC é ativada somente após a estabilização da nova delegação."
++    "A troca de delegação será feita em janela aprovada, com os registros já publicados e conferidos na Akamai, TTLs reduzidos previamente e plano de reversão para os servidores atuais. A assinatura DNSSEC é ativada somente após a estabilização da nova delegação.",
++    "Para concluir antes das matrículas de 11/01/2027, as licenças Edge DNS precisam estar ativas até 14/12/2026."
+    ]
+   }
+  ],
+@@ -580,7 +581,7 @@
+    "reference_date": "2026-09-24",
+    "phase1_end_earliest": "2026-10-15",
+    "phase1_end_latest": "2026-10-22",
+-   "classification": "partially_fits",
++   "classification": "fits",
+    "path": "Implantação completa de 3 a 4 semanas a partir do início",
+    "reason": "O esforço de serviços cabe com ampla margem antes de 11/01/2027, mas o prazo de licenciamento na compra direta junto à Akamai e eventual congelamento de mudanças são desconhecidos, o que impede classificar como cabe.",
+    "summary_marker": "condicionada ao prazo de licenciamento",
+@@ -589,7 +590,8 @@
+      "weeks": null,
+      "pending_question": "Qual o prazo de fornecimento e ativação das licenças Edge DNS na compra direta da Vértice Educação junto à Akamai?"
+     }
+-   }
++   },
++   "license_deadline": "2026-12-14"
+   }
+  ],
+  "document_text": {
+@@ -614,7 +616,12 @@
+   "diagram_origins_title": "Hospedagem atual",
+   "diagram_origins": "Servidor do site e portal",
+   "diagram_users": "Alunos e candidatos",
+-  "diagram_users_detail": "Site, portal e e-mail"
++  "diagram_users_detail": "Site, portal e e-mail",
++  "callout_qualifications": "A equipe será mobilizada com experiência em DNS autoritativo, DNSSEC e migração de zonas; as credenciais nominais serão apresentadas na mobilização.",
++  "assessment_outcome": "Com base no levantamento, será entregue o plano de migração por zona, com inventário conferido, TTLs, janela de troca e procedimento de reversão.",
++  "front_titles": {
++   "continuity": "DNS autoritativo resiliente e independente do registrador"
++  }
+  },
+  "input_assessment": {
+   "status": "sufficient",
+@@ -630,5 +637,9 @@
+   "Coordenação de infraestrutura: decisões, acessos ao registrador e janelas de mudança;",
+   "Hospedagem: confirmação dos endereços do servidor e apoio nos testes;",
+   "E-mail: validação dos registros MX, TXT e SRV após cada troca."
++ ],
++ "team_competencies": [
++  "DNS autoritativo, DNSSEC e migração de zonas;",
++  "Gestão de projeto, testes e documentação técnica."
+  ]
+ }
+\ No newline at end of file
+diff --git a/tests/test_v10_engine.py b/tests/test_v10_engine.py
+new file mode 100644
+index 0000000..93912fc
+--- /dev/null
++++ b/tests/test_v10_engine.py
+@@ -0,0 +1,191 @@
++from __future__ import annotations
++
++import json
++import tempfile
++import unittest
++from copy import deepcopy
++from pathlib import Path
++
++from docx import Document
++
++from sales_engineer.case_runner import validate_state
++from sales_engineer.document_validation import extract_docx_text
++from sales_engineer.neutral_template_builder import _product_names_in, build_neutral_template_docx
++from sales_engineer.proposal_rules import REQUIRED_DOCUMENT_TEXT_V10, validate_proposal_rules
++from tests.test_v7_engine import vertice_latest, vertice_source
++
++ROOT = Path(__file__).resolve().parents[1]
++TEMPLATE = ROOT / "assets" / "proposal_neutral_template.docx"
++
++
++def errors_of(proposal: dict) -> str:
++    return " | ".join(validate_proposal_rules(proposal, vertice_source()))
++
++
++def compose(proposal: dict) -> Document:
++    with tempfile.TemporaryDirectory() as tmp:
++        output = Path(tmp) / "p.docx"
++        build_neutral_template_docx(proposal, TEMPLATE, output)
++        return Document(output)
++
++
++def trace_rows(document: Document) -> list[list[str]]:
++    table = next(t for t in document.tables if t.rows[0].cells[0].text == "Requisito")
++    return [[cell.text for cell in row.cells] for row in table.rows]
++
++
++class ClientFacingTextTests(unittest.TestCase):
++    """Auditoria v8.3, itens 2 a 4."""
++
++    def test_fixture_is_clean(self) -> None:
++        self.assertEqual(validate_proposal_rules(vertice_latest(), vertice_source()), [])
++
++    def test_catalog_id_never_reaches_the_client(self) -> None:
++        proposal = vertice_latest()
++        proposal["traceability"][0]["solution"] = "edge_dns com DNSSEC"
++        self.assertIn("identificador interno de produto em texto do cliente (edge_dns): traceability.REQ-01", errors_of(proposal))
++        # Defesa em profundidade: o compositor também traduz ids na coluna de componente.
++        self.assertEqual(_product_names_in("edge_dns + app_api_protector; gtm"), "Edge DNS + App & API Protector; Global Traffic Management")
++
++    def test_matrix_column_shows_acceptance_not_source(self) -> None:
++        proposal = vertice_latest()
++        rows = trace_rows(compose(proposal))
++        self.assertEqual(rows[0], ["Requisito", "Necessidade", "Componente", "Evidência de aceite"])
++        criteria = {c["requirement_id"]: c["criterion"] for c in proposal["acceptance_criteria"] if c.get("phase", "committed") == "committed"}
++        for row, item in zip(rows[1:], proposal["traceability"]):
++            self.assertNotEqual(row[3], item.get("evidence"))
++            if item["requirement_id"] in criteria:
++                self.assertIn(criteria[item["requirement_id"]], row[3])
++
++    def test_no_template_text_outside_the_case(self) -> None:
++        text = extract_docx_text_of(vertice_latest())
++        for phrase in ("future state", "segurança de aplicações", "gestão global de tráfego", "Continuidade e desempenho das jornadas digitais"):
++            self.assertNotIn(phrase, text)
++        self.assertIn("DNS autoritativo resiliente e independente do registrador", text)
++
++    def test_every_new_slot_is_required(self) -> None:
++        for key in REQUIRED_DOCUMENT_TEXT_V10:
++            proposal = vertice_latest()
++            del proposal["document_text"][key]
++            self.assertIn(f"document_text.{key} ausente", errors_of(proposal))
++        proposal = vertice_latest()
++        del proposal["document_text"]["front_titles"]["continuity"]
++        self.assertIn("front_titles.continuity ausente", errors_of(proposal))
++        proposal = vertice_latest()
++        proposal["team_competencies"] = []
++        self.assertIn("team_competencies deve ter de 1 a 3", errors_of(proposal))
++
++
++def extract_docx_text_of(proposal: dict) -> str:
++    with tempfile.TemporaryDirectory() as tmp:
++        output = Path(tmp) / "p.docx"
++        build_neutral_template_docx(proposal, TEMPLATE, output)
++        return extract_docx_text(output)
++
++
++class SchemaFirstTests(unittest.TestCase):
++    """Auditoria v8.3, item 8: o que o validador aceita, o compositor monta."""
++
++    MUTATIONS = [
++        ("delivery", "responsibilities", ["texto solto"]),
++        ("delivery", "phases", [{"name": "Fase", "weeks": "3 a 4", "objective": "x"}]),
++        (None, "dimensioning", [["só", "três", "colunas"]]),
++        (None, "sections", {"Resumo executivo": ["x"]}),
++        (None, "populos_roles", [["Papel", "Resp"]]),
++        (None, "acceptance_criteria", [{"requirement_id": "REQ-01", "phase": "committed", "criterion": 3}]),
++        (None, "solution_decisions", [{"product_id": "edge_dns", "status": "recomendado"}]),
++        (None, "document_text", {"about_solution": ["lista"]}),
++    ]
++
++    def test_shape_errors_are_violations_never_exceptions(self) -> None:
++        for parent, key, value in self.MUTATIONS:
++            proposal = vertice_latest()
++            (proposal[parent] if parent else proposal)[key] = value
++            errors = validate_state(proposal, vertice_source())
++            self.assertTrue(errors, key)
++            self.assertTrue(all(e.startswith("formato (") for e in errors), (key, errors))
++
++    def test_schema_ships_with_the_skill(self) -> None:
++        schema = ROOT / "skills" / "akamai-proposal-authoring" / "references" / "state.schema.json"
++        self.assertEqual(json.loads(schema.read_text(encoding="utf-8"))["$id"], "populos/proposal-state/v10")
++
++
++class ProportionalEventPlanTests(unittest.TestCase):
++    """Auditoria v8.3, item 5."""
++
++    def test_heavy_readiness_without_traffic_path_product_blocks(self) -> None:
++        proposal = vertice_latest()
++        proposal["event_readiness"].append("Sala de crise no início das matrículas;")
++        self.assertIn("plano de evento desproporcional ao escopo", errors_of(proposal))
++
++    def test_heavy_readiness_is_fine_with_traffic_path_product(self) -> None:
++        proposal = vertice_latest()
++        proposal["event_readiness"].append("Sala de crise no início das matrículas;")
++        next(d for d in proposal["solution_decisions"] if d["product_id"] == "app_api_protector")["status"] = "recommended"
++        self.assertNotIn("plano de evento desproporcional", errors_of(proposal))
++
++
++class LicenseDeadlineTests(unittest.TestCase):
++    """Auditoria v8.3, item 6: prazo desconhecido vira data limite."""
++
++    def test_unknown_lead_time_can_fit_with_the_right_deadline(self) -> None:
++        proposal = vertice_latest()
++        item = proposal["event_feasibility"][0]
++        self.assertEqual((item["classification"], item["license_deadline"]), ("fits", "2026-12-14"))
++        self.assertIsNone(item["lead_times"]["licenciamento"]["weeks"])
++        self.assertEqual(validate_proposal_rules(proposal, vertice_source()), [])
++
++    def test_wrong_or_undeclared_deadline_blocks(self) -> None:
++        proposal = vertice_latest()
++        proposal["event_feasibility"][0]["license_deadline"] = "2026-12-31"
++        self.assertIn("sem data limite (license_deadline = 2026-12-14)", errors_of(proposal))
++        proposal = vertice_latest()
++        summary = next(s for s in proposal["sections"] if s["title"].casefold() == "resumo executivo")
++        summary["paragraphs"] = [p for p in summary["paragraphs"] if "14/12" not in p]
++        self.assertIn("sumário não declara a data limite das licenças (14/12)", errors_of(proposal))
++
++
++class StandardConflictTests(unittest.TestCase):
++    """Auditoria v8.3, item 7: nas categorias conhecidas, o código obriga a classificar."""
++
++    def _with_client_demand(self, text: str) -> dict:
++        proposal = vertice_latest()
++        proposal["traceability"].append({"requirement_id": "REQ-99", "requirement": text, "solution": "A definir",
++                                         "source": "e-mail", "speakers": ["client"], "hypothesis": False})
++        return proposal
++
++    def test_unclassified_demand_blocks(self) -> None:
++        proposal = self._with_client_demand("Garantia de 12 meses após o aceite definitivo")
++        self.assertIn("sem classificação (standard_conflicts, warranty): REQ-99", errors_of(proposal))
++
++    def test_conflict_needs_a_governance_decision(self) -> None:
++        proposal = self._with_client_demand("Tempo de resolução de 30 minutos para incidentes críticos")
++        proposal["standard_conflicts"] = [{"category": "sla", "requirement_id": "REQ-99", "status": "conflict", "decision_key": "sla_resolution"}]
++        self.assertIn("conflito com padrão POPULOS sem decisão de governança", errors_of(proposal))
++        proposal["governance"]["sla_resolution"] = {"state": "populos_internal_decision", "value": None, "source": "TR 7.2"}
++        errors = errors_of(proposal)
++        self.assertNotIn("sem decisão de governança", errors)
++        self.assertIn("decisão interna aberta: sla_resolution", errors)
++
++    def test_compatible_needs_a_reason(self) -> None:
++        proposal = self._with_client_demand("Prazo de implantação de 30 dias corridos")
++        proposal["standard_conflicts"] = [{"category": "deadline", "requirement_id": "REQ-99", "status": "compatible"}]
++        self.assertIn("compatível com padrão POPULOS sem motivo", errors_of(proposal))
++        proposal["standard_conflicts"][0]["reason"] = "A estimativa aprovada de 3 a 4 semanas cabe nos 30 dias."
++        self.assertNotIn("REQ-99", errors_of(proposal))
++
++
++class ApprovalQuoteRobustnessTests(unittest.TestCase):
++    """Auditoria v8.3: citação de e-mail (>), quebras de linha e espaços não decidem a comparação."""
++
++    def test_email_quoted_approval_matches(self) -> None:
++        proposal = vertice_latest()
++        warranty = proposal["governance"]["warranty"]
++        source = vertice_source() + "\n\n> De: Vitor (dono comercial)\n> Aprovo a Garantia:\n>   " + warranty["value"].replace(" por ", "\n> por ") + "\n"
++        warranty["approval_quote"] = "Vitor (dono comercial) Aprovo a Garantia: " + warranty["value"]
++        errors = [e for e in validate_proposal_rules(proposal, source) if "warranty" in e]
++        self.assertEqual(errors, [])
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/tests/test_v7_engine.py b/tests/test_v7_engine.py
+index 6854143..07095f8 100644
+--- a/tests/test_v7_engine.py
++++ b/tests/test_v7_engine.py
+@@ -19,7 +19,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures"
+ 
+ def vertice_latest() -> dict:
+     """A real authoring output (diverse-case round, case 01), upgraded to the latest contract."""
+-    return json.loads((FIXTURES / "vertice_v9.json").read_text(encoding="utf-8"))
++    return json.loads((FIXTURES / "vertice_v10.json").read_text(encoding="utf-8"))
+ 
+ 
+ def vertice_source() -> str:
+@@ -173,7 +173,7 @@ class CaseRunnerTests(unittest.TestCase):
+     def test_iteration_limit_is_enforced(self) -> None:
+         with mock.patch.object(case_runner, "engine_config", return_value={"max_iterations": 2}):
+             self.assertEqual(self._submit("{").get("status"), "violations")
+-            self.assertEqual(self._submit({"rules_version": 9}).get("status"), "violations")
++            self.assertEqual(self._submit({"rules_version": 10}).get("status"), "violations")
+             self.assertEqual(self._submit(vertice_latest())["status"], "limit_reached")
+         log = json.loads((self.run_dir / "attempts.json").read_text(encoding="utf-8"))
+         self.assertEqual([a["attempt"] for a in log["attempts"]], [1, 2])
+@@ -181,8 +181,9 @@ class CaseRunnerTests(unittest.TestCase):
+ 
+     def test_malformed_and_old_states_come_back_as_feedback(self) -> None:
+         self.assertIn("não é um objeto JSON", validate_state([])[0])
+-        self.assertIn("rules_version deve ser 9", validate_state({"rules_version": 8})[0])
+-        self.assertTrue(validate_state({"rules_version": 9, "input_assessment": "x"})[0].startswith("estado malformado"))
++        self.assertIn("rules_version deve ser 10", validate_state({"rules_version": 9})[0])
++        self.assertEqual(validate_state({"rules_version": 10, "input_assessment": "x"}),
++                         ["formato (input_assessment): 'x' is not of type 'object'"])
+ 
+     def test_source_extraction_reads_text_and_docx(self) -> None:
+         source = Path(self.tmp.name) / "insumo"
+diff --git a/tests/test_v8_engine.py b/tests/test_v8_engine.py
+index e500669..0838134 100644
+--- a/tests/test_v8_engine.py
++++ b/tests/test_v8_engine.py
+@@ -94,6 +94,8 @@ class PreProposalGateTests(unittest.TestCase):
+     def test_assessment_is_mandatory(self) -> None:
+         proposal = vertice_v8()
+         del proposal["input_assessment"]
++        self.assertEqual(validate_proposal_rules(proposal), ["formato ((raiz)): 'input_assessment' is a required property"])
++        proposal["rules_version"] = 9  # sem o JSON Schema, a regra do gate continua exigindo o campo
+         self.assertEqual(validate_proposal_rules(proposal), ["input_assessment.status ausente ou inválido (sufficient | insufficient)"])
+ 
+     def test_no_catalog_blocks_with_its_own_reason(self) -> None:
+@@ -243,8 +245,8 @@ class SealedRoundFixesTests(unittest.TestCase):
+         proposal["delivery"]["responsibilities"] = ["Cliente: acessos ao registrador"]
+         proposal["populos_roles"] = [["Arquiteto", "Desenho"]]
+         errors = errors_of(proposal)
+-        self.assertIn("delivery.responsibilities deve ser lista de {party, responsibility}", errors)
+-        self.assertIn("populos_roles deve ser lista de [papel, responsabilidade, dedicação]", errors)
++        self.assertIn("formato (delivery.responsibilities.0): 'Cliente: acessos ao registrador' is not of type 'object'", errors)
++        self.assertIn("formato (populos_roles.0): ['Arquiteto', 'Desenho'] is too short", errors)
+ 
+     def test_case_decision_cannot_claim_institutional_standard(self) -> None:
+         """Estado real do Gemini (rodada v9, caso 04): licença marcada como padrão institucional para pular a aprovação."""

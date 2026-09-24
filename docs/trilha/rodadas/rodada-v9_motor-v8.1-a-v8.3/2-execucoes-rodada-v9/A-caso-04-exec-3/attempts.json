@@ -1,0 +1,29 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:34:35.154320+00:00",
+      "errors_count": 5,
+      "errors": [
+        "janela da Fase 1 declarada diverge do cálculo (05/03–19/03): Lançamento do novo seguro auto",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Lançamento do novo seguro auto",
+        "sumário não declara a viabilidade do evento (05/03): Lançamento do novo seguro auto",
+        "sumário não declara a viabilidade do evento (19/03): Lançamento do novo seguro auto",
+        "sumário não declara a viabilidade do evento (lançamento do novo seguro auto em 15/01/2027): Lançamento do novo seguro auto"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:35:10.992288+00:00",
+      "errors_count": 6,
+      "errors": [
+        "faixa 4–5 semanas diverge da soma das fases (7–9): O projeto está dividido em fases sequenciais de planejamento, configuração e validação, ga",
+        "janela da Fase 1 declarada diverge do cálculo (05/03–19/03): Lançamento do novo seguro auto",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Lançamento do novo seguro auto",
+        "sumário não declara a viabilidade do evento (05/03): Lançamento do novo seguro auto",
+        "sumário não declara a viabilidade do evento (19/03): Lançamento do novo seguro auto",
+        "sumário não declara a viabilidade do evento (lançamento do novo seguro auto em 15/01/2027 (concluindo entre 2026-11-12 e 2026-11-19, antes do congelamento)): Lançamento do novo seguro auto"
+      ]
+    }
+  ]
+}

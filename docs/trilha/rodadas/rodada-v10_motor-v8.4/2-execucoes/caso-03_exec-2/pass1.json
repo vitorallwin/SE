@@ -1,0 +1,753 @@
+{
+ "rules_version": 10,
+ "data_mode": "test",
+ "client_name": "Grupo Mariá Varejo",
+ "opportunity": "Proteção do e-commerce e das APIs para a Black Friday 2026",
+ "code": "MARIA-AAP-BMP-2026",
+ "opportunity_id": "caso-03-maria-varejo",
+ "input_assessment": {
+  "status": "sufficient",
+  "missing": [
+   "modelo de contratação e prazo de compras",
+   "confirmação da topologia de data centers",
+   "lista de hostnames e APIs"
+  ],
+  "reason": "O material identifica o cliente, os ativos (e-commerce, APIs compartilhadas com o app) e necessidades concretas de WAF, proteção contra bots e visibilidade de APIs."
+ },
+ "catalog_fit": {
+  "status": "fits",
+  "requested": "WAF, proteção contra bots (credential stuffing e consulta automatizada de preços), visibilidade de tráfego de API e redução de lentidão no pico",
+  "reason": "App & API Protector e Bot Manager Premier do catálogo cobrem os pedidos de segurança; a lentidão depende de informação adicional."
+ },
+ "client_scope": {
+  "type": null,
+  "excludes_implementation": false,
+  "source": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI): \"Queremos entender o que a Akamai faria.\"; Notas da call de 20/09/2026: \"Fernanda: quer tudo configurado em modo bloqueio antes da BF\"; E-mail 3 (18/09/2026, Marcelo Brito, CFO): \"que seja o mínimo necessário para atravessar a Black Friday\"",
+  "forbidden_in_committed": [
+   "alteração de DNS do e-commerce sem aprovação do cliente",
+   "mudança em produção após 01/11/2026"
+  ]
+ },
+ "governance": {
+  "engagement_type": {
+   "state": "populos_internal_decision",
+   "value": null,
+   "source": "O material não define se o engajamento é implantação completa, implantação mínima para a Black Friday ou faseada com 2027.",
+   "approved_by": null,
+   "approved_at": null,
+   "approval_record": null,
+   "approval_quote": null,
+   "mode": null,
+   "engagement_ref": null
+  },
+  "warranty": {
+   "state": "populos_internal_decision",
+   "value": null,
+   "source": "Nenhuma decisão interna POPULOS fornecida para este caso.",
+   "approved_by": null,
+   "approved_at": null,
+   "approval_record": null,
+   "approval_quote": null,
+   "mode": null,
+   "engagement_ref": null
+  },
+  "license_supply": {
+   "state": "populos_internal_decision",
+   "value": null,
+   "source": "Nenhuma decisão interna POPULOS fornecida para este caso.",
+   "approved_by": null,
+   "approved_at": null,
+   "approval_record": null,
+   "approval_quote": null,
+   "mode": null,
+   "engagement_ref": null
+  },
+  "sla": {
+   "state": "commitment",
+   "basis": "populos_standard",
+   "value": "Tabela institucional de SLA do template aprovado",
+   "source": "Template neutro POPULOS aprovado",
+   "template_version": "2026.09.24-1"
+  }
+ },
+ "discovery": {
+  "business_goals": [
+   "Proteger o e-commerce e as APIs compartilhadas com o app com WAF em modo bloqueio (REQ-01, REQ-07)",
+   "Reduzir o abuso automatizado de login e de consulta de preços (REQ-02, REQ-03)",
+   "Obter visibilidade do tráfego de API exigida pela auditoria (REQ-04)",
+   "Ativar a proteção antes do congelamento de mudanças de 01/11 para atravessar a Black Friday (REQ-05)",
+   "Avaliar a causa da lentidão nos horários de pico (REQ-06)"
+  ]
+ },
+ "traceability": [
+  {
+   "requirement_id": "REQ-01",
+   "requirement": "WAF para o e-commerce e suas APIs",
+   "solution": "App & API Protector",
+   "evidence": "\"Precisamos de WAF e proteção contra bots urgente.\"",
+   "source": "E-mail 2 (17/09/2026, Fernanda Lopes, CISO)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-02",
+   "requirement": "Proteção contra credential stuffing no login de clientes",
+   "solution": "Bot Manager Premier",
+   "evidence": "\"Tivemos um incidente de credential stuffing em julho, cerca de 1.200 contas de clientes foram acessadas indevidamente\"",
+   "source": "E-mail 2 (17/09/2026, Fernanda Lopes, CISO)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-03",
+   "requirement": "Mitigação de bots que consultam preços continuamente",
+   "solution": "Bot Manager Premier",
+   "evidence": "\"uns bots que ficam consultando preço o dia inteiro\"",
+   "source": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-04",
+   "requirement": "Visibilidade do tráfego de API",
+   "solution": "App & API Protector",
+   "evidence": "\"Our audit team also flagged that we have no visibility of API traffic at all.\"",
+   "source": "E-mail 2 (17/09/2026, Fernanda Lopes, CISO)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-05",
+   "requirement": "Proteção em modo bloqueio antes da Black Friday, respeitando o congelamento de mudanças a partir de 01/11",
+   "solution": "Cronograma com ativação em produção até 29/10",
+   "evidence": "\"quer tudo configurado em modo bloqueio antes da BF\"; \"time dele congela mudanças a partir de 01/11\"",
+   "source": "Notas da call de 20/09/2026",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-06",
+   "requirement": "Redução da lentidão nos horários de pico",
+   "solution": "Pendente de levantamento (Ion em avaliação)",
+   "evidence": "\"nosso e-commerce tá sofrendo com lentidão nos horários de pico\"",
+   "source": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-07",
+   "requirement": "Cobrir o app, que usa as mesmas APIs do site",
+   "solution": "App & API Protector",
+   "evidence": "\"tem o app também, que conversa com as mesmas APIs do site\"",
+   "source": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  }
+ ],
+ "source_coverage": [
+  {
+   "ref": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI)",
+   "statement": "Lentidão nos horários de pico",
+   "status": "pendente",
+   "targets": [
+    "REQ-06"
+   ]
+  },
+  {
+   "ref": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI)",
+   "statement": "Bots consultando preço o dia inteiro",
+   "status": "coberto",
+   "targets": [
+    "REQ-03"
+   ]
+  },
+  {
+   "ref": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI)",
+   "statement": "Cerca de 500 mil visitas por dia",
+   "status": "coberto",
+   "targets": [
+    "dimensionamento"
+   ]
+  },
+  {
+   "ref": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI)",
+   "statement": "Blog e site institucional já passam pela Cloudflare; o e-commerce não",
+   "status": "coberto",
+   "targets": [
+    "exclusões"
+   ]
+  },
+  {
+   "ref": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI)",
+   "statement": "O app conversa com as mesmas APIs do site",
+   "status": "coberto",
+   "targets": [
+    "REQ-07"
+   ]
+  },
+  {
+   "ref": "E-mail 2 (17/09/2026, Fernanda Lopes, CISO)",
+   "statement": "Incidente de credential stuffing em julho com cerca de 1.200 contas acessadas",
+   "status": "coberto",
+   "targets": [
+    "REQ-02",
+    "sumário"
+   ]
+  },
+  {
+   "ref": "E-mail 2 (17/09/2026, Fernanda Lopes, CISO)",
+   "statement": "Necessidade urgente de WAF e proteção contra bots",
+   "status": "coberto",
+   "targets": [
+    "REQ-01",
+    "REQ-02"
+   ]
+  },
+  {
+   "ref": "E-mail 2 (17/09/2026, Fernanda Lopes, CISO)",
+   "statement": "Auditoria apontou ausência de visibilidade do tráfego de API",
+   "status": "coberto",
+   "targets": [
+    "REQ-04"
+   ]
+  },
+  {
+   "ref": "E-mail 2 (17/09/2026, Fernanda Lopes, CISO)",
+   "statement": "Não quer solução paliativa",
+   "status": "coberto",
+   "targets": [
+    "escopo"
+   ]
+  },
+  {
+   "ref": "E-mail 3 (18/09/2026, Marcelo Brito, CFO)",
+   "statement": "Orçamento do ano praticamente fechado; mínimo necessário para a Black Friday; restante no orçamento de 2027",
+   "status": "pendente",
+   "targets": [
+    "engajamento"
+   ]
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "Cerca de 5 milhões de acessos por dia no pico de campanha",
+   "status": "coberto",
+   "targets": [
+    "dimensionamento"
+   ]
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "Pergunta sobre garantia de 100% de bloqueio de bot",
+   "status": "coberto",
+   "targets": [
+    "premissas"
+   ]
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "Dois data centers, possivelmente ativo-passivo, a confirmar",
+   "status": "pendente",
+   "targets": [
+    "dimensionamento"
+   ]
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "Black Friday começa em 25/11 e a campanha vai até 29/11",
+   "status": "coberto",
+   "targets": [
+    "REQ-05",
+    "sumário"
+   ]
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "O app responde por 40% das vendas",
+   "status": "coberto",
+   "targets": [
+    "REQ-07",
+    "sumário"
+   ]
+  },
+  {
+   "ref": "Notas da call de 20/09/2026",
+   "statement": "Configuração em modo bloqueio antes da Black Friday",
+   "status": "coberto",
+   "targets": [
+    "REQ-05"
+   ]
+  },
+  {
+   "ref": "Notas da call de 20/09/2026",
+   "statement": "Congelamento de mudanças a partir de 01/11",
+   "status": "coberto",
+   "targets": [
+    "REQ-05",
+    "premissas"
+   ]
+  },
+  {
+   "ref": "Notas da call de 20/09/2026",
+   "statement": "Preferência por não mexer no DNS do e-commerce agora",
+   "status": "pendente",
+   "targets": [
+    "premissas"
+   ]
+  },
+  {
+   "ref": "Notas da call de 20/09/2026",
+   "statement": "Prazo de contratação e compras não discutido",
+   "status": "pendente",
+   "targets": [
+    "engajamento"
+   ]
+  },
+  {
+   "ref": "Notas da call de 20/09/2026",
+   "statement": "Áudio cortado; restante da call não registrado",
+   "status": "descartado",
+   "targets": [],
+   "reason": "Não há conteúdo registrado."
+  }
+ ],
+ "client_numbers": [
+  {
+   "quote": "umas 500 mil visitas por dia",
+   "ref": "E-mail 1 (15/09/2026, Rodrigo Tanaka, Gerente de TI)",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "uns 5 milhões de acessos/dia no pico de campanha",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "cerca de 1.200 contas de clientes foram acessadas indevidamente",
+   "ref": "E-mail 2 (17/09/2026, Fernanda Lopes, CISO)",
+   "destination": "contexto_de_dor",
+   "summary_marker": "cerca de 1.200 contas"
+  },
+  {
+   "quote": "40% das vendas",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "contexto_de_dor",
+   "summary_marker": "40% das vendas"
+  },
+  {
+   "quote": "100% de bloqueio de bot",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "descartado_com_motivo",
+   "reason": "Nenhuma solução garante bloqueio absoluto; tratado como premissa e o aceite usa critérios mensuráveis."
+  },
+  {
+   "quote": "2 data centers",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "congela mudanças a partir de 01/11",
+   "ref": "Notas da call de 20/09/2026",
+   "destination": "meta"
+  },
+  {
+   "quote": "black friday deles começa na quarta 25/11, a campanha vai até domingo 29/11",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "meta"
+  }
+ ],
+ "open_questions": [
+  "Qual é o tipo de engajamento desejado: implantação mínima para a Black Friday, com o restante no orçamento de 2027, ou implantação completa agora?",
+  "Qual é o prazo de liberação das licenças App & API Protector e Bot Manager Premier após a assinatura, e qual é o prazo de contratação e compras do Grupo Mariá Varejo?",
+  "A ativação do App & API Protector e do Bot Manager Premier exige apontar os hostnames do e-commerce e das APIs para a Akamai. O time de TI aceita essa alteração antes de 01/11?",
+  "Quais hostnames, endpoints de login e APIs (inclusive as usadas pelo app) entram no escopo?",
+  "Qual é o volume real de acessos: 500 mil visitas por dia em média e 5 milhões no pico de campanha?",
+  "Os dois data centers operam em ativo-passivo? Existe requisito de continuidade entre eles?",
+  "Existe meta mensurável de desempenho para alguma jornada (por exemplo, checkout) que justifique avaliar aceleração?"
+ ],
+ "standard_conflicts": [
+  {
+   "category": "deadline",
+   "requirement_id": "REQ-05",
+   "status": "compatible",
+   "reason": "As fases comprometidas terminam entre 22/10 e 29/10, antes do congelamento de 01/11, condicionadas à liberação das licenças até 21/10."
+  }
+ ],
+ "solution_decisions": [
+  {
+   "product_id": "app_api_protector",
+   "status": "recommended",
+   "requirement_ids": [
+    "REQ-01",
+    "REQ-04",
+    "REQ-07"
+   ],
+   "rationale": "O e-commerce e as APIs compartilhadas com o app precisam de WAF e a auditoria apontou falta de visibilidade de API.",
+   "client_summary": "WAF e proteção das APIs do e-commerce e do app, com visibilidade do tráfego de API.",
+   "capabilities": [
+    "WAF",
+    "proteção de APIs",
+    "DDoS L7"
+   ]
+  },
+  {
+   "product_id": "bot_manager",
+   "status": "recommended",
+   "requirement_ids": [
+    "REQ-02",
+    "REQ-03"
+   ],
+   "rationale": "Há evidência de credential stuffing em julho e de consulta automatizada de preços.",
+   "client_summary": "Detecção e resposta a bots no login e na consulta de preços.",
+   "capabilities": [
+    "detecção de bots",
+    "resposta adaptativa",
+    "segmentação"
+   ]
+  },
+  {
+   "product_id": "account_protector",
+   "status": "optional",
+   "requirement_ids": [
+    "REQ-02"
+   ],
+   "rationale": "O risco também envolve login e sinais pós-login, mas o CFO pediu o mínimo necessário neste ano.",
+   "client_summary": "Avaliação de risco de login e de comportamento pós-login.",
+   "capabilities": [
+    "risco de login",
+    "perfil comportamental",
+    "sinais de confiança"
+   ],
+   "trigger": "Incluir no orçamento de 2027 se, após a Black Friday, persistirem acessos indevidos com credenciais válidas não resolvidos pela proteção contra bots."
+  },
+  {
+   "product_id": "ion",
+   "status": "needs_information",
+   "requirement_ids": [
+    "REQ-06"
+   ],
+   "rationale": "A lentidão foi relatada sem jornada nomeada nem meta mensurável.",
+   "client_summary": "Aceleração do e-commerce, a avaliar."
+  },
+  {
+   "product_id": "gtm",
+   "status": "needs_information",
+   "requirement_ids": [],
+   "rationale": "Dois data centers citados em nota não confirmada e sem requisito de continuidade; o cliente prefere não alterar DNS agora.",
+   "client_summary": "Continuidade entre data centers, a avaliar."
+  },
+  {
+   "product_id": "alb",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há requisito de roteamento por requisição entre origens."
+  },
+  {
+   "product_id": "edge_dns",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "DNS autoritativo não está no escopo e o cliente prefere não mexer no DNS agora."
+  },
+  {
+   "product_id": "prolexic",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há evidência de ataques volumétricos L3/L4."
+  },
+  {
+   "product_id": "malware_protection",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há fluxo de upload de arquivos citado."
+  },
+  {
+   "product_id": "ip_accelerator",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há aplicação TCP/UDP não web no escopo."
+  }
+ ],
+ "products": [
+  "app_api_protector",
+  "bot_manager"
+ ],
+ "architecture": {
+  "summary": "O tráfego do e-commerce e das APIs usadas pelo site e pelo app passa pela borda Akamai, onde o App & API Protector aplica o WAF e dá visibilidade das APIs e o Bot Manager Premier classifica e responde a bots no login e na consulta de preços, antes de encaminhar as requisições legítimas aos data centers atuais."
+ },
+ "sections": [
+  {
+   "title": "Resumo executivo",
+   "paragraphs": [
+    "O Grupo Mariá Varejo sofreu em julho um incidente de credential stuffing em que cerca de 1.200 contas de clientes foram acessadas indevidamente, convive com bots que consultam preços continuamente e não tem visibilidade do tráfego de API, apontada pela auditoria. O app, que usa as mesmas APIs do site, responde por 40% das vendas.",
+    "Recomendamos o App & API Protector para WAF e visibilidade de APIs e o Bot Manager Premier para responder ao abuso automatizado no login e na consulta de preços, ativados em modo bloqueio antes do congelamento de mudanças de 01/11.",
+    "Viabilidade para a Black Friday (25/11 a 29/11): a partir de 24/09, as fases comprometidas terminam entre 22/10 e 29/10, antes do congelamento de 01/11. O prazo de liberação das licenças ainda não é conhecido; para cumprir o plano, as licenças precisam estar ativas até 21/10. Por isso a viabilidade é parcial até essa confirmação.",
+    "Dependem de resposta do cliente: o modelo de contratação diante do orçamento de 2026, a aceitação da alteração de apontamento dos hostnames do e-commerce antes de 01/11 e a lista de hostnames e APIs."
+   ]
+  }
+ ],
+ "dimensioning": [
+  [
+   "Volume de acessos do e-commerce",
+   "500 mil visitas/dia (média) e 5 milhões de acessos/dia (pico de campanha)",
+   "Informado pelo cliente em fontes diferentes; a confirmar no levantamento",
+   "Pendente"
+  ],
+  [
+   "Hostnames e APIs protegidos",
+   "E-commerce e APIs compartilhadas com o app",
+   "Lista de hostnames e endpoints a ser fornecida pelo cliente",
+   "Pendente"
+  ],
+  [
+   "Data centers de origem",
+   "2",
+   "Nota não confirmada; topologia a confirmar",
+   "Pendente"
+  ]
+ ],
+ "estimates": [],
+ "assessment_items": [
+  "Inventário de hostnames, endpoints de login e APIs do e-commerce e do app",
+  "Revisão do tráfego atual, incluindo picos de campanha e padrões de bots de consulta de preços",
+  "Plano de apontamento dos hostnames para a Akamai com janela e reversão"
+ ],
+ "client_roles": [
+  "Gerente de TI (Rodrigo Tanaka) para janelas de mudança e apontamento de hostnames",
+  "CISO (Fernanda Lopes) para aprovação das políticas de bloqueio",
+  "Responsável pelas APIs e pelo app",
+  "Aprovador de compras e orçamento"
+ ],
+ "team_competencies": [
+  "Arquitetura de segurança de aplicações e APIs na borda Akamai",
+  "Configuração e ajuste de WAF e de gestão de bots",
+  "Condução de mudanças em produção com janela e reversão"
+ ],
+ "scope": {
+  "included": [
+   "Configuração do App & API Protector para os hostnames do e-commerce e das APIs acordados",
+   "Configuração do Bot Manager Premier para as rotas de login e de consulta de preços",
+   "Período de monitoramento seguido de ativação em modo bloqueio antes de 01/11",
+   "Preparação para a Black Friday com monitoramento e reversão"
+  ],
+  "deliverables": [
+   "Relatório de levantamento com hostnames, APIs e plano de apontamento",
+   "Políticas de WAF e de bots ativas em modo bloqueio",
+   "Relatório de visibilidade do tráfego de API",
+   "Documentação as-built e runbook de reversão"
+  ],
+  "excluded": [
+   "Domínios já atendidos por outro provedor (blog e site institucional)",
+   "Aceleração de desempenho, pendente de meta mensurável",
+   "Continuidade entre data centers",
+   "Alterações nas aplicações ou nas origens do cliente"
+  ]
+ },
+ "delivery": {
+  "phases": [
+   {
+    "name": "Levantamento e desenho",
+    "kind": "assessment",
+    "weeks": [
+     1,
+     1
+    ],
+    "duration": "1 semana",
+    "objective": "Levantar hostnames, APIs e rotas de login e definir o plano de apontamento",
+    "dependency": "Contratação e acesso às informações do cliente",
+    "outputs": [
+     "Relatório de levantamento",
+     "Plano de apontamento com reversão"
+    ]
+   },
+   {
+    "name": "Implantação em modo monitoramento",
+    "kind": "implementation",
+    "weeks": [
+     2,
+     3
+    ],
+    "duration": "2 a 3 semanas",
+    "objective": "Configurar WAF, proteção de APIs e gestão de bots em modo monitoramento e ajustar falsos positivos",
+    "dependency": "Licenças ativas e aprovação do apontamento dos hostnames",
+    "outputs": [
+     "Políticas configuradas",
+     "Relatório de ajustes"
+    ]
+   },
+   {
+    "name": "Ativação em modo bloqueio",
+    "kind": "implementation",
+    "weeks": [
+     1,
+     1
+    ],
+    "duration": "1 semana",
+    "objective": "Ativar o modo bloqueio em janela aprovada, antes de 01/11",
+    "dependency": "Aprovação da CISO e janela do time de TI",
+    "outputs": [
+     "Políticas em modo bloqueio",
+     "As-built e runbook de reversão"
+    ]
+   }
+  ],
+  "responsibilities": [
+   {
+    "party": "Grupo Mariá Varejo - TI",
+    "responsibility": "Fornecer hostnames e APIs, aprovar janelas e executar o apontamento dos hostnames"
+   },
+   {
+    "party": "Grupo Mariá Varejo - Segurança",
+    "responsibility": "Aprovar as políticas e a passagem para modo bloqueio"
+   },
+   {
+    "party": "Grupo Mariá Varejo - Compras",
+    "responsibility": "Concluir a contratação a tempo de ativar as licenças até 21/10"
+   }
+  ]
+ },
+ "populos_roles": [
+  [
+   "Arquiteto de segurança",
+   "Desenho e configuração das políticas",
+   "Durante todas as fases"
+  ],
+  [
+   "Gerente de projeto",
+   "Cronograma, janelas e comunicação",
+   "Durante todas as fases"
+  ]
+ ],
+ "assumptions": [
+  "Premissa: o cliente aceita apontar os hostnames do e-commerce e das APIs para a Akamai antes de 01/11; validação no levantamento.",
+  "Premissa: as licenças estarão ativas até 21/10; validação na contratação.",
+  "Premissa: nenhuma solução garante bloqueio de 100% dos bots; o aceite usa os critérios mensuráveis desta proposta.",
+  "Premissa: o volume de pico de 5 milhões de acessos por dia será confirmado no levantamento."
+ ],
+ "restrictions": [
+  "Nenhuma mudança em produção após 01/11/2026, início do congelamento de mudanças do cliente.",
+  "Os domínios atendidos por outro provedor não fazem parte desta proposta.",
+  "A ativação depende da aprovação do apontamento dos hostnames pelo time de TI.",
+  "Alterações nas aplicações e nas origens do cliente são de responsabilidade do cliente."
+ ],
+ "risks": [
+  {
+   "risk": "Liberação das licenças após 21/10",
+   "impact": "Ativação em modo bloqueio não cabe antes de 01/11",
+   "mitigation": "Confirmar o prazo de licenciamento na contratação e iniciar o levantamento em paralelo"
+  },
+  {
+   "risk": "Recusa em alterar o apontamento dos hostnames antes de 01/11",
+   "impact": "Proteção não entra no caminho do tráfego antes da Black Friday",
+   "mitigation": "Aprovar a janela de apontamento no levantamento, com reversão documentada"
+  },
+  {
+   "risk": "Falsos positivos no modo bloqueio",
+   "impact": "Bloqueio de clientes legítimos",
+   "mitigation": "Período de monitoramento antes do bloqueio e runbook de reversão"
+  }
+ ],
+ "acceptance_criteria": [
+  {
+   "requirement_id": "REQ-01",
+   "phase": "committed",
+   "criterion": "Todos os hostnames do e-commerce listados no levantamento com política de WAF em modo bloqueio, comprovada por requisições de teste de ataque bloqueadas e registradas no painel Akamai."
+  },
+  {
+   "requirement_id": "REQ-04",
+   "phase": "committed",
+   "criterion": "Relatório do App & API Protector listando as APIs e endpoints observados em pelo menos 7 dias de tráfego, entregue e revisado com o cliente."
+  },
+  {
+   "requirement_id": "REQ-07",
+   "phase": "committed",
+   "criterion": "Todos os hostnames de API usados pelo app listados no levantamento com política ativa em modo bloqueio, comprovada por requisições de teste bloqueadas."
+  },
+  {
+   "requirement_id": "REQ-02",
+   "phase": "committed",
+   "criterion": "Rotas de login definidas no levantamento com o Bot Manager Premier em modo de resposta ativa, comprovado por relatório de classificação de bots e ações aplicadas em pelo menos 7 dias."
+  },
+  {
+   "requirement_id": "REQ-03",
+   "phase": "committed",
+   "criterion": "Rotas de consulta de preços definidas no levantamento com o Bot Manager Premier em modo de resposta ativa, comprovado por relatório de classificação de bots e ações aplicadas em pelo menos 7 dias."
+  },
+  {
+   "requirement_id": "REQ-05",
+   "phase": "committed",
+   "criterion": "Ativação em modo bloqueio concluída e registrada em janela aprovada até 29/10/2026."
+  }
+ ],
+ "event_readiness": [
+  "Congelamento de mudanças a partir de 01/11, com políticas estáveis antes dessa data",
+  "Monitoramento reforçado das políticas de WAF e de bots de 25/11 a 29/11",
+  "Runbook de reversão testado antes de 01/11",
+  "Revisão de capacidade com base no volume de pico confirmado",
+  "Sala de crise conduzida pela POPULOS durante a campanha"
+ ],
+ "critical_events": [
+  {
+   "name": "Black Friday",
+   "date": "2026-11-25",
+   "source": "Notas de WhatsApp do executivo de contas (19/09/2026)"
+  }
+ ],
+ "event_feasibility": [
+  {
+   "event": "Black Friday",
+   "reference_date": "2026-09-24",
+   "phase1_end_earliest": "2026-10-22",
+   "phase1_end_latest": "2026-10-29",
+   "classification": "partially_fits",
+   "path": "Levantamento, monitoramento e bloqueio concluídos antes do congelamento de 01/11",
+   "reason": "O prazo de liberação das licenças é desconhecido.",
+   "summary_marker": "as licenças precisam estar ativas até 21/10",
+   "license_deadline": "2026-10-21",
+   "lead_times": {
+    "licenciamento": {
+     "weeks": null,
+     "pending_question": "Qual é o prazo de liberação das licenças App & API Protector e Bot Manager Premier após a assinatura, e qual é o prazo de contratação e compras do Grupo Mariá Varejo?"
+    }
+   }
+  }
+ ],
+ "document_text": {
+  "about_akamai": "A Akamai opera uma plataforma distribuída de borda que protege e entrega aplicações e APIs próximas aos usuários.",
+  "about_solution": "A solução combina WAF e proteção de APIs com gestão de bots na borda para o e-commerce e as APIs do app do Grupo Mariá Varejo.",
+  "partnership": "A POPULOS é parceira Akamai e conduz o desenho, a configuração e a ativação das soluções propostas.",
+  "coverage": "A proteção cobre os hostnames do e-commerce e as APIs usadas pelo site e pelo app, conforme a lista confirmada no levantamento.",
+  "dimensioning_intro": "O dimensionamento abaixo reflete as informações recebidas; os itens pendentes serão confirmados no levantamento.",
+  "assessment_outcome": "O levantamento entrega a lista de hostnames e APIs, os padrões de tráfego e o plano de apontamento com reversão.",
+  "methodology_intro": "A implantação segue três etapas: levantamento, configuração em modo monitoramento e ativação em modo bloqueio.",
+  "knowledge_transfer": "A equipe de TI e de segurança do cliente recebe repasse das políticas configuradas e do runbook de reversão.",
+  "tests": "Os testes incluem requisições de ataque controladas contra o WAF e a revisão dos relatórios de classificação de bots.",
+  "schedule_intro": "O cronograma soma de 4 a 5 semanas e depende da ativação das licenças até 21/10.",
+  "schedule_sequence": "Levantamento (1 semana), monitoramento (2 a 3 semanas) e ativação em modo bloqueio (1 semana), concluídos até 29/10.",
+  "closing": "A POPULOS permanece à disposição para esclarecer as questões pendentes e ajustar esta proposta.",
+  "callout_qualifications": "A equipe POPULOS atua com arquitetos de segurança de aplicações dedicados a este projeto.",
+  "callout_limits": "Nenhuma solução garante o bloqueio de 100% dos bots; o aceite usa critérios mensuráveis.",
+  "callout_migration": "O apontamento dos hostnames para a Akamai ocorre em janela aprovada, com reversão documentada.",
+  "callout_milestones": "Marco principal: modo bloqueio ativo até 29/10, antes do congelamento de 01/11.",
+  "diagram_users": "Clientes do site e do app",
+  "diagram_users_detail": "Navegadores e app móvel acessando o e-commerce e as APIs",
+  "diagram_origins_title": "Data centers do Grupo Mariá Varejo",
+  "diagram_origins": "Origens atuais do e-commerce e das APIs",
+  "front_titles": {
+   "protection": "Proteção de aplicações e APIs",
+   "automation": "Proteção contra bots"
+  }
+ }
+}

@@ -1,0 +1,16 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:02:26.819221+00:00",
+      "errors_count": 5,
+      "errors": [
+        "decisão interna aberta: engagement_type",
+        "decisão interna aberta: warranty",
+        "decisão interna aberta: license_supply",
+        "engagement_type ausente ou inválido",
+        "decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para 'None')"
+      ]
+    }
+  ]
+}

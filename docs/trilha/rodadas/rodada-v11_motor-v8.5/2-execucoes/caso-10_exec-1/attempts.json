@@ -1,0 +1,44 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:23:17.919052+00:00",
+      "errors_count": 4,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): engagement_type",
+        "valor aprovado não aparece na citação do insumo: license_supply",
+        "citação da aprovação não nomeia o aprovador (Vitor (Executivo de Contas, POPULOS)): license_supply"
+      ],
+      "codes": [
+        "APROVACAO-CITACAO",
+        "DECISAO-ABERTA"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:23:27.664265+00:00",
+      "errors_count": 3,
+      "errors": [
+        "decisão interna aberta: warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor): engagement_type",
+        "citação da aprovação não nomeia o aprovador (Vitor): license_supply"
+      ],
+      "codes": [
+        "APROVACAO-CITACAO",
+        "DECISAO-ABERTA"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T17:23:35.851532+00:00",
+      "errors_count": 1,
+      "errors": [
+        "decisão interna aberta: warranty"
+      ],
+      "codes": [
+        "DECISAO-ABERTA"
+      ]
+    }
+  ]
+}

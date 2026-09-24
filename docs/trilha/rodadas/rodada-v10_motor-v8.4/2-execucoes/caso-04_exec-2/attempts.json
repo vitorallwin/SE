@@ -1,0 +1,21 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:02:08.777061+00:00",
+      "errors_count": 2,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "evento com data conhecida sem viabilidade declarada: Congelamento de mudanças de fim de ano"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:02:13.433166+00:00",
+      "errors_count": 1,
+      "errors": [
+        "decisão interna aberta: license_supply"
+      ]
+    }
+  ]
+}

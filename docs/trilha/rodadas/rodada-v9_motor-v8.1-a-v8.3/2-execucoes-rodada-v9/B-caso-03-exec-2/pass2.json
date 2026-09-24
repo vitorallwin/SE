@@ -1,0 +1,735 @@
+{
+ "rules_version": 9,
+ "data_mode": "test",
+ "client_name": "Grupo Mariá Varejo",
+ "opportunity": "Proteção do e-commerce e das APIs do app para a Black Friday 2026",
+ "code": "POPULOS-MARIA-2026-01",
+ "opportunity_id": "caso-03",
+ "input_assessment": {
+  "status": "sufficient",
+  "missing": [
+   "modelo dos data centers",
+   "prazo de contratação e compras",
+   "hostnames e APIs no escopo",
+   "autorização de mudança de DNS do e-commerce"
+  ],
+  "reason": "O cliente está identificado e há necessidades concretas sobre ativos identificáveis: WAF e proteção contra bots no e-commerce e nas APIs usadas pelo site e pelo app, após incidente de credential stuffing."
+ },
+ "catalog_fit": {
+  "status": "fits",
+  "requested": "WAF, proteção contra bots, visibilidade de tráfego de API e desempenho do e-commerce em pico",
+  "reason": "App & API Protector, Bot Manager Premier, Account Protector e Ion estão no catálogo fornecido."
+ },
+ "client_scope": {
+  "type": "não definido pelo cliente (\"Queremos entender o que a Akamai faria\")",
+  "excludes_implementation": false,
+  "source": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka): \"Queremos entender o que a Akamai faria.\"",
+  "forbidden_in_committed": [
+   "alteração de DNS",
+   "modo bloqueio"
+  ]
+ },
+ "governance": {
+  "engagement_type": {
+   "state": "populos_internal_decision",
+   "value": null,
+   "source": "O material não define o tipo de engajamento; o cliente pediu para entender o que a Akamai faria."
+  },
+  "warranty": {
+   "state": "populos_internal_decision",
+   "value": null,
+   "source": "Nenhuma decisão interna POPULOS fornecida para este caso."
+  },
+  "license_supply": {
+   "state": "populos_internal_decision",
+   "value": null,
+   "source": "Nenhuma decisão interna POPULOS fornecida para este caso."
+  },
+  "sla": {
+   "state": "commitment",
+   "basis": "populos_standard",
+   "value": "Tabela fixa de SLA do template POPULOS aprovado",
+   "source": "Template neutro POPULOS aprovado",
+   "template_version": "2026.09.24-1"
+  }
+ },
+ "discovery": {
+  "business_goals": [
+   "Proteger o e-commerce e as APIs do site e do app com WAF (REQ-01, REQ-07)",
+   "Reduzir a automação maliciosa de credential stuffing e consulta de preços (REQ-02)",
+   "Obter visibilidade do tráfego de API (REQ-03)",
+   "Preparar a operação para a Black Friday de 25/11 a 29/11/2026, respeitando o congelamento de mudanças de 01/11 (REQ-06)",
+   "Qualificar a lentidão nos horários de pico antes de propor aceleração (REQ-05)",
+   "Confirmar a topologia dos dois data centers antes de propor continuidade entre origens (REQ-08)"
+  ]
+ },
+ "traceability": [
+  {
+   "requirement_id": "REQ-01",
+   "requirement": "WAF para o e-commerce e as APIs públicas",
+   "solution": "App & API Protector",
+   "evidence": "\"Precisamos de WAF e proteção contra bots urgente.\"",
+   "source": "E-mail 2 — 17/09/2026 (Fernanda Lopes)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-02",
+   "requirement": "Proteção contra bots: credential stuffing e consulta automatizada de preços",
+   "solution": "Bot Manager Premier",
+   "evidence": "Incidente de credential stuffing em julho com cerca de 1.200 contas acessadas; bots consultando preço o dia inteiro.",
+   "source": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka); E-mail 2 — 17/09/2026 (Fernanda Lopes)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-03",
+   "requirement": "Visibilidade do tráfego de API",
+   "solution": "App & API Protector",
+   "evidence": "\"Our audit team also flagged that we have no visibility of API traffic at all.\"",
+   "source": "E-mail 2 — 17/09/2026 (Fernanda Lopes)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-05",
+   "requirement": "Reduzir a lentidão do e-commerce nos horários de pico",
+   "solution": "Ion (depende de informação)",
+   "evidence": "\"nosso e-commerce tá sofrendo com lentidão nos horários de pico\"",
+   "source": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-06",
+   "requirement": "Prontidão para a Black Friday de 25/11 a 29/11/2026 com congelamento de mudanças a partir de 01/11",
+   "solution": "Plano de prontidão para o evento",
+   "evidence": "Datas da campanha e congelamento de mudanças informados pelo cliente.",
+   "source": "Notas de WhatsApp do executivo de contas (19/09/2026); Notas da call de 20/09/2026",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-07",
+   "requirement": "Incluir as APIs consumidas pelo app, canal de 40% das vendas",
+   "solution": "App & API Protector; Bot Manager Premier",
+   "evidence": "\"tem o app também, que conversa com as mesmas APIs do site\"; app responde por 40% das vendas.",
+   "source": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka); Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-08",
+   "requirement": "Continuidade entre os dois data centers",
+   "solution": "Global Traffic Management (depende de informação)",
+   "evidence": "\"eles têm 2 data centers, acho q ativo-passivo? confirmar\"",
+   "source": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "speakers": [
+    "vendor"
+   ],
+   "hypothesis": true
+  }
+ ],
+ "source_coverage": [
+  {
+   "ref": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka)",
+   "statement": "Lentidão nos horários de pico",
+   "status": "pendente",
+   "targets": [
+    "REQ-05"
+   ]
+  },
+  {
+   "ref": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka)",
+   "statement": "Bots consultando preço o dia inteiro",
+   "status": "coberto",
+   "targets": [
+    "REQ-02"
+   ]
+  },
+  {
+   "ref": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka)",
+   "statement": "500 mil visitas por dia",
+   "status": "coberto",
+   "targets": [
+    "dimensionamento"
+   ]
+  },
+  {
+   "ref": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka)",
+   "statement": "Blog e site institucional passam pela Cloudflare; o e-commerce não",
+   "status": "coberto",
+   "targets": [
+    "exclusões",
+    "premissas"
+   ]
+  },
+  {
+   "ref": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka)",
+   "statement": "O app conversa com as mesmas APIs do site",
+   "status": "coberto",
+   "targets": [
+    "REQ-07"
+   ]
+  },
+  {
+   "ref": "E-mail 2 — 17/09/2026 (Fernanda Lopes)",
+   "statement": "Incidente de credential stuffing em julho com cerca de 1.200 contas acessadas e reset de senhas",
+   "status": "coberto",
+   "targets": [
+    "REQ-02",
+    "sumário"
+   ]
+  },
+  {
+   "ref": "E-mail 2 — 17/09/2026 (Fernanda Lopes)",
+   "statement": "Necessidade urgente de WAF e proteção contra bots",
+   "status": "coberto",
+   "targets": [
+    "REQ-01",
+    "REQ-02"
+   ]
+  },
+  {
+   "ref": "E-mail 2 — 17/09/2026 (Fernanda Lopes)",
+   "statement": "Auditoria apontou ausência de visibilidade do tráfego de API",
+   "status": "coberto",
+   "targets": [
+    "REQ-03"
+   ]
+  },
+  {
+   "ref": "E-mail 2 — 17/09/2026 (Fernanda Lopes)",
+   "statement": "Não quer solução paliativa",
+   "status": "coberto",
+   "targets": [
+    "sumário",
+    "escopo"
+   ]
+  },
+  {
+   "ref": "E-mail 3 — 18/09/2026 (Marcelo Brito)",
+   "statement": "Orçamento do ano praticamente fechado; fazer o mínimo para atravessar a Black Friday; restante no orçamento de 2027, que fecha em fevereiro",
+   "status": "coberto",
+   "targets": [
+    "sumário",
+    "engajamento",
+    "premissas"
+   ]
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "Cerca de 5 milhões de acessos por dia no pico de campanha",
+   "status": "coberto",
+   "targets": [
+    "dimensionamento"
+   ]
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "Pergunta sobre garantia de 100% de bloqueio de bots",
+   "status": "descartado",
+   "targets": [
+    "premissas"
+   ],
+   "reason": "Não há como garantir 100% de bloqueio; a proposta não assume esse compromisso e declara o limite nas premissas."
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "Dois data centers, possivelmente ativo-passivo, a confirmar",
+   "status": "pendente",
+   "targets": [
+    "REQ-08"
+   ]
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "Black Friday de 25/11 (quarta) a 29/11 (domingo)",
+   "status": "coberto",
+   "targets": [
+    "REQ-06"
+   ]
+  },
+  {
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "statement": "App é o canal que mais cresce, com 40% das vendas",
+   "status": "coberto",
+   "targets": [
+    "REQ-07",
+    "sumário"
+   ]
+  },
+  {
+   "ref": "Notas da call de 20/09/2026",
+   "statement": "Fernanda quer tudo configurado em modo bloqueio antes da Black Friday",
+   "status": "pendente",
+   "targets": [
+    "REQ-06",
+    "premissas"
+   ]
+  },
+  {
+   "ref": "Notas da call de 20/09/2026",
+   "statement": "Time de TI congela mudanças a partir de 01/11",
+   "status": "coberto",
+   "targets": [
+    "REQ-06",
+    "premissas"
+   ]
+  },
+  {
+   "ref": "Notas da call de 20/09/2026",
+   "statement": "Rodrigo prefere não mexer no DNS do e-commerce agora",
+   "status": "pendente",
+   "targets": [
+    "REQ-06",
+    "exclusões"
+   ]
+  },
+  {
+   "ref": "Notas da call de 20/09/2026",
+   "statement": "Prazo de contratação e compras não foi discutido",
+   "status": "pendente",
+   "targets": [
+    "REQ-06"
+   ]
+  }
+ ],
+ "client_numbers": [
+  {
+   "quote": "umas 500 mil visitas por dia",
+   "ref": "E-mail 1 — 15/09/2026 (Rodrigo Tanaka)",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "cerca de 1.200 contas de clientes foram acessadas indevidamente",
+   "ref": "E-mail 2 — 17/09/2026 (Fernanda Lopes)",
+   "destination": "contexto_de_dor",
+   "summary_marker": "cerca de 1.200 contas"
+  },
+  {
+   "quote": "uns 5 milhões de acessos/dia no pico de campanha",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "vocês garantem 100% de bloqueio de bot",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "descartado_com_motivo",
+   "reason": "Pergunta do cliente sobre garantia absoluta; nenhuma solução garante 100% de bloqueio e a proposta não assume esse compromisso."
+  },
+  {
+   "quote": "2 data centers",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "black friday deles começa na quarta 25/11, a campanha vai até domingo 29/11",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "contexto_de_dor",
+   "summary_marker": "25 a 29 de novembro"
+  },
+  {
+   "quote": "40% das vendas",
+   "ref": "Notas de WhatsApp do executivo de contas (19/09/2026)",
+   "destination": "contexto_de_dor",
+   "summary_marker": "40% das vendas"
+  },
+  {
+   "quote": "congela mudanças a partir de 01/11",
+   "ref": "Notas da call de 20/09/2026",
+   "destination": "contexto_de_dor",
+   "summary_marker": "1º de novembro"
+  },
+  {
+   "quote": "orçamento de 2027, que fecha em fevereiro",
+   "ref": "E-mail 3 — 18/09/2026 (Marcelo Brito)",
+   "destination": "descartado_com_motivo",
+   "reason": "Contexto orçamentário do cliente, sem efeito sobre dimensionamento ou meta técnica; registrado como condição para as ofertas opcionais."
+  }
+ ],
+ "open_questions": [
+  "Qual é o prazo de contratação e de compras do Grupo Mariá para as licenças antes da Black Friday?",
+  "O Grupo Mariá autoriza a alteração de DNS dos hostnames do e-commerce e das APIs antes do congelamento de 01/11? Sem ela não há ativação antes do evento.",
+  "Quais hostnames do e-commerce e quais APIs (site e app) entram no escopo?",
+  "Os 500 mil por dia e os 5 milhões por dia em pico referem-se à mesma métrica (visitas ou requisições)?",
+  "Os dois data centers operam em ativo-passivo ou ativo-ativo, e há requisito de continuidade entre eles?",
+  "Qual jornada e qual métrica de tempo de resposta definem a lentidão em pico?",
+  "Quais regras e jornadas a CISO espera em modo bloqueio antes do evento, após o período em modo alerta?"
+ ],
+ "solution_decisions": [
+  {
+   "product_id": "app_api_protector",
+   "status": "recommended",
+   "requirement_ids": [
+    "REQ-01",
+    "REQ-03",
+    "REQ-07"
+   ],
+   "rationale": "O cliente pediu WAF e a auditoria apontou falta de visibilidade de APIs no e-commerce e nas APIs usadas pelo app.",
+   "client_summary": "WAF adaptativo e proteção de APIs na borda para o e-commerce e as APIs consumidas pelo site e pelo app.",
+   "capabilities": [
+    "WAF",
+    "proteção de APIs",
+    "DDoS L7"
+   ]
+  },
+  {
+   "product_id": "bot_manager",
+   "status": "recommended",
+   "requirement_ids": [
+    "REQ-02",
+    "REQ-07"
+   ],
+   "rationale": "Credential stuffing com cerca de 1.200 contas acessadas e consulta automatizada de preços foram relatados pelo cliente.",
+   "client_summary": "Detecção e resposta a automação maliciosa no login e nas páginas de preço, no site e nas APIs do app.",
+   "capabilities": [
+    "detecção de bots",
+    "resposta adaptativa",
+    "telemetria"
+   ]
+  },
+  {
+   "product_id": "account_protector",
+   "status": "optional",
+   "requirement_ids": [
+    "REQ-02"
+   ],
+   "rationale": "O incidente envolveu acesso indevido a contas; a avaliação de risco por conta complementa o Bot Manager, mas o CFO pediu o mínimo necessário para a Black Friday.",
+   "client_summary": "Avaliação de risco de login e comportamento por conta, como camada adicional ao controle de automação.",
+   "capabilities": [
+    "risco de login",
+    "perfil comportamental",
+    "detecção de abuso"
+   ],
+   "trigger": "Incluir no orçamento de 2027 se, após a Black Friday, persistirem acessos indevidos a contas não explicados por automação; requer aprovação orçamentária do cliente."
+  },
+  {
+   "product_id": "ion",
+   "status": "needs_information",
+   "requirement_ids": [
+    "REQ-05"
+   ],
+   "rationale": "A lentidão em pico não foi ligada a uma jornada nem a uma métrica mensurável.",
+   "client_summary": "Aceleração de conteúdo dinâmico, a avaliar quando a jornada e a métrica de lentidão forem definidas."
+  },
+  {
+   "product_id": "gtm",
+   "status": "needs_information",
+   "requirement_ids": [
+    "REQ-08"
+   ],
+   "rationale": "Os dois data centers e o modelo ativo-passivo são uma nota a confirmar, sem requisito de continuidade declarado pelo cliente.",
+   "client_summary": "Continuidade entre data centers por DNS, a avaliar após a confirmação da topologia."
+  },
+  {
+   "product_id": "alb",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há requisito de roteamento por requisição entre origens."
+  },
+  {
+   "product_id": "edge_dns",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "O cliente prefere não alterar o DNS do e-commerce agora; não há requisito de DNS autoritativo."
+  },
+  {
+   "product_id": "prolexic",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há evidência de DDoS volumétrico L3/L4 nem de exposição direta de faixas de IP."
+  },
+  {
+   "product_id": "malware_protection",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há fluxo de upload de arquivos no material."
+  },
+  {
+   "product_id": "ip_accelerator",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "O escopo se limita a aplicações e APIs HTTPS."
+  }
+ ],
+ "products": [
+  "app_api_protector",
+  "bot_manager"
+ ],
+ "architecture": {
+  "summary": "Os usuários do site e do app do Grupo Mariá acessam o e-commerce e as APIs pela borda Akamai, onde o App & API Protector aplica WAF e visibilidade de APIs e o Bot Manager Premier trata a automação maliciosa antes que o tráfego alcance os data centers do cliente. O blog e o site institucional permanecem no provedor atual."
+ },
+ "sections": [
+  {
+   "title": "Resumo executivo",
+   "paragraphs": [
+    "O Grupo Mariá Varejo sofreu em julho um incidente de credential stuffing em que cerca de 1.200 contas de clientes foram acessadas indevidamente, além de conviver com bots que consultam preços continuamente e sem visibilidade do tráfego de API. O app, que já responde por 40% das vendas, usa as mesmas APIs do site.",
+    "Recomendamos o App & API Protector para WAF e visibilidade de APIs e o Bot Manager Premier para a automação maliciosa, cobrindo o e-commerce e as APIs do site e do app. Account Protector fica como opção para o orçamento de 2027.",
+    "A Black Friday ocorre de 25 a 29 de novembro, e o time de TI congela mudanças a partir de 1º de novembro. A fase contratada de Assessment e desenho dura de 2 a 3 semanas; iniciada em 24/09/2026, termina entre 08/10/2026 e 15/10/2026. A viabilidade para o evento é parcial: a ativação antes do congelamento depende do prazo de licenciamento, ainda não informado, e da autorização do cliente para alterar o DNS do e-commerce, que hoje o cliente prefere não alterar.",
+    "Nenhuma solução garante 100% de bloqueio de bots; os controles serão medidos pelos critérios de aceite desta proposta."
+   ]
+  }
+ ],
+ "dimensioning": [
+  [
+   "Volume diário do e-commerce",
+   "500 mil visitas/dia em rotina; cerca de 5 milhões de acessos/dia em pico de campanha",
+   "Informado pelo cliente; métrica a confirmar",
+   "Pendente"
+  ],
+  [
+   "Hostnames e APIs no escopo (site e app)",
+   "A confirmar",
+   "Levantamento na fase de Assessment",
+   "Pendente"
+  ],
+  [
+   "Data centers de origem",
+   "2 (modelo de operação a confirmar)",
+   "Nota do executivo de contas, a confirmar com o cliente",
+   "Pendente"
+  ]
+ ],
+ "estimates": [],
+ "assessment_items": [
+  "Inventário dos hostnames do e-commerce e das APIs consumidas pelo site e pelo app",
+  "Mapeamento das jornadas de login e de consulta de preços expostas à automação",
+  "Levantamento da topologia dos dois data centers e das janelas de mudança até 01/11"
+ ],
+ "client_roles": [
+  "Gerente de TI (Rodrigo Tanaka): janelas, DNS e origens",
+  "CISO (Fernanda Lopes): políticas de segurança e critérios de bloqueio",
+  "CFO (Marcelo Brito): aprovação orçamentária"
+ ],
+ "scope": {
+  "included": [
+   "Assessment do ambiente atual do e-commerce e das APIs do site e do app",
+   "Desenho das políticas de App & API Protector e Bot Manager Premier",
+   "Plano de prontidão para a Black Friday"
+  ],
+  "deliverables": [
+   "Relatório de Assessment com inventário de hostnames e APIs",
+   "Documento de desenho (HLD) das políticas de WAF, APIs e bots",
+   "Plano de prontidão para a Black Friday com runbook de reversão"
+  ],
+  "excluded": [
+   "Blog e site institucional, atendidos pelo provedor atual",
+   "Edge DNS, Prolexic, Application Load Balancer, Malware Protection e IP Accelerator",
+   "Garantia de 100% de bloqueio de bots",
+   "Alterações nas aplicações e nas origens do cliente"
+  ]
+ },
+ "delivery": {
+  "phases": [
+   {
+    "name": "Levantamento e Assessment",
+    "kind": "assessment",
+    "weeks": [
+     1,
+     2
+    ],
+    "duration": "1 a 2 semanas",
+    "objective": "Levantar hostnames, APIs, jornadas de login e preço e a topologia das origens.",
+    "dependency": "Acesso aos responsáveis de TI e segurança do cliente",
+    "outputs": [
+     "Relatório de Assessment"
+    ]
+   },
+   {
+    "name": "Desenho da solução",
+    "kind": "design",
+    "weeks": [
+     1,
+     1
+    ],
+    "duration": "1 semana",
+    "objective": "Definir as políticas de WAF, APIs e bots e o plano de prontidão para o evento.",
+    "dependency": "Relatório de Assessment validado pelo cliente",
+    "outputs": [
+     "HLD das políticas",
+     "Plano de prontidão para a Black Friday"
+    ]
+   }
+  ],
+  "responsibilities": [
+   "Gerente de TI: acesso às origens, janelas de mudança e decisão sobre DNS",
+   "CISO: aprovação das políticas e dos critérios de bloqueio",
+   "CFO: aprovação orçamentária e de compras"
+  ],
+  "populos_roles": [
+   [
+    "Arquiteto de soluções",
+    "Assessment e desenho das políticas",
+    "Fases contratadas"
+   ],
+   [
+    "Gerente de projeto",
+    "Cronograma, riscos e comunicação",
+    "Fases contratadas"
+   ]
+  ]
+ },
+ "optional_phase": {
+  "title": "Ativação antes da Black Friday",
+  "intro": "Onda opcional de ativação, condicionada às decisões do cliente listadas abaixo.",
+  "conditions": [
+   "Contratação das licenças com prazo compatível com o congelamento de 01/11",
+   "Autorização do cliente para alterar o DNS dos hostnames do e-commerce e das APIs",
+   "Janela de mudança aprovada antes de 01/11"
+  ],
+  "waves": [
+   {
+    "id": "W1",
+    "name": "Ativação de WAF, APIs e bots",
+    "components": [
+     "app_api_protector",
+     "bot_manager"
+    ],
+    "goes_to_production": true,
+    "activities": "Ativação das políticas em modo alerta, ajuste com base nos eventos observados e passagem para bloqueio das regras aprovadas pela CISO, com janela, reversão e aprovação definidas, antes de 01/11.",
+    "acceptance": "Políticas ativas nos hostnames aprovados e relatório de eventos entregue.",
+    "milestone": "Aceite da onda W1 antes de 01/11/2026"
+   }
+  ]
+ },
+ "assumptions": [
+  "Premissa: a ativação na borda exige alteração de DNS dos hostnames do e-commerce; sem autorização do cliente até a janela aprovada, a onda W1 não ocorre antes do evento.",
+  "Premissa: as políticas iniciam em modo alerta e passam a bloqueio somente nas regras aprovadas pela CISO após o ajuste; validação na onda W1.",
+  "Premissa: o blog e o site institucional permanecem no provedor atual e fora do escopo.",
+  "Premissa: nenhum controle garante 100% de bloqueio de bots; o resultado é medido pelos critérios de aceite."
+ ],
+ "restrictions": [
+  "Congelamento de mudanças do cliente a partir de 01/11/2026.",
+  "Black Friday de 25/11 a 29/11/2026, sem mudanças durante o evento.",
+  "Orçamento de 2026 praticamente fechado; itens adicionais dependem do orçamento de 2027.",
+  "Prazo de licenciamento ainda não informado."
+ ],
+ "risks": [
+  {
+   "risk": "Licenciamento não concluído antes de 01/11",
+   "impact": "Ativação adiada para depois da Black Friday",
+   "mitigation": "Confirmar prazo de contratação na primeira semana"
+  },
+  {
+   "risk": "DNS do e-commerce não autorizado",
+   "impact": "Proteção na borda indisponível durante o evento",
+   "mitigation": "Decisão do cliente registrada ao fim do Assessment"
+  },
+  {
+   "risk": "Bloqueio sem ajuste suficiente",
+   "impact": "Bloqueio de clientes legítimos",
+   "mitigation": "Modo alerta prévio e bloqueio apenas das regras aprovadas"
+  }
+ ],
+ "acceptance_criteria": [
+  {
+   "requirement_id": "REQ-01",
+   "phase": "committed",
+   "criterion": "HLD com as políticas de WAF para 100% dos hostnames do e-commerce listados no relatório de Assessment, entregue e aprovado pela CISO."
+  },
+  {
+   "requirement_id": "REQ-02",
+   "phase": "committed",
+   "criterion": "HLD com as políticas de bots para as jornadas de login e de consulta de preços mapeadas no Assessment, entregue e aprovado pela CISO."
+  },
+  {
+   "requirement_id": "REQ-03",
+   "phase": "committed",
+   "criterion": "Relatório de Assessment com o inventário das APIs do site e do app, entregue e validado pelo Gerente de TI."
+  },
+  {
+   "requirement_id": "REQ-05",
+   "phase": "committed",
+   "criterion": "Relatório de Assessment registra a jornada e a métrica de lentidão informadas pelo cliente, ou a pendência correspondente."
+  },
+  {
+   "requirement_id": "REQ-06",
+   "phase": "committed",
+   "criterion": "Plano de prontidão para a Black Friday com testes de carga, revisão de capacidade, congelamento de mudanças, monitoramento, runbook de reversão e sala de crise liderada pela POPULOS, entregue até o fim da fase de desenho."
+  },
+  {
+   "requirement_id": "REQ-07",
+   "phase": "committed",
+   "criterion": "HLD cobre 100% das APIs consumidas pelo app listadas no relatório de Assessment."
+  },
+  {
+   "requirement_id": "REQ-08",
+   "phase": "committed",
+   "criterion": "Relatório de Assessment registra a topologia dos dois data centers confirmada pelo cliente, ou a pendência correspondente."
+  },
+  {
+   "requirement_id": "REQ-01",
+   "phase": "optional",
+   "option_id": "W1",
+   "criterion": "Políticas de WAF e APIs ativas em 100% dos hostnames aprovados, com relatório de eventos de 7 dias em modo alerta entregue antes de 01/11/2026."
+  },
+  {
+   "requirement_id": "REQ-02",
+   "phase": "optional",
+   "option_id": "W1",
+   "criterion": "Políticas de bots ativas nas jornadas de login e de preço, com as regras aprovadas pela CISO em bloqueio e registro de aprovação e reversão, antes de 01/11/2026."
+  }
+ ],
+ "event_readiness": [
+  "Testes de carga antes de 01/11",
+  "Revisão de capacidade das origens",
+  "Congelamento de mudanças de 01/11 até o fim do evento",
+  "Monitoramento dos eventos de WAF e bots durante a campanha",
+  "Runbook de reversão e degradação",
+  "Sala de crise liderada pela POPULOS de 25/11 a 29/11"
+ ],
+ "critical_events": [
+  {
+   "name": "Black Friday",
+   "date": "2026-11-25",
+   "source": "Notas de WhatsApp do executivo de contas (19/09/2026)"
+  }
+ ],
+ "event_feasibility": [
+  {
+   "event": "Black Friday",
+   "reference_date": "2026-09-24",
+   "phase1_end_earliest": "2026-10-08",
+   "phase1_end_latest": "2026-10-15",
+   "classification": "partially_fits",
+   "path": "Assessment e desenho concluídos entre 08/10/2026 e 15/10/2026; a onda W1 precisa terminar antes de 01/11.",
+   "reason": "O prazo de licenciamento é desconhecido e a alteração de DNS do e-commerce ainda não foi autorizada.",
+   "summary_marker": "A viabilidade para o evento é parcial",
+   "lead_times": {
+    "licenciamento": {
+     "weeks": null,
+     "pending_question": "Qual é o prazo de contratação e de compras das licenças?"
+    }
+   }
+  }
+ ],
+ "document_text": {
+  "about_solution": "A solução protege o e-commerce e as APIs do site e do app do Grupo Mariá com WAF, visibilidade de APIs e controle de automação maliciosa na borda Akamai.",
+  "coverage": "A cobertura inclui os hostnames do e-commerce e as APIs consumidas pelo site e pelo app. O blog e o site institucional permanecem no provedor atual.",
+  "dimensioning_intro": "O dimensionamento parte dos volumes informados pelo cliente, que serão confirmados no Assessment.",
+  "methodology_intro": "A POPULOS conduz o Assessment e o desenho das políticas em duas fases, com validação do cliente ao fim de cada uma.",
+  "tests": "Os testes cobrem a validação das políticas em modo alerta e os testes de carga previstos no plano de prontidão.",
+  "schedule_intro": "O cronograma contratado soma de 2 a 3 semanas a partir da assinatura.",
+  "schedule_sequence": "Levantamento e Assessment, seguido do desenho da solução, totalizando de 2 a 3 semanas. A onda opcional W1 depende das condições listadas e deve terminar antes de 01/11/2026; a duração em calendário é condicional ao congelamento de mudanças do cliente.",
+  "closing": "A POPULOS está à disposição para validar as pendências e ajustar esta proposta.",
+  "callout_migration": "A ativação na borda exige alteração de DNS do e-commerce, que depende de autorização do cliente.",
+  "callout_milestones": "Marcos: fim do Assessment, aprovação do HLD e, se contratada, aceite da onda W1 antes de 01/11/2026.",
+  "diagram_users": "Clientes do Grupo Mariá",
+  "diagram_users_detail": "Acessam o e-commerce pelo navegador e pelo app, que usa as mesmas APIs do site.",
+  "diagram_origins_title": "Data centers do Grupo Mariá",
+  "diagram_origins": "O e-commerce e as APIs rodam em dois data centers do cliente, com modelo de operação a confirmar."
+ }
+}

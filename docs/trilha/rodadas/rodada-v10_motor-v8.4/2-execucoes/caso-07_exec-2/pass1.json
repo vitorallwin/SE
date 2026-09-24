@@ -1,0 +1,731 @@
+{
+ "rules_version": 10,
+ "data_mode": "test",
+ "client_name": "Solaris Energia",
+ "opportunity": "Proteção e continuidade do portal do cliente",
+ "code": "SOLARIS-2026-AAP-GTM",
+ "opportunity_id": "solaris-energia-2026-09",
+ "input_assessment": {
+  "status": "sufficient",
+  "missing": [],
+  "reason": "O material identifica o cliente, os ativos (portal, APIs do app, duas origens) e necessidades concretas de proteção e continuidade."
+ },
+ "catalog_fit": {
+  "status": "fits",
+  "requested": "Proteção contra DDoS de aplicação e robôs no portal/APIs e failover automático entre duas origens",
+  "reason": "App & API Protector, Bot Manager Premier e Global Traffic Management estão no catálogo."
+ },
+ "client_scope": {
+  "type": "phased",
+  "excludes_implementation": true,
+  "source": "ata de 22/09/2026, Beatriz: \"Queremos primeiro um assessment e desenho, e depois a implantação. Não queremos contratar a implantação às cegas.\"",
+  "forbidden_in_committed": [
+   "ativação em produção",
+   "mudança em produção",
+   "go-live"
+  ]
+ },
+ "governance": {
+  "engagement_type": {
+   "state": "commitment",
+   "value": "phased",
+   "approved_value": "phased",
+   "source": "E-mail de Vitor (Executivo de Contas, POPULOS), 24/09/2026 09:14",
+   "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+   "approved_at": "2026-09-24",
+   "approval_record": "E-mail de Vitor (Executivo de Contas, POPULOS), 24/09/2026 09:14",
+   "mode": "test",
+   "engagement_ref": "phased",
+   "approval_quote": "Aprovo para a Solaris Energia: engajamento em fases (phased), com Fase 1 de assessment e desenho contratada e Fase 2 de implantação opcional."
+  },
+  "license_supply": {
+   "state": "commitment",
+   "value": "Revenda autorizada pela POPULOS",
+   "approved_value": "Revenda autorizada pela POPULOS",
+   "source": "E-mail de Vitor (Executivo de Contas, POPULOS), 24/09/2026 09:14",
+   "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+   "approved_at": "2026-09-24",
+   "approval_record": "E-mail de Vitor (Executivo de Contas, POPULOS), 24/09/2026 09:14",
+   "mode": "test",
+   "engagement_ref": "phased",
+   "approval_quote": "Aprovo também: as licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada."
+  },
+  "warranty": {
+   "state": "commitment",
+   "value": "90 dias corridos após o aceite de cada fase, para defeitos diretamente atribuíveis aos serviços executados",
+   "approved_value": "90 dias corridos após o aceite de cada fase, para defeitos diretamente atribuíveis aos serviços executados",
+   "source": "E-mail de Vitor (Executivo de Contas, POPULOS), 24/09/2026 09:14",
+   "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+   "approved_at": "2026-09-24",
+   "approval_record": "E-mail de Vitor (Executivo de Contas, POPULOS), 24/09/2026 09:14",
+   "mode": "test",
+   "engagement_ref": "phased",
+   "approval_quote": "E aprovo a garantia: a POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite de cada fase."
+  },
+  "sla": {
+   "state": "commitment",
+   "basis": "populos_standard",
+   "value": "Tabela institucional de SLA da POPULOS",
+   "source": "Template neutro aprovado POPULOS 2026.09.24-1",
+   "template_version": "2026.09.24-1"
+  },
+  "sla_applicability": {
+   "state": "commitment",
+   "value": [
+    "implementation"
+   ],
+   "approved_value": [
+    "implementation"
+   ],
+   "source": "E-mail de Vitor (Executivo de Contas, POPULOS), 24/09/2026 09:20",
+   "approved_by": "Vitor (Executivo de Contas, POPULOS)",
+   "approved_at": "2026-09-24",
+   "approval_record": "E-mail de Vitor (Executivo de Contas, POPULOS), 24/09/2026 09:20",
+   "mode": "test",
+   "engagement_ref": "phased",
+   "approval_quote": "Sobre o SLA da Solaris Energia, aprovo: a tabela institucional de SLA da POPULOS se aplica somente à Fase 2 (implantação). A Fase 1 não tem SLA de atendimento a incidentes."
+  },
+  "phase1_estimate": {
+   "state": "commitment",
+   "value": "3 a 4 semanas",
+   "approved_value": "3 a 4 semanas",
+   "source": "E-mail de Ana Ribeiro (Arquiteta, POPULOS), 24/09/2026 10:02",
+   "approved_by": "Ana Ribeiro (Arquiteta, POPULOS)",
+   "approved_at": "2026-09-24",
+   "approval_record": "E-mail de Ana Ribeiro (Arquiteta, POPULOS), 24/09/2026 10:02",
+   "mode": "test",
+   "engagement_ref": "phased",
+   "approval_quote": "Aprovo as estimativas de esforço da Solaris Energia: Fase 1 de 3 a 4 semanas; Fase 2 de 6 a 8 semanas.",
+   "approver_role": "arquiteto"
+  },
+  "phase2_estimate": {
+   "state": "commitment",
+   "value": "6 a 8 semanas",
+   "approved_value": "6 a 8 semanas",
+   "source": "E-mail de Ana Ribeiro (Arquiteta, POPULOS), 24/09/2026 10:02",
+   "approved_by": "Ana Ribeiro (Arquiteta, POPULOS)",
+   "approved_at": "2026-09-24",
+   "approval_record": "E-mail de Ana Ribeiro (Arquiteta, POPULOS), 24/09/2026 10:02",
+   "mode": "test",
+   "engagement_ref": "phased",
+   "approval_quote": "Aprovo as estimativas de esforço da Solaris Energia: Fase 1 de 3 a 4 semanas; Fase 2 de 6 a 8 semanas.",
+   "approver_role": "arquiteto"
+  }
+ },
+ "discovery": {
+  "business_goals": [
+   "Manter o portal do cliente e as APIs do app disponíveis sob ataques de aplicação (REQ-01)",
+   "Conter a enumeração automatizada de CPFs na consulta de débitos (REQ-02)",
+   "Automatizar o failover entre o datacenter próprio e a nuvem pública (REQ-03)",
+   "Chegar à campanha de 01/03/2027 com proteção e failover automático em operação (REQ-04, REQ-05, REQ-06)"
+  ]
+ },
+ "traceability": [
+  {
+   "requirement_id": "REQ-01",
+   "requirement": "Proteger o portal do cliente e as APIs usadas pelo app contra negação de serviço na camada de aplicação",
+   "solution": "App & API Protector",
+   "evidence": "Portal fora do ar por cerca de 3 horas em junho e em agosto por ataque de negação de serviço na camada de aplicação na consulta de débitos",
+   "source": "ata de 22/09/2026, fala de Henrique Sato",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-02",
+   "requirement": "Conter robôs que testam números de CPF na consulta de débitos e expõem nome e endereço",
+   "solution": "Bot Manager Premier",
+   "evidence": "Robôs testando números de CPF; a página devolve nome e endereço quando o CPF existe",
+   "source": "ata de 22/09/2026, fala de Henrique Sato",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-03",
+   "requirement": "Tornar automático o failover entre o datacenter próprio (principal) e a nuvem pública",
+   "solution": "Global Traffic Management",
+   "evidence": "Nuvem pública hoje só recebe tráfego manualmente quando o datacenter cai; cliente quer failover automático",
+   "source": "ata de 22/09/2026, fala de Beatriz Nogueira",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-04",
+   "requirement": "Estar protegido e com failover automático antes de 01/03/2027, início da campanha estadual de renegociação de dívidas",
+   "solution": "Cronograma em fases com prontidão para o evento",
+   "evidence": "Campanha começa em 01/03/2027; na última campanha o tráfego do portal triplicou",
+   "source": "ata de 22/09/2026, fala de Beatriz Nogueira",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-05",
+   "requirement": "Contratar primeiro o Assessment e o desenho e somente depois a implantação",
+   "solution": "Fase 1 contratada; Fase 2 opcional após aceite do desenho",
+   "evidence": "Cliente não quer contratar a implantação às cegas",
+   "source": "ata de 22/09/2026, fala de Beatriz Nogueira",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  },
+  {
+   "requirement_id": "REQ-06",
+   "requirement": "Executar mudanças em produção somente às terças, das 22h às 2h",
+   "solution": "Janela de mudança nas ondas de implantação",
+   "evidence": "Sem congelamento formal; mudanças em produção só às terças, das 22h às 2h",
+   "source": "ata de 22/09/2026, fala de Henrique Sato",
+   "speakers": [
+    "client"
+   ],
+   "hypothesis": false
+  }
+ ],
+ "source_coverage": [
+  {
+   "ref": "ata 22/09/2026, Beatriz",
+   "statement": "Distribuidora de energia em 3 estados, com 4,2 milhões de unidades consumidoras",
+   "status": "coberto",
+   "targets": [
+    "sumário"
+   ]
+  },
+  {
+   "ref": "ata 22/09/2026, Beatriz",
+   "statement": "Portal concentra segunda via de conta, religação e consulta de débitos; o app usa as mesmas APIs",
+   "status": "coberto",
+   "targets": [
+    "REQ-01",
+    "escopo"
+   ]
+  },
+  {
+   "ref": "ata 22/09/2026, Henrique",
+   "statement": "Portal fora do ar por cerca de 3 horas em junho e agosto por DoS de camada de aplicação",
+   "status": "coberto",
+   "targets": [
+    "REQ-01",
+    "sumário"
+   ]
+  },
+  {
+   "ref": "ata 22/09/2026, Henrique",
+   "statement": "Não houve ataque volumétrico de rede",
+   "status": "coberto",
+   "targets": [
+    "exclusões"
+   ]
+  },
+  {
+   "ref": "ata 22/09/2026, Henrique",
+   "statement": "Robôs testando CPFs na consulta de débitos; exposição de nome e endereço; tratado com o DPO",
+   "status": "coberto",
+   "targets": [
+    "REQ-02",
+    "premissas"
+   ]
+  },
+  {
+   "ref": "ata 22/09/2026, Beatriz",
+   "statement": "Dois ambientes de origem com failover manual; desejo de failover automático",
+   "status": "coberto",
+   "targets": [
+    "REQ-03",
+    "dimensionamento"
+   ]
+  },
+  {
+   "ref": "ata 22/09/2026, Beatriz",
+   "statement": "Campanha de renegociação em 01/03/2027; tráfego triplicou na última campanha",
+   "status": "coberto",
+   "targets": [
+    "REQ-04",
+    "dimensionamento",
+    "sumário"
+   ]
+  },
+  {
+   "ref": "ata 22/09/2026, Henrique",
+   "statement": "Sem congelamento formal; mudanças às terças, das 22h às 2h",
+   "status": "coberto",
+   "targets": [
+    "REQ-06",
+    "premissas"
+   ]
+  },
+  {
+   "ref": "ata 22/09/2026, Beatriz e Ana",
+   "statement": "Assessment e desenho primeiro; implantação depois como opção",
+   "status": "coberto",
+   "targets": [
+    "REQ-05",
+    "engajamento"
+   ]
+  },
+  {
+   "ref": "ata 22/09/2026, Henrique",
+   "statement": "DNS dos domínios permanece no provedor atual",
+   "status": "coberto",
+   "targets": [
+    "exclusões"
+   ]
+  },
+  {
+   "ref": "e-mails POPULOS 24/09/2026",
+   "statement": "Aprovações de engajamento, licenças, garantia, SLA, estimativas e prazo de licenças",
+   "status": "coberto",
+   "targets": [
+    "engajamento",
+    "escopo"
+   ]
+  }
+ ],
+ "client_numbers": [
+  {
+   "quote": "3 estados",
+   "ref": "ata de 22/09/2026",
+   "destination": "contexto_de_dor",
+   "summary_marker": "3 estados"
+  },
+  {
+   "quote": "4,2 milhões de unidades consumidoras",
+   "ref": "ata de 22/09/2026",
+   "destination": "contexto_de_dor",
+   "summary_marker": "4,2 milhões de unidades consumidoras"
+  },
+  {
+   "quote": "cerca de 3 horas em cada episódio",
+   "ref": "ata de 22/09/2026",
+   "destination": "contexto_de_dor",
+   "summary_marker": "cerca de 3 horas"
+  },
+  {
+   "quote": "milhões de requisições",
+   "ref": "ata de 22/09/2026",
+   "destination": "contexto_de_dor",
+   "summary_marker": "milhões de requisições"
+  },
+  {
+   "quote": "dois ambientes de origem",
+   "ref": "ata de 22/09/2026",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "01/03/2027",
+   "ref": "ata de 22/09/2026",
+   "destination": "meta"
+  },
+  {
+   "quote": "o tráfego do portal triplicou",
+   "ref": "ata de 22/09/2026",
+   "destination": "dimensionamento"
+  },
+  {
+   "quote": "às terças, das 22h às 2h",
+   "ref": "ata de 22/09/2026",
+   "destination": "dimensionamento"
+  }
+ ],
+ "open_questions": [
+  "Quais hostnames e APIs do portal e do app entram no escopo?",
+  "Qual é o volume de tráfego habitual e de pico do portal, para dimensionar a campanha em que o tráfego triplicou?",
+  "Qual subdomínio do provedor DNS atual poderá ser delegado ao Global Traffic Management?"
+ ],
+ "standard_conflicts": [
+  {
+   "category": "deadline",
+   "requirement_id": "REQ-04",
+   "status": "compatible",
+   "reason": "Fase 1 (até 4 semanas), licenças (até 2 semanas) e Fase 2 (até 8 semanas) terminam até 31/12/2026, antes de 01/03/2027."
+  }
+ ],
+ "solution_decisions": [
+  {
+   "product_id": "app_api_protector",
+   "status": "recommended",
+   "requirement_ids": [
+    "REQ-01",
+    "REQ-04"
+   ],
+   "rationale": "Ataques de negação de serviço na camada de aplicação derrubaram o portal duas vezes; o portal e o app compartilham as mesmas APIs públicas.",
+   "client_summary": "Proteção do portal do cliente e das APIs do app com WAF e mitigação de DDoS de aplicação na borda.",
+   "capabilities": [
+    "WAF",
+    "proteção de APIs",
+    "DDoS L7"
+   ]
+  },
+  {
+   "product_id": "bot_manager",
+   "status": "recommended",
+   "requirement_ids": [
+    "REQ-02"
+   ],
+   "rationale": "Há automação evidenciada: robôs testam números de CPF na consulta de débitos, com exposição de dado pessoal.",
+   "client_summary": "Detecção e resposta aos robôs que testam CPFs na consulta de débitos.",
+   "capabilities": [
+    "detecção de bots",
+    "resposta adaptativa",
+    "telemetria"
+   ]
+  },
+  {
+   "product_id": "gtm",
+   "status": "recommended",
+   "requirement_ids": [
+    "REQ-03",
+    "REQ-04"
+   ],
+   "rationale": "Há duas origens (datacenter próprio e nuvem pública) e o cliente quer failover automático por saúde entre elas.",
+   "client_summary": "Failover automático por DNS entre o datacenter próprio e a nuvem pública, com testes de saúde das origens.",
+   "capabilities": [
+    "failover entre provedores",
+    "políticas de tráfego",
+    "testes de saúde"
+   ]
+  },
+  {
+   "product_id": "edge_dns",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "O DNS dos domínios permanece no provedor atual, que funciona bem, e não é o foco."
+  },
+  {
+   "product_id": "alb",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "O requisito é failover entre origens, sem roteamento por requisição; esse gatilho é atendido pelo GTM."
+  },
+  {
+   "product_id": "prolexic",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não houve ataque volumétrico de rede; os ataques relatados são de camada de aplicação."
+  },
+  {
+   "product_id": "account_protector",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "O abuso relatado ocorre na consulta de débitos, sem vínculo com criação de conta, login ou recuperação."
+  },
+  {
+   "product_id": "ion",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há objetivo de latência ou experiência ligado a uma jornada mensurável."
+  },
+  {
+   "product_id": "ip_accelerator",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "O escopo se limita a portal web e APIs HTTPS."
+  },
+  {
+   "product_id": "malware_protection",
+   "status": "excluded",
+   "requirement_ids": [],
+   "rationale": "Não há fluxo de upload de arquivos relatado."
+  }
+ ],
+ "products": [
+  "app_api_protector",
+  "bot_manager",
+  "gtm"
+ ],
+ "architecture": {
+  "summary": "Usuários do portal e do app acessam os hostnames da Solaris pela borda Akamai, onde o App & API Protector filtra ataques de aplicação e o Bot Manager Premier trata os robôs da consulta de débitos; o Global Traffic Management responde pelo subdomínio delegado e direciona o tráfego ao datacenter próprio ou, em falha detectada pelos testes de saúde, à nuvem pública."
+ },
+ "sections": [
+  {
+   "title": "Resumo executivo",
+   "paragraphs": [
+    "A Solaris Energia é distribuidora de energia em 3 estados, com 4,2 milhões de unidades consumidoras. O portal do cliente, que concentra segunda via de conta, pedido de religação e consulta de débitos, e o app que usa as mesmas APIs ficaram fora do ar por cerca de 3 horas em junho e em agosto, sob ataques de negação de serviço na camada de aplicação com milhões de requisições na consulta de débitos. Robôs também testam números de CPF nessa página, expondo nome e endereço de titulares.",
+    "A POPULOS propõe um engajamento em duas fases. A Fase 1, de Assessment e desenho, é contratada agora e dura de 3 a 4 semanas; não inclui mudança nos ambientes da Solaris. A Fase 2, de implantação, é apresentada como opção, contratada após o aceite do desenho, e cobre o App & API Protector, o Bot Manager Premier e o Global Traffic Management para failover automático entre o datacenter próprio e a nuvem pública.",
+    "Viabilidade para a campanha de renegociação de 01/03/2027: com início em 24/09/2026, a Fase 1 termina entre 15/10/2026 e 22/10/2026. Somando até 2 semanas de provisionamento das licenças após a assinatura do pedido e a Fase 2, o caminho mais longo encerra a implantação em 31/12/2026, antes da campanha, desde que a Fase 2 seja contratada logo após o aceite do desenho e as janelas de terça-feira estejam disponíveis."
+   ]
+  }
+ ],
+ "dimensioning": [
+  [
+   "Origens",
+   "2 (datacenter próprio e nuvem pública)",
+   "Ata de 22/09/2026",
+   "Confirmado"
+  ],
+  [
+   "Tráfego de pico na campanha",
+   "A confirmar (a última campanha triplicou o tráfego)",
+   "Levantamento da Fase 1",
+   "Pendente"
+  ],
+  [
+   "Hostnames e APIs protegidos",
+   "A confirmar",
+   "Levantamento da Fase 1",
+   "Pendente"
+  ]
+ ],
+ "estimates": [],
+ "assessment_items": [
+  "Inventário de hostnames e APIs do portal e do app",
+  "Comportamento atual das origens e do failover manual",
+  "Linha de base de tráfego e padrões de ataque e de robôs na consulta de débitos"
+ ],
+ "client_roles": [
+  "Gerente de Canais Digitais (patrocínio e aceite)",
+  "Coordenador de Segurança (políticas e resposta)",
+  "Equipe de infraestrutura (origens e DNS atual)",
+  "DPO (tratamento do dado pessoal exposto)"
+ ],
+ "team_competencies": [
+  "Arquitetura de segurança de aplicações e APIs Akamai",
+  "Gestão de tráfego e failover entre origens",
+  "Gestão de mudanças em janelas restritas"
+ ],
+ "scope": {
+  "included": [
+   "Fase 1: levantamento do portal, das APIs do app e das duas origens",
+   "Fase 1: desenho da proteção, da contenção de robôs e do failover automático",
+   "Fase 2 (opcional): implantação em duas ondas"
+  ],
+  "deliverables": [
+   "Relatório de levantamento",
+   "Desenho de arquitetura (HLD) com plano de ondas, reversão e testes",
+   "Plano de prontidão para a campanha de 01/03/2027"
+  ],
+  "excluded": [
+   "Mudanças no DNS autoritativo além da delegação do subdomínio de failover",
+   "Proteção DDoS volumétrica de rede",
+   "Correção de código da aplicação e das APIs",
+   "Tratamento jurídico da exposição de dados pessoais, conduzido pelo DPO da Solaris"
+  ]
+ },
+ "delivery": {
+  "phases": [
+   {
+    "name": "Fase 1 - Assessment e desenho",
+    "kind": "assessment",
+    "weeks": [
+     3,
+     4
+    ],
+    "duration": "3 a 4 semanas",
+    "objective": "Levantar o ambiente e produzir o desenho aprovado da solução",
+    "dependency": "Assinatura da proposta e acesso às equipes da Solaris",
+    "outputs": [
+     "Relatório de levantamento",
+     "Desenho de arquitetura (HLD)",
+     "Plano de ondas e de prontidão"
+    ]
+   }
+  ],
+  "responsibilities": [
+   {
+    "party": "Solaris - Canais Digitais",
+    "responsibility": "Patrocinar o projeto, informar hostnames e aprovar o desenho"
+   },
+   {
+    "party": "Solaris - Segurança",
+    "responsibility": "Fornecer histórico de ataques e validar políticas"
+   },
+   {
+    "party": "Solaris - Infraestrutura",
+    "responsibility": "Dar acesso às origens e ao provedor DNS atual"
+   }
+  ]
+ },
+ "populos_roles": [
+  [
+   "Arquiteta de soluções",
+   "Levantamento e desenho",
+   "Fase 1"
+  ],
+  [
+   "Executivo de contas",
+   "Governança comercial",
+   "Fases 1 e 2"
+  ],
+  [
+   "Engenharia de implantação",
+   "Configuração e testes das ondas",
+   "Fase 2 (opcional)"
+  ]
+ ],
+ "optional_phase": {
+  "title": "Fase 2 - Implantação (opcional)",
+  "intro": "A Fase 2 é contratada após o aceite do desenho da Fase 1 e executa a implantação em duas ondas, com duração estimada de 6 a 8 semanas após o provisionamento das licenças.",
+  "conditions": [
+   "Aceite formal do desenho da Fase 1",
+   "Assinatura do pedido de licenças, com provisionamento em até 2 semanas",
+   "Janelas de terça-feira, das 22h às 2h, reservadas pela Solaris"
+  ],
+  "waves": [
+   {
+    "id": "W1",
+    "name": "Onda 1 - Proteção do portal e das APIs",
+    "components": [
+     "app_api_protector",
+     "bot_manager"
+    ],
+    "goes_to_production": true,
+    "activities": "Configuração do App & API Protector e do Bot Manager Premier em modo de observação, ajuste e ativação na janela de terça-feira das 22h às 2h, com plano de reversão e aprovação da Solaris.",
+    "acceptance": "Políticas ativas nos hostnames acordados e robôs da consulta de débitos tratados conforme o desenho.",
+    "milestone": "Aceite da Onda 1",
+    "duration": "3 a 4 semanas"
+   },
+   {
+    "id": "W2",
+    "name": "Onda 2 - Failover automático",
+    "components": [
+     "gtm"
+    ],
+    "goes_to_production": true,
+    "activities": "Configuração do Global Traffic Management, delegação do subdomínio e teste de failover na janela de terça-feira das 22h às 2h, com plano de reversão e aprovação da Solaris.",
+    "acceptance": "Failover automático para a nuvem pública demonstrado em teste controlado.",
+    "milestone": "Aceite da Onda 2",
+    "duration": "3 a 4 semanas"
+   }
+  ]
+ },
+ "assumptions": [
+  "A Solaris disponibiliza as equipes de Canais Digitais, Segurança e Infraestrutura durante a Fase 1.",
+  "O provedor DNS atual permite delegar um subdomínio ao Global Traffic Management; será confirmado no levantamento.",
+  "A nuvem pública suporta receber todo o tráfego do portal em contingência; será validado no levantamento."
+ ],
+ "restrictions": [
+  "Mudanças em ambientes de produção só às terças, das 22h às 2h.",
+  "A Fase 1 não altera ambientes da Solaris.",
+  "O DNS autoritativo permanece no provedor atual.",
+  "A Fase 2 depende do aceite do desenho e da contratação."
+ ],
+ "risks": [
+  {
+   "risk": "Contratação da Fase 2 após janeiro de 2027",
+   "impact": "Implantação pode não terminar antes de 01/03/2027",
+   "mitigation": "Aceite do desenho e pedido de licenças logo após a Fase 1"
+  },
+  {
+   "risk": "Poucas janelas de terça-feira disponíveis",
+   "impact": "Atraso das ondas",
+   "mitigation": "Reserva antecipada das janelas no plano de ondas"
+  }
+ ],
+ "acceptance_criteria": [
+  {
+   "requirement_id": "REQ-01",
+   "phase": "committed",
+   "criterion": "Desenho entregue com as políticas de proteção de aplicação para cada hostname e API inventariados, aprovado pela Solaris."
+  },
+  {
+   "requirement_id": "REQ-02",
+   "phase": "committed",
+   "criterion": "Desenho entregue com o tratamento dos robôs na consulta de débitos, aprovado pela Solaris."
+  },
+  {
+   "requirement_id": "REQ-03",
+   "phase": "committed",
+   "criterion": "Desenho entregue com a política de failover entre as duas origens e os testes de saúde definidos, aprovado pela Solaris."
+  },
+  {
+   "requirement_id": "REQ-04",
+   "phase": "committed",
+   "criterion": "Plano de prontidão entregue com datas das ondas anteriores a 01/03/2027."
+  },
+  {
+   "requirement_id": "REQ-05",
+   "phase": "committed",
+   "criterion": "Relatório de levantamento e desenho entregues e aceitos formalmente ao fim da Fase 1."
+  },
+  {
+   "requirement_id": "REQ-06",
+   "phase": "committed",
+   "criterion": "Plano de ondas entregue com cada ativação prevista em janela de terça-feira, das 22h às 2h."
+  },
+  {
+   "requirement_id": "REQ-01",
+   "phase": "optional",
+   "option_id": "W1",
+   "criterion": "Políticas do App & API Protector ativas em todos os hostnames acordados, verificadas em teste de regras na janela aprovada."
+  },
+  {
+   "requirement_id": "REQ-02",
+   "phase": "optional",
+   "option_id": "W1",
+   "criterion": "Requisições automatizadas de teste na consulta de débitos classificadas e tratadas conforme a política definida no desenho."
+  },
+  {
+   "requirement_id": "REQ-03",
+   "phase": "optional",
+   "option_id": "W2",
+   "criterion": "Em teste controlado, a indisponibilidade simulada do datacenter faz o tráfego ir para a nuvem pública sem ação manual."
+  }
+ ],
+ "event_readiness": [
+  "Janelas de terça-feira, das 22h às 2h, reservadas para as ondas",
+  "Plano de reversão por onda",
+  "Monitoramento reforçado nas semanas iniciais da campanha",
+  "Revisão de capacidade das origens com a Solaris",
+  "Sala de crise conduzida pela POPULOS no início da campanha"
+ ],
+ "critical_events": [
+  {
+   "name": "Campanha estadual de renegociação de dívidas",
+   "date": "2027-03-01",
+   "source": "ata de 22/09/2026, fala de Beatriz Nogueira"
+  }
+ ],
+ "event_feasibility": [
+  {
+   "event": "Campanha estadual de renegociação de dívidas",
+   "reference_date": "2026-09-24",
+   "phase1_end_earliest": "2026-10-15",
+   "phase1_end_latest": "2026-10-22",
+   "classification": "fits",
+   "path": "Fase 1 até 22/10/2026, licenças até 2 semanas após o pedido e Fase 2 de até 8 semanas: término até 31/12/2026",
+   "reason": "Folga de cerca de 8 semanas antes de 01/03/2027",
+   "summary_marker": "01/03/2027",
+   "lead_times": {
+    "licenciamento": {
+     "weeks": 2,
+     "source": "E-mail de Vitor (Executivo de Contas, POPULOS), 24/09/2026 11:30"
+    }
+   }
+  }
+ ],
+ "document_text": {
+  "about_akamai": "A Akamai opera uma plataforma distribuída de borda que entrega e protege aplicações web e APIs próximas aos usuários; nesta proposta, ela é a base da proteção do portal e do failover entre as origens da Solaris Energia.",
+  "about_solution": "A solução combina três controles: App & API Protector para ataques de aplicação no portal e nas APIs do app, Bot Manager Premier para os robôs que testam CPFs na consulta de débitos e Global Traffic Management para failover automático entre o datacenter próprio e a nuvem pública.",
+  "partnership": "A POPULOS é parceira Akamai e fornece as licenças por meio de revenda autorizada, com desenho, implantação e acompanhamento executados por sua equipe técnica.",
+  "coverage": "A cobertura se limita ao portal do cliente, às APIs compartilhadas com o app e às duas origens atuais. O DNS dos domínios permanece no provedor atual.",
+  "dimensioning_intro": "O dimensionamento parte dos fatos informados na reunião de 22/09/2026 e será confirmado no levantamento da Fase 1.",
+  "assessment_outcome": "O levantamento entrega o mapa de hostnames e APIs do portal e do app, o comportamento das origens em falha e a linha de base de tráfego, que sustentam o desenho aprovado para a Fase 2.",
+  "methodology_intro": "A metodologia separa desenho e implantação: a Fase 1 levanta o ambiente e produz o desenho; a Fase 2, se contratada, implanta os controles em ondas nas janelas de terça-feira.",
+  "knowledge_transfer": "Ao final de cada fase, a POPULOS conduz sessões de repasse com as equipes de Canais Digitais e Segurança da Solaris, cobrindo políticas, painéis e procedimentos de resposta.",
+  "tests": "Na Fase 1, o desenho é validado em revisão técnica com a Solaris. Na Fase 2, cada onda passa por testes funcionais, testes de failover entre origens e verificação das regras de proteção antes do aceite.",
+  "schedule_intro": "O cronograma parte da data desta proposta, 24/09/2026, e considera a Fase 1 de 3 a 4 semanas.",
+  "schedule_sequence": "Fase 1 (Assessment e desenho) e, após o aceite do desenho e a contratação, provisionamento das licenças e Fase 2 em duas ondas nas janelas de terça-feira, das 22h às 2h.",
+  "closing": "A POPULOS permanece à disposição da Solaris Energia para esclarecer esta proposta e ajustar o planejamento da campanha de 01/03/2027.",
+  "callout_qualifications": "Equipe POPULOS com arquitetura e implantação de soluções Akamai de segurança de aplicações e gestão de tráfego.",
+  "callout_limits": "A Fase 1 não altera ambientes da Solaris. A implantação depende da contratação da Fase 2 após o aceite do desenho.",
+  "callout_migration": "A ativação dos controles ocorre em ondas, nas janelas de terça-feira das 22h às 2h, com plano de reversão aprovado para cada onda.",
+  "callout_milestones": "Marcos: aceite do desenho (fim da Fase 1), aceite da Onda 1 (proteção do portal e das APIs) e aceite da Onda 2 (failover automático).",
+  "diagram_users": "Clientes da Solaris",
+  "diagram_users_detail": "Usuários do portal do cliente e do app, que usa as mesmas APIs",
+  "diagram_origins_title": "Origens da Solaris",
+  "diagram_origins": "Datacenter próprio (principal) e nuvem pública (contingência)",
+  "front_titles": {
+   "continuity": "Continuidade entre origens",
+   "protection": "Proteção do portal e das APIs",
+   "automation": "Contenção de robôs na consulta de débitos"
+  },
+  "warranty_intro": "A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 90 dias corridos após o aceite de cada fase.",
+  "license_prefix": "As licenças Akamai serão fornecidas pela POPULOS por meio de revenda autorizada."
+ }
+}

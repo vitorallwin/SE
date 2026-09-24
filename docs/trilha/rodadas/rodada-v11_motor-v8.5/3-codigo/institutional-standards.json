@@ -1,0 +1,34 @@
+{
+  "template_version": "2026.09.24-1",
+  "sla": {
+    "scope": "Atuação da equipe POPULOS sobre falhas ou defeitos decorrentes exclusivamente dos serviços executados, durante a execução e a garantia técnica. Não é sustentação nem suporte gerenciado.",
+    "support_window": "Não definida na tabela institucional (a tabela não fixa horário de atendimento).",
+    "severities": [
+      {
+        "severity": "ALTA",
+        "response": "Até 1 hora",
+        "resolution": "Até 4 horas",
+        "description": "Situação de alto impacto que possivelmente coloque em risco o ambiente de produção. A apresentação de uma solução de contorno (workaround) também é considerada tempo de solução."
+      },
+      {
+        "severity": "MÉDIA",
+        "response": "Até 2 horas",
+        "resolution": "Até 8 horas",
+        "description": "Situação de baixo impacto, podendo a maioria das funções do software ser usada; entretanto, alguma intervenção pode ser necessária. A apresentação de workaround também é considerada tempo de solução."
+      },
+      {
+        "severity": "BAIXA",
+        "response": "Até 16 horas",
+        "resolution": "Até 24 horas",
+        "description": "Solicitações de mudança, atualizações, gerenciamento de usuários, dúvidas, novas instalações ou publicações de aplicativos e outras ações planejadas."
+      }
+    ]
+  },
+  "decisions_without_standard": [
+    "warranty",
+    "license_supply",
+    "engagement_type",
+    "stabilization_buffer",
+    "sla_applicability (fora de implementation)"
+  ]
+}

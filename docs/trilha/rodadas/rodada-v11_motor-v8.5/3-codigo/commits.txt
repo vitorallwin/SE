@@ -1,0 +1,1 @@
+985e2cd Motor v8.5 (regras v11): datas pelo motor, SLA por fase, padrões visíveis

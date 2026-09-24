@@ -1,0 +1,28 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:23:25.289338+00:00",
+      "errors_count": 3,
+      "errors": [
+        "citação da aprovação não nomeia o aprovador (Vitor): engagement_type",
+        "citação da aprovação não nomeia o aprovador (Vitor): warranty",
+        "citação da aprovação não nomeia o aprovador (Vitor): license_supply"
+      ],
+      "codes": [
+        "APROVACAO-CITACAO"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T17:23:39.382919+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "codes": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb11/w-efd93d4e/execucao/final/LUMINA-BOT-2026.docx"
+      }
+    }
+  ]
+}

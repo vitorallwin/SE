@@ -1,0 +1,31 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:33:29.491401+00:00",
+      "errors_count": 2,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "dimensionamento estimado sem premissa de responsável: Esforço de implantação"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:33:34.664032+00:00",
+      "errors_count": 2,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "dimensionamento estimado sem premissa de responsável: Esforço de implantação"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T16:33:38.661849+00:00",
+      "errors_count": 2,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "dimensionamento estimado sem premissa de responsável: Esforço de implantação"
+      ]
+    }
+  ]
+}

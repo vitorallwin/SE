@@ -1,0 +1,64 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T16:33:19.625371+00:00",
+      "errors_count": 15,
+      "errors": [
+        "faixa 4–5 semanas diverge da soma das fases (7–9): O cronograma foi estruturado em fases sequenciais com duração total de 4 a 5 semanas.",
+        "faixa 4–5 semanas diverge da soma das fases (7–9): Pendências e bloqueios:\n1. Nenhum bloqueio comercial ou técnico pendente.\n2. Licenciamento",
+        "número de dor ausente do sumário: 15/12/2026 a 05/01/2027",
+        "destino de cobertura inexistente: cronograma (Transcrição - Diego Martins)",
+        "destino de cobertura inexistente: eventos críticos (Transcrição - Diego Martins)",
+        "destino de cobertura inexistente: contexto_de_dor (Transcrição - Camila Reis)",
+        "dimensionamento estimado sem premissa de responsável: Esforço de implantação",
+        "janela da Fase 1 declarada diverge do cálculo (05/03–19/03): Lançamento do Novo Seguro Auto",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (05/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (19/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (lançamento do novo seguro auto): Lançamento do Novo Seguro Auto",
+        "evento com data conhecida sem viabilidade declarada: Congelamento de Fim de Ano (Change Freeze)",
+        "viabilidade 'fits' com prazo de licenciamento desconhecido: Lançamento do Novo Seguro Auto",
+        "aprovação citada não existe no insumo (approval_quote): license_supply"
+      ]
+    },
+    {
+      "attempt": 2,
+      "at": "2026-09-24T16:34:15.960852+00:00",
+      "errors_count": 11,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "dimensionamento estimado sem premissa de responsável: Esforço de implantação",
+        "janela da Fase 1 declarada diverge do cálculo (05/03–12/03): Lançamento do Novo Seguro Auto",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (05/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (12/03): Lançamento do Novo Seguro Auto",
+        "janela da Fase 1 declarada diverge do cálculo (02/02–09/02): Congelamento de Fim de Ano (Change Freeze)",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Congelamento de Fim de Ano (Change Freeze)",
+        "sumário não declara a viabilidade do evento (02/02): Congelamento de Fim de Ano (Change Freeze)",
+        "sumário não declara a viabilidade do evento (09/02): Congelamento de Fim de Ano (Change Freeze)",
+        "valor aprovado não aparece na citação do insumo: effort_estimate"
+      ]
+    },
+    {
+      "attempt": 3,
+      "at": "2026-09-24T16:34:49.848643+00:00",
+      "errors_count": 13,
+      "errors": [
+        "decisão interna aberta: license_supply",
+        "dimensionamento estimado sem premissa de responsável: Esforço de implantação",
+        "janela da Fase 1 declarada diverge do cálculo (05/03–12/03): Lançamento do Novo Seguro Auto",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (05/03): Lançamento do Novo Seguro Auto",
+        "sumário não declara a viabilidade do evento (12/03): Lançamento do Novo Seguro Auto",
+        "janela da Fase 1 declarada diverge do cálculo (02/02–09/02): Congelamento de Fim de Ano (Change Freeze)",
+        "Fase 1 termina depois do evento, mas a viabilidade não é 'não cabe': Congelamento de Fim de Ano (Change Freeze)",
+        "sumário não declara a viabilidade do evento (02/02): Congelamento de Fim de Ano (Change Freeze)",
+        "sumário não declara a viabilidade do evento (09/02): Congelamento de Fim de Ano (Change Freeze)",
+        "viabilidade 'fits' com prazo de licenciamento desconhecido: Lançamento do Novo Seguro Auto",
+        "viabilidade 'fits' com prazo de licenciamento desconhecido: Congelamento de Fim de Ano (Change Freeze)",
+        "valor aprovado não aparece na citação do insumo: effort_estimate"
+      ]
+    }
+  ]
+}

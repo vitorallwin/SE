@@ -1,0 +1,30 @@
+{
+  "rules_version": 10,
+  "data_mode": "test",
+  "input_assessment": {
+    "status": "insufficient",
+    "missing": [
+      "identificação da empresa cliente (razão social, segmento, contato completo)",
+      "identificação do site ou aplicação a proteger (domínios, tipo de aplicação, APIs)",
+      "necessidade concreta: ameaças enfrentadas ou requisito de proteção (WAF, DDoS, bots, DNS)",
+      "ambiente atual: origens, hospedagem e soluções de segurança já contratadas",
+      "volumes de tráfego, prazos e tipo de engajamento esperado"
+    ],
+    "reason": "O material é uma única mensagem de formulário ('Quero proteger meu site. Me mandem uma proposta.') sem nome de empresa, sem identificação do site ou dos ativos e sem requisito concreto. Não há base para selecionar produtos, dimensionar ou definir escopo."
+  },
+  "catalog_fit": {
+    "status": "fits",
+    "requested": "proteção de site (pedido genérico, sem detalhamento)",
+    "reason": "Proteção de aplicações web é um tema coberto pelo catálogo, mas nenhum produto pode ser avaliado sem qualificação; o encaixe é apenas preliminar."
+  },
+  "open_questions": [
+    "Qual é a empresa (razão social, segmento) e quem é o contato responsável pela decisão, com e-mail e telefone?",
+    "Quais sites, domínios ou APIs precisam ser protegidos e que tipo de aplicação é (institucional, e-commerce, portal autenticado, API)?",
+    "Qual problema motivou o pedido: ataques já sofridos (DDoS, invasão, bots, fraude em login), exigência regulatória ou prevenção?",
+    "Onde a aplicação está hospedada, quantas origens existem e quem é o provedor de DNS atual?",
+    "Quais soluções de segurança ou CDN já estão contratadas hoje?",
+    "Qual é o volume aproximado de tráfego (acessos, requisições ou banda) e há picos ou eventos críticos com data?",
+    "Há fluxo de envio de arquivos por usuários ou jornadas com login e criação de conta?",
+    "O que se espera da POPULOS: levantamento, desenho da solução ou implementação, e em qual prazo?"
+  ]
+}

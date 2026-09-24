@@ -1,0 +1,25 @@
+{
+  "rules_version": 10,
+  "data_mode": "test",
+  "input_assessment": {
+    "status": "insufficient",
+    "missing": [
+      "identificação da empresa cliente (razão social, CNPJ ou nome comercial)",
+      "identificação do site ou aplicação a proteger (domínio, URL, tipo de aplicação)",
+      "necessidade concreta: ameaça, incidente ou requisito de proteção (WAF, DDoS de aplicação, DDoS de infraestrutura, bots, fraude em contas, uploads)",
+      "contexto técnico: hospedagem, origens, DNS, APIs expostas",
+      "contato completo e papel do solicitante"
+    ],
+    "reason": "O material é uma única mensagem de formulário ('Quero proteger meu site. Me mandem uma proposta.') sem empresa identificada, sem site ou ativo identificável e sem necessidade concreta além de proteção genérica. Não há base para selecionar produtos, dimensionar ou definir escopo; o resultado adequado é a qualificação."
+  },
+  "open_questions": [
+    "Qual é a empresa que está solicitando a proposta (razão social ou nome comercial) e qual é o seu papel nela?",
+    "Qual site ou aplicação deve ser protegido (domínio/URL) e há APIs públicas associadas a ele?",
+    "Contra o que deseja se proteger: ataques à aplicação (WAF, injeção, exploração de vulnerabilidades), ataques de negação de serviço (volumétricos ou de aplicação), robôs automatizados, fraude em login/criação de contas ou arquivos maliciosos enviados por usuários?",
+    "Houve algum incidente recente ou existe uma exigência (auditoria, norma, contrato) que motiva o pedido? Se sim, descreva.",
+    "Onde o site está hospedado (nuvem, data center próprio, múltiplas origens) e quem gerencia o DNS do domínio?",
+    "Qual é o volume aproximado de tráfego (requisições ou acessos por mês) e há picos ou eventos críticos com data definida?",
+    "O que espera da POPULOS: avaliação, desenho da solução, implementação ou operação contínua? Há prazo desejado?",
+    "Qual é o melhor contato (e-mail e telefone) para agendarmos uma conversa de levantamento?"
+  ]
+}

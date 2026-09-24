@@ -1,0 +1,15 @@
+{
+  "attempts": [
+    {
+      "attempt": 1,
+      "at": "2026-09-24T17:22:51.628128+00:00",
+      "errors_count": 0,
+      "errors": [],
+      "codes": [],
+      "composition": {
+        "status": "emitted",
+        "docx": "/tmp/rb11/w-dbf4c862/execucao/final/POPULOS-VERTICE-EDGEDNS-2026.docx"
+      }
+    }
+  ]
+}

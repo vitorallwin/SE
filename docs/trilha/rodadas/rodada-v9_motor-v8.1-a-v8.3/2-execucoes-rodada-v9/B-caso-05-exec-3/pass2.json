@@ -1,0 +1,111 @@
+{
+  "rules_version": 9,
+  "data_mode": "test",
+  "client_name": "Hospital São Lucas do Vale",
+  "opportunity": "Desktops virtuais Citrix — assessment e desenho",
+  "code": "HSLV-VDI-2026-09",
+  "opportunity_id": "caso-05",
+  "input_assessment": {
+    "status": "sufficient",
+    "missing": [],
+    "reason": "O material identifica o cliente (Hospital São Lucas do Vale, contato Juliana Castro, Gerente de TI) e uma necessidade concreta sobre ativos identificáveis: migração de cerca de 1.100 estações físicas com Windows 10 para desktops virtuais Citrix, com acesso ao prontuário eletrônico, disponibilidade 24x7 e conformidade com a LGPD (e-mail de 21/09/2026)."
+  },
+  "catalog_fit": {
+    "status": "no_catalog",
+    "requested": "Assessment, desenho e estimativa de implantação de desktops virtuais (VDI) com Citrix para cerca de 1.100 estações, incluindo thin clients e acesso ao prontuário eletrônico.",
+    "reason": "O catálogo fornecido cobre apenas produtos Akamai de entrega, DNS, tráfego e segurança de borda (Edge DNS, App & API Protector, Malware Protection, ALB, GTM, Ion, Prolexic, Account Protector, IP Accelerator, Bot Manager Premier). Nenhum deles oferece virtualização de desktops, Citrix, gestão de estações ou thin clients. Os requisitos de disponibilidade 24x7 e LGPD referem-se ao ambiente VDI e não a aplicações web públicas, origens múltiplas ou DDoS, portanto não justificam produtos do catálogo. A lacuna é declarada em vez de adaptar produtos não relacionados."
+  },
+  "open_questions": [
+    "A POPULOS possui oferta, parceria e catálogo aprovados para Citrix/VDI que possam ser usados nesta proposta?",
+    "Existe alguma necessidade de publicação web, APIs públicas ou proteção de borda (por exemplo, acesso externo ao prontuário) que devesse ser avaliada com o catálogo Akamai?"
+  ],
+  "traceability": [
+    {
+      "requirement_id": "REQ-01",
+      "requirement": "Migrar cerca de 1.100 estações físicas com Windows 10 para desktops virtuais Citrix",
+      "solution": "Fora do catálogo fornecido (lacuna declarada)",
+      "evidence": "Migrar cerca de 1.100 estações físicas com Windows 10 para desktops virtuais Citrix",
+      "source": "E-mail de Juliana Castro (Gerente de TI) de 21/09/2026, parágrafo 1",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-02",
+      "requirement": "Permitir acesso ao prontuário eletrônico a partir de qualquer estação, inclusive thin clients",
+      "solution": "Fora do catálogo fornecido (lacuna declarada)",
+      "evidence": "Permitir acesso ao prontuário eletrônico a partir de qualquer estação, inclusive thin clients",
+      "source": "E-mail de Juliana Castro (Gerente de TI) de 21/09/2026, parágrafo 1",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-03",
+      "requirement": "Garantir disponibilidade 24x7 do ambiente",
+      "solution": "Fora do catálogo fornecido (lacuna declarada)",
+      "evidence": "Garantir disponibilidade 24x7 do ambiente",
+      "source": "E-mail de Juliana Castro (Gerente de TI) de 21/09/2026, parágrafo 2",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-04",
+      "requirement": "Atender à LGPD para dados de saúde",
+      "solution": "Fora do catálogo fornecido (lacuna declarada)",
+      "evidence": "Atender à LGPD para dados de saúde",
+      "source": "E-mail de Juliana Castro (Gerente de TI) de 21/09/2026, parágrafo 2",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    },
+    {
+      "requirement_id": "REQ-05",
+      "requirement": "Entregar proposta de assessment e desenho da solução com estimativa para a implantação",
+      "solution": "Fora do catálogo fornecido (lacuna declarada)",
+      "evidence": "Entregar proposta de assessment e desenho da solução com estimativa para a implantação",
+      "source": "E-mail de Juliana Castro (Gerente de TI) de 21/09/2026, parágrafo 3",
+      "speakers": [
+        "client"
+      ],
+      "hypothesis": false
+    }
+  ],
+  "discovery": {
+    "business_goals": [
+      "Substituir as estações com Windows 10 sem suporte por desktops virtuais Citrix (REQ-01, REQ-02)",
+      "Manter o atendimento hospitalar 24x7 com conformidade à LGPD (REQ-03, REQ-04)"
+    ]
+  },
+  "client_scope": {
+    "type": "phased",
+    "excludes_implementation": false,
+    "source": "\"Gostaríamos de uma proposta técnica de assessment e desenho da solução, com estimativa para a implantação.\" (e-mail de 21/09/2026)",
+    "forbidden_in_committed": []
+  },
+  "client_numbers": [
+    {
+      "quote": "cerca de 1.100 estações de trabalho",
+      "ref": "E-mail de Juliana Castro (Gerente de TI) de 21/09/2026, parágrafo 1",
+      "destination": "descartado_com_motivo",
+      "reason": "Dimensionamento de VDI fora do catálogo fornecido; nenhuma proposta é emitida."
+    },
+    {
+      "quote": "disponibilidade 24x7",
+      "ref": "E-mail de Juliana Castro (Gerente de TI) de 21/09/2026, parágrafo 2",
+      "destination": "descartado_com_motivo",
+      "reason": "Requisito do ambiente VDI, fora do catálogo fornecido."
+    },
+    {
+      "quote": "Windows 10",
+      "ref": "E-mail de Juliana Castro (Gerente de TI) de 21/09/2026, parágrafo 1",
+      "destination": "descartado_com_motivo",
+      "reason": "Contexto do ambiente atual de estações, fora do catálogo fornecido."
+    }
+  ]
+}
