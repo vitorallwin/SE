@@ -60,6 +60,8 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .dot.on { background: var(--emitted); }
 
 .mast-right { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.local-fields { display: flex; flex-direction: column; gap: 16px; }
+.local-fields[hidden] { display: none; }
 .key-result { margin: 0; font-size: 14px; font-weight: 500; }
 .key-result:empty { display: none; }
 .key-result.ok { color: var(--emitted); }

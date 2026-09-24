@@ -23,7 +23,7 @@ const CODES = {
 };
 const LEGIT = new Set(["GATE-INSUMO", "GATE-CATALOGO", "DECISAO-ABERTA"]);
 const FEAS = { fits: "cabe", partially_fits: "cabe parcialmente", does_not_fit: "não cabe", conditional: "condicional" };
-const AUTHOR = { A: "Gemini", "B-api": "Claude (API)", manual: "manual", B: "—" };
+const AUTHOR = { A: "Gemini", "B-api": "Claude (API)", "C-local": "IA local", manual: "manual", B: "—" };
 
 const state = { status: null, runs: [], current: null, selected: null, poll: null };
 const $ = (id) => document.getElementById(id);
@@ -75,7 +75,7 @@ function renderEngine() {
     ...[["Motor", s.engine_version], ["Regras", `v${s.rules_version}`], ["Template", s.template_version]].map(([k, v]) =>
       h("div", {}, h("dt", {}, k), h("dd", {}, v))),
     h("div", {}, h("dt", {}, "Autores"), h("dd", {},
-      ...[["gemini", "Gemini"], ["claude", "Claude"]].map(([key, label], i) => h("span", {
+      ...[["gemini", "Gemini"], ["claude", "Claude"], ["local", "IA local"]].map(([key, label], i) => h("span", {
         title: a[key].configured ? `${a[key].model} · chave: ${a[key].key_source}` : "sem chave no .env",
         style: i ? "margin-left:12px" : "" }, h("span", { class: `dot ${a[key].configured ? "on" : ""}` }), label)))),
   );
@@ -189,7 +189,7 @@ function renderSheet() {
       h("div", { class: "block-title" }, h("h2", { id: "t-attempts" }, "Tentativas"), h("span", { class: "aside" }, `${log.length} de ${limit} usadas · limite físico`)),
       h("div", { class: "slots", style: `--limit:${limit}` }, ...slots),
       h("div", { class: "toolbar" },
-        authorBtn("claude", "Claude"), authorBtn("gemini", "Gemini"),
+        authorBtn("claude", "Claude"), authorBtn("gemini", "Gemini"), authorBtn("local", "IA local"),
         h("span", { class: "sep", "aria-hidden": "true" }),
         h("button", { class: "btn", type: "button", disabled: running || full, onclick: () => openDialog("dlg-state") }, "Colar estado.json"),
         h("button", { class: "btn btn-quiet", type: "button", onclick: () => openDialog("dlg-complement") }, "Complementar insumo → nova execução")),
@@ -383,7 +383,14 @@ fileInput.addEventListener("change", listFiles);
 drop.addEventListener("drop", () => setTimeout(listFiles));
 
 $("new-run").addEventListener("click", () => openDialog("dlg-new"));
-$("open-keys").addEventListener("click", () => { openDialog("dlg-keys"); $("key-result").textContent = ""; });
+const syncLocalFields = () => {
+  const form = $("form-keys"), local = form.provider.value === "local", cfg = state.status?.authors?.local || {};
+  $("local-fields").hidden = !local;
+  if (local) { form.base_url.value ||= cfg.base_url || "https://popai.populos.com.br/v1"; form.model.value ||= cfg.model || "populos"; }
+  form.key.placeholder = state.status?.authors?.[form.provider.value]?.configured ? "Deixe vazio para manter a chave atual" : "Clique aqui e aperte Ctrl+V";
+};
+$("form-keys").provider.addEventListener("change", syncLocalFields);
+$("open-keys").addEventListener("click", () => { openDialog("dlg-keys"); $("key-result").textContent = ""; syncLocalFields(); });
 
 $("form-keys").addEventListener("submit", async (event) => {
   if (event.submitter?.value === "cancel") return;
@@ -392,7 +399,7 @@ $("form-keys").addEventListener("submit", async (event) => {
   $("keys-error").textContent = ""; result.textContent = "Gravando e testando…"; result.className = "key-result";
   button.disabled = true;
   try {
-    const r = await api("/api/keys", { method: "POST", body: { provider: form.provider.value, key: form.key.value } });
+    const r = await api("/api/keys", { method: "POST", body: { provider: form.provider.value, key: form.key.value, base_url: form.base_url.value, model: form.model.value } });
     form.key.value = "";
     state.status.authors = r.authors; renderEngine();
     if (state.current) renderSheet();

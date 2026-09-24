@@ -17,7 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from .ai import ClaudeClient, GeminiClient, load_dotenv
+from .ai import ClaudeClient, GeminiClient, OpenAICompatClient, load_dotenv
 from .case_runner import ROOT, author_loop, engine_config, prepare_run, record_attempt
 from .feasibility import compute, paragraph
 from .violation_codes import code_of
@@ -64,30 +64,49 @@ def authors() -> dict[str, Any]:
     return {
         "gemini": GeminiClient().status(),
         "claude": ClaudeClient(config["configurations"]["B"]["author_model"]).status(),
+        "local": OpenAICompatClient().status(),
     }
 
 
-KEY_VARIABLES = {"gemini": "GEMINI_API_KEY", "claude": "ANTHROPIC_API_KEY"}
+KEY_VARIABLES = {"gemini": "GEMINI_API_KEY", "claude": "ANTHROPIC_API_KEY", "local": "LOCAL_AI_API_KEY"}
 
 
-def set_key(provider: str, key: str) -> dict[str, Any]:
+def set_key(provider: str = "", key: str = "", base_url: str = "", model: str = "") -> dict[str, Any]:
     """Write an author key into the git-ignored .env (UTF-8 without BOM, no quotes) and test it right away.
 
-    The key goes browser → this local server → .env; it is never sent back to the browser.
+    The key goes browser → this local server → .env; it is never sent back to the browser. The local AI
+    (any OpenAI-compatible endpoint) also takes its base URL and model name.
     """
     variable = KEY_VARIABLES.get(provider)
     if not variable:
         raise LabError("autor inválido")
+    load_dotenv(ROOT)
     key = "".join(str(key or "").split()).strip("\"'")
-    if len(key) < 20:
-        raise LabError("a chave parece incompleta: copie a chave inteira")
+    updates: dict[str, str] = {}
+    if key:
+        if len(key) < 20:
+            raise LabError("a chave parece incompleta: copie a chave inteira")
+        updates[variable] = key
+    elif not os.environ.get(variable):
+        raise LabError("cole a chave")
+    if provider == "local":
+        base_url = str(base_url or "").strip().rstrip("/").removesuffix("/chat/completions")
+        model = str(model or "").strip()
+        if base_url:
+            if not re.fullmatch(r"https?://[^\s/]+(/[^\s]*)?", base_url):
+                raise LabError("URL inválida: use o endereço base, ex.: https://servidor/v1")
+            updates["LOCAL_AI_BASE_URL"] = base_url
+        if model:
+            updates["LOCAL_AI_MODEL"] = model
+        if not (updates.get("LOCAL_AI_BASE_URL") or os.environ.get("LOCAL_AI_BASE_URL")) or not (model or os.environ.get("LOCAL_AI_MODEL")):
+            raise LabError("informe a URL base e o nome do modelo")
     env_file = ROOT / ".env"
     lines = env_file.read_text(encoding="utf-8-sig").splitlines() if env_file.exists() else []
-    lines = [line for line in lines if line.strip().removeprefix("export ").partition("=")[0].strip() != variable]
-    lines.append(f"{variable}={key}")
+    lines = [line for line in lines if line.strip().removeprefix("export ").partition("=")[0].strip() not in updates]
+    lines += [f"{name}={value}" for name, value in updates.items()]
     env_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
     load_dotenv(ROOT)
-    return {"provider": provider, "length": len(key), "check": check_key(provider), "authors": authors()}
+    return {"provider": provider, "length": len(key) or len(os.environ.get(variable, "")), "check": check_key(provider), "authors": authors()}
 
 
 def check_key(provider: str) -> dict[str, Any]:
@@ -100,17 +119,30 @@ def check_key(provider: str) -> dict[str, Any]:
     key = os.environ.get(KEY_VARIABLES[provider], "")
     if provider == "gemini":
         request = urllib.request.Request("https://generativelanguage.googleapis.com/v1beta/models?pageSize=1&key=" + urllib.parse.quote(key, safe=""))
-    else:
+    elif provider == "claude":
         request = urllib.request.Request("https://api.anthropic.com/v1/models?limit=1", headers={"x-api-key": key, "anthropic-version": "2023-06-01"})
+    else:
+        request = urllib.request.Request(os.environ.get("LOCAL_AI_BASE_URL", "").rstrip("/") + "/models", headers={"Authorization": f"Bearer {key}"})
     try:
-        with urllib.request.urlopen(request, timeout=20):
-            return {"ok": True, "message": "chave aceita pelo provedor"}
+        with urllib.request.urlopen(request, timeout=20) as response:
+            body = response.read().decode("utf-8", errors="replace")
     except urllib.error.HTTPError as exc:
         if exc.code in {400, 401, 403}:
             return {"ok": False, "message": "o provedor recusou a chave: gere uma nova e cole de novo"}
+        if provider == "local" and exc.code in {404, 405}:
+            return {"ok": True, "message": "servidor sem /models: a chave será testada ao rodar o autor"}
         return {"ok": False, "message": f"o provedor respondeu HTTP {exc.code}; tente de novo em instantes"}
-    except (urllib.error.URLError, TimeoutError) as exc:
+    except (urllib.error.URLError, TimeoutError, ValueError) as exc:
         return {"ok": False, "message": f"sem acesso ao provedor: {exc}"}
+    if provider == "local":
+        model = os.environ.get("LOCAL_AI_MODEL", "")
+        try:
+            names = [m.get("id") for m in json.loads(body).get("data", [])]
+        except (json.JSONDecodeError, AttributeError):
+            names = []
+        if names and model not in names:
+            return {"ok": False, "message": f"chave aceita, mas o modelo '{model}' não está na lista do servidor: {', '.join(map(str, names[:8]))}"}
+    return {"ok": True, "message": "chave aceita pelo provedor"}
 
 
 def status() -> dict[str, Any]:
@@ -206,7 +238,7 @@ def submit_state(run_id: str, text: str) -> dict[str, Any]:
 
 def _set_author(run_dir: Path, engine: str, model: str) -> None:
     request = _read_json(run_dir / "request.json", {})
-    request["configuration"] = {"gemini": "A", "claude": "B-api", "manual": "manual"}[engine]
+    request["configuration"] = {"gemini": "A", "claude": "B-api", "local": "C-local", "manual": "manual"}[engine]
     request["author_model"] = model
     (run_dir / "request.json").write_text(json.dumps(request, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -223,6 +255,8 @@ def start_author(run_id: str, engine: str) -> dict[str, Any]:
         client: Any = GeminiClient()
     elif engine == "claude":
         client = ClaudeClient(engine_config()["configurations"]["B"]["author_model"])
+    elif engine == "local":
+        client = OpenAICompatClient()
     else:
         raise LabError("autor inválido")
     if not client.configured:

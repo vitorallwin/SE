@@ -54,7 +54,7 @@ class Handler(BaseHTTPRequestHandler):
             ("POST", r"/api/runs/([a-z0-9-]+)/author", lambda r: lab.start_author(r, self._body().get("engine", ""))),
             ("POST", r"/api/runs/([a-z0-9-]+)/complement", lambda r: lab.complement_run(r, self._body().get("text", ""))),
             ("POST", r"/api/runs/([a-z0-9-]+)/pdf", lambda r: lab.render_pdf(r)),
-            ("POST", r"/api/keys", lambda: lab.set_key(*(lambda b: (b.get("provider", ""), b.get("key", "")))(self._body()))),
+            ("POST", r"/api/keys", lambda: lab.set_key(**{k: v for k, v in self._body().items() if k in {"provider", "key", "base_url", "model"}})),
         ]
         for verb, pattern, handler in routes:
             match = re.fullmatch(pattern, path)

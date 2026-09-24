@@ -102,7 +102,83 @@ class DotenvTests(unittest.TestCase):
             self.assertEqual(result["length"], len("AIzaSyExemploExemploExemploExemplo123"))
             self.assertNotIn("AIzaSy", json.dumps(result))
             with self.assertRaises(lab.LabError):
-                lab.set_key("gemini", "")
+                lab.set_key("gemini", "curta")
+            self.assertEqual(lab.set_key("gemini", "")["length"], result["length"])  # vazio mantém a chave atual
+            with self.assertRaises(lab.LabError):
+                lab.set_key("local", "", "https://servidor/v1", "populos")  # sem chave local ainda
+
+
+class LocalAITests(unittest.TestCase):
+    """IA local compatível com OpenAI: mesmo loop de autor, validador e limite."""
+
+    def serve(self, handler_cls):
+        import threading
+        from http.server import ThreadingHTTPServer
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), handler_cls)
+        threading.Thread(target=server.serve_forever, daemon=True).start()
+        self.addCleanup(server.shutdown)
+        return f"http://127.0.0.1:{server.server_port}/v1"
+
+    def test_local_author_emits_through_the_same_loop(self) -> None:
+        import os
+        from http.server import BaseHTTPRequestHandler
+
+        from sales_engineer.ai import OpenAICompatClient
+        from sales_engineer.case_runner import author_loop, prepare_run
+
+        state_text = (FIXTURES / "vertice_v11.json").read_text(encoding="utf-8")
+        seen: list[dict] = []
+
+        class Fake(BaseHTTPRequestHandler):
+            def log_message(self, *args):  # noqa: D401
+                pass
+
+            def do_POST(self):
+                body = json.loads(self.rfile.read(int(self.headers["Content-Length"])))
+                seen.append({"auth": self.headers.get("Authorization"), **body})
+                if "response_format" in body:  # servidor que não aceita response_format
+                    self.send_response(400); self.end_headers(); self.wfile.write(b'{"error":"response_format"}'); return
+                reply = {"choices": [{"finish_reason": "stop", "message": {"content": "```json\n" + state_text + "\n```"}}]}
+                data = json.dumps(reply).encode()
+                self.send_response(200); self.send_header("Content-Length", str(len(data))); self.end_headers(); self.wfile.write(data)
+
+        base = self.serve(Fake)
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.dict(os.environ, {
+                "LOCAL_AI_BASE_URL": base, "LOCAL_AI_API_KEY": "chave-de-teste", "LOCAL_AI_MODEL": "populos"}):
+            source = Path(tmp) / "fonte"
+            source.mkdir()
+            (source / "insumo.md").write_bytes((FIXTURES / "vertice_insumo.md").read_bytes())
+            run_dir = Path(tmp) / "run"
+            prepare_run(source, run_dir, "2026-09-24", "test", "B")
+            log = author_loop(run_dir, OpenAICompatClient())
+            attempts = json.loads((run_dir / "attempts.json").read_text(encoding="utf-8"))["attempts"]
+        self.assertEqual(attempts[0]["composition"]["status"], "emitted", attempts[0]["errors"])
+        self.assertEqual(log["model"], "populos")
+        self.assertEqual(seen[-1]["auth"], "Bearer chave-de-teste")
+        self.assertEqual(seen[-1]["model"], "populos")
+        self.assertNotIn("response_format", seen[-1])
+
+    def test_rejected_local_key_is_explained(self) -> None:
+        import os
+        from http.server import BaseHTTPRequestHandler
+
+        from sales_engineer.ai import OpenAICompatClient
+
+        class Deny(BaseHTTPRequestHandler):
+            def log_message(self, *args):
+                pass
+
+            def do_POST(self):
+                self.rfile.read(int(self.headers["Content-Length"]))
+                self.send_response(401); self.end_headers(); self.wfile.write(b'{"error":{"type":"authentication_error"}}')
+
+        base = self.serve(Deny)
+        with mock.patch.dict(os.environ, {"LOCAL_AI_BASE_URL": base, "LOCAL_AI_API_KEY": "x" * 30, "LOCAL_AI_MODEL": "populos"}):
+            with self.assertRaises(RuntimeError) as ctx:
+                OpenAICompatClient().generate_json("s", {"a": 1})
+        self.assertIn("IA local recusou a chave", str(ctx.exception))
+        self.assertIn("LOCAL_AI_API_KEY", str(ctx.exception))
 
 
 if __name__ == "__main__":

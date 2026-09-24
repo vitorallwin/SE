@@ -95,7 +95,8 @@ class GeminiClient:
         }
 
 
-DOTENV_KEYS = {"GEMINI_API_KEY", "GEMINI_MODEL", "ANTHROPIC_API_KEY", "ANTHROPIC_MODEL"}
+DOTENV_KEYS = {"GEMINI_API_KEY", "GEMINI_MODEL", "ANTHROPIC_API_KEY", "ANTHROPIC_MODEL",
+               "LOCAL_AI_API_KEY", "LOCAL_AI_BASE_URL", "LOCAL_AI_MODEL"}
 
 
 def load_dotenv(root: Any) -> None:
@@ -126,7 +127,7 @@ def key_source(name: str) -> str | None:
 def explain_key_error(provider: str, status: int, detail: str) -> str:
     """Short operator-facing message for a rejected key, instead of the raw API payload."""
     if status in {400, 401, 403} and re.search(r"API_KEY_INVALID|API key not valid|invalid x-api-key|authentication_error|PERMISSION_DENIED", detail, re.I):
-        variable = "GEMINI_API_KEY" if provider == "Gemini" else "ANTHROPIC_API_KEY"
+        variable = {"Gemini": "GEMINI_API_KEY", "Claude": "ANTHROPIC_API_KEY"}.get(provider, "LOCAL_AI_API_KEY")
         source = key_source(variable) or "?"
         return (f"{provider} recusou a chave (origem: {source}). Confira {variable} no .env: sem aspas, sem espaços, "
                 f"chave ativa no console do provedor. Depois reinicie a bancada.")
@@ -207,3 +208,90 @@ class ClaudeClient:
 
     def status(self) -> dict[str, Any]:
         return {"configured": self.configured, "model": self.model, "key_source": key_source("ANTHROPIC_API_KEY")}
+
+
+class OpenAICompatClient:
+    """Author via any OpenAI-compatible endpoint (/v1/chat/completions), e.g. a company-hosted model.
+
+    Configured by LOCAL_AI_BASE_URL (ending in /v1), LOCAL_AI_API_KEY and LOCAL_AI_MODEL.
+    """
+
+    def __init__(self) -> None:
+        self.base_url = os.getenv("LOCAL_AI_BASE_URL", "").strip().rstrip("/")
+        self.api_key = os.getenv("LOCAL_AI_API_KEY", "").strip()
+        self.model = os.getenv("LOCAL_AI_MODEL", "").strip()
+
+    @property
+    def configured(self) -> bool:
+        return bool(self.base_url and self.api_key and self.model)
+
+    def _post(self, body: dict[str, Any]) -> dict[str, Any]:
+        request = urllib.request.Request(
+            self.base_url + "/chat/completions",
+            data=json.dumps(body).encode("utf-8"),
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"},
+            method="POST",
+        )
+        for attempt in range(4):
+            try:
+                with urllib.request.urlopen(request, timeout=1200) as response:
+                    return json.loads(response.read().decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                detail = exc.read().decode("utf-8", errors="replace")[:600]
+                if exc.code in {429, 500, 502, 503, 504} and attempt < 3:
+                    time.sleep(2 ** (attempt + 2))
+                    continue
+                raise _HTTPFailure(exc.code, detail) from exc
+            except (urllib.error.URLError, TimeoutError) as exc:
+                if attempt < 3:
+                    time.sleep(2 ** (attempt + 2))
+                    continue
+                raise RuntimeError(f"Falha ao acessar a IA local: {exc}") from exc
+        raise RuntimeError("IA local não respondeu após as tentativas configuradas")
+
+    def _complete(self, system: str, user: str, max_output_tokens: int) -> str:
+        body: dict[str, Any] = {"model": self.model, "temperature": 0.1, "max_tokens": max_output_tokens,
+                                "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+                                "response_format": {"type": "json_object"}}
+        try:
+            data = self._post(body)
+        except _HTTPFailure as exc:
+            if exc.status != 400:
+                raise RuntimeError(explain_key_error("IA local", exc.status, exc.detail)) from exc
+            # Servidores compatíveis nem sempre aceitam response_format ou um max_tokens alto.
+            body.pop("response_format")
+            body["max_tokens"] = min(max_output_tokens, 16384)
+            try:
+                data = self._post(body)
+            except _HTTPFailure as retry:
+                raise RuntimeError(explain_key_error("IA local", retry.status, retry.detail)) from retry
+        try:
+            choice = data["choices"][0]
+            text = choice["message"]["content"] or ""
+        except (KeyError, IndexError, TypeError) as exc:
+            raise RuntimeError(f"Resposta da IA local sem conteúdo utilizável: {str(data)[:300]}") from exc
+        if choice.get("finish_reason") == "length":
+            raise RuntimeError("A IA local cortou a resposta (limite de tokens de saída ou de contexto do modelo)")
+        return text
+
+    def generate_json(self, system: str, payload: dict[str, Any], max_output_tokens: int = 16384) -> dict[str, Any]:
+        if not self.configured:
+            raise RuntimeError("IA local não configurada (LOCAL_AI_BASE_URL, LOCAL_AI_API_KEY, LOCAL_AI_MODEL)")
+        text = self._complete(system, "ENTRADA JSON:\n" + json.dumps(payload, ensure_ascii=False), max_output_tokens)
+        parsed = _json_object(text)
+        if parsed is None:
+            parsed = _json_object(self._complete("Responda somente JSON válido.",
+                                                 "Corrija o JSON abaixo, preservando todo o conteúdo:\n\n" + text, max_output_tokens))
+        if parsed is None:
+            raise RuntimeError("A IA local retornou JSON inválido mesmo após a etapa de reparo")
+        return parsed
+
+    def status(self) -> dict[str, Any]:
+        return {"configured": self.configured, "model": self.model, "base_url": self.base_url,
+                "key_source": key_source("LOCAL_AI_API_KEY")}
+
+
+class _HTTPFailure(Exception):
+    def __init__(self, status: int, detail: str):
+        super().__init__(f"HTTP {status}")
+        self.status, self.detail = status, detail

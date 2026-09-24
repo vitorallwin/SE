@@ -110,10 +110,19 @@
         <select name="provider">
           <option value="gemini">Gemini (aistudio.google.com/apikey)</option>
           <option value="claude">Claude (console.anthropic.com)</option>
+          <option value="local">IA local (compatível com OpenAI, ex.: PopAI)</option>
         </select>
       </label>
+      <div class="local-fields" id="local-fields" hidden>
+        <label class="field">URL base
+          <input name="base_url" type="url" autocomplete="off" spellcheck="false" placeholder="https://popai.populos.com.br/v1">
+        </label>
+        <label class="field">Modelo
+          <input name="model" autocomplete="off" spellcheck="false" placeholder="populos">
+        </label>
+      </div>
       <label class="field">Chave
-        <input name="key" type="password" required autocomplete="off" spellcheck="false" placeholder="Clique aqui e aperte Ctrl+V">
+        <input name="key" type="password" autocomplete="off" spellcheck="false" placeholder="Clique aqui e aperte Ctrl+V">
       </label>
       <p class="key-result" id="key-result" role="status"></p>
       <p class="form-error" id="keys-error" role="alert"></p>
