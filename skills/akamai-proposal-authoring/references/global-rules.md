@@ -33,6 +33,17 @@ The global state separates client facts, requirements, decisions, scope, commerc
 - When a schedule depends on an external date (freeze, event, client window), the calendar duration is stated as conditional. Declared week ranges must equal the sum of the phases.
 - Case decisions (warranty, license supply, engagement, estimates) are scoped to one opportunity id and are never reused as few-shot examples.
 
+## Decisions, provenance and feasibility (rules v6 and v7)
+
+- A decision is committed only with an explicit approval: approver, ISO date, and a record of where the approval happened. Moving on without objecting is not approval. The approved text is kept verbatim; context goes outside it.
+- A decision is bound to the engagement type it was made for. When the engagement changes, dependent decisions reopen. An institutional block (such as the SLA table) is emitted only when declared applicable to the current engagement.
+- `data_mode: test` marks the origin of the data. It never disables a check.
+- An effort estimate has a technical owner (architect, engineering, delivery, or technical presales).
+- Provenance records who said it: client, vendor, or input document. A requirement supported only by the vendor is a hypothesis to validate.
+- Committed deliverables and acceptance criteria never require an action that the scope boundary forbids.
+- For a critical event with a known date, feasibility is computed in the proposal from the proposal date, including the license lead time, and stated in the executive summary. A dateless event becomes an open question.
+- Every option that touches production (a wave, a fast track) declares it, has its own window, rollback, approval, and acceptance criteria, and must fit before the change freeze, not only before the event.
+
 ## Client-facing language
 
 Never expose pipeline or drafting language. The single source for forbidden and untranslated terms is `lexicon.json`, consumed by code. Rewrite internal terms as proposal language such as `levantamento`, `premissa de dimensionamento`, `condição de contratação`, or a named requirement.

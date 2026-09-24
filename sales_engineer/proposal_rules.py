@@ -156,6 +156,81 @@ def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
 
     if int(proposal.get("rules_version", 0) or 0) >= 6:
         errors.extend(_validate_rules_v6(proposal))
+    if int(proposal.get("rules_version", 0) or 0) >= 7:
+        errors.extend(_validate_rules_v7(proposal))
+    return errors
+
+
+LATEST_RULES_VERSION = 7
+DATA_MODES = {"test", "production"}
+TECHNICAL_ROLES = {"arquiteto", "engenharia", "delivery", "pré-vendas técnica"}
+_IMPLICIT_APPROVAL = re.compile(r"ao seguir|impl[ií]cit|t[aá]cit|presumid|por padr[aã]o|dado de teste", re.IGNORECASE)
+
+
+def _production_options(proposal: dict[str, Any]) -> list[dict[str, Any]]:
+    options = [wave for wave in (proposal.get("optional_phase") or {}).get("waves", []) if wave.get("goes_to_production")]
+    track = proposal.get("fast_track")
+    if track and track.get("production_change"):
+        options.append(track)
+    return options
+
+
+def _validate_rules_v7(proposal: dict[str, Any]) -> list[str]:
+    """Engine-wide issues from the V6 audit: explicit approvals, technical estimate owners,
+    acceptance for every production option, license lead time, and test mode as a flag."""
+    errors: list[str] = []
+
+    # Modo de teste é marcação de origem, nunca desliga checagem.
+    if proposal.get("data_mode") not in DATA_MODES:
+        errors.append("data_mode ausente ou inválido (use 'test' ou 'production')")
+
+    # Aprovação explícita: aprovador, data ISO, registro da aprovação e modo; sem aprovação implícita.
+    for key, decision in proposal.get("governance", {}).items():
+        if decision.get("state") != "commitment":
+            continue
+        try:
+            date.fromisoformat(str(decision.get("approved_at", "")))
+        except ValueError:
+            errors.append(f"decisão sem data de aprovação válida (AAAA-MM-DD): {key}")
+        if not decision.get("approval_record"):
+            errors.append(f"decisão sem registro da aprovação explícita: {key}")
+        if decision.get("mode") not in DATA_MODES:
+            errors.append(f"decisão sem modo de dado (test/production): {key}")
+        for field in ("approved_by", "approval_record", "source"):
+            if _IMPLICIT_APPROVAL.search(str(decision.get(field, ""))):
+                errors.append(f"aprovação implícita ou marcação de teste no texto ({field}): {key}")
+        if key.endswith("_estimate") and decision.get("approver_role") not in TECHNICAL_ROLES:
+            errors.append(f"estimativa de esforço aprovada por papel não técnico: {key}")
+
+    # Estimativa de esforço tem dono técnico.
+    for estimate in proposal.get("estimates", []):
+        if estimate.get("owner_role") not in TECHNICAL_ROLES:
+            errors.append(f"estimativa sem dono técnico (owner_role): {estimate.get('item')}")
+
+    # Toda opção que toca produção tem critério de aceite próprio.
+    options = _production_options(proposal)
+    option_ids = {option.get("id") for option in options}
+    for option in options:
+        if not option.get("id"):
+            errors.append(f"opção que toca produção sem id: {option.get('name') or option.get('title')}")
+        elif not any(c.get("option_id") == option["id"] for c in proposal.get("acceptance_criteria", [])):
+            errors.append(f"opção que toca produção sem critério de aceite próprio: {option['id']}")
+    for criterion in proposal.get("acceptance_criteria", []):
+        if criterion.get("phase") != "committed" and criterion.get("option_id") not in option_ids:
+            errors.append(f"critério de fase opcional sem opção existente: {criterion.get('option_id')}")
+
+    # O prazo de licenciamento entra em qualquer cálculo de viabilidade.
+    for item in proposal.get("event_feasibility", []):
+        lead = (item.get("lead_times") or {}).get("licenciamento")
+        if not lead or lead.get("weeks") is None or not lead.get("source"):
+            errors.append(f"viabilidade sem prazo de licenciamento declarado (semanas e origem): {item.get('event')}")
+    track = proposal.get("fast_track")
+    if track and track.get("components"):
+        lead = (track.get("lead_times") or {}).get("licenciamento")
+        if not lead or lead.get("weeks") is None or not lead.get("source"):
+            errors.append("trilha rápida sem prazo de licenciamento declarado")
+        if not any("licen" in str(text).casefold() for text in track.get("items", [])):
+            errors.append("trilha rápida não lista o licenciamento entre os pré-requisitos")
     return errors
 
 
@@ -205,7 +280,7 @@ def _validate_rules_v6(proposal: dict[str, Any]) -> list[str]:
 
     # Committed deliverables cannot require what the scope boundary forbids.
     forbidden = [normalize_document_text(term) for term in proposal.get("client_scope", {}).get("forbidden_in_committed", [])]
-    committed = [c.get("criterion", "") for c in proposal.get("acceptance_criteria", []) if c.get("phase") != "optional"]
+    committed = [c.get("criterion", "") for c in proposal.get("acceptance_criteria", []) if c.get("phase", "committed") == "committed"]
     committed += proposal.get("scope", {}).get("included", []) + proposal.get("scope", {}).get("deliverables", [])
     for text in committed:
         for term in forbidden:

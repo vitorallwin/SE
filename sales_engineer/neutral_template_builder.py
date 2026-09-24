@@ -574,14 +574,22 @@ def build_neutral_template_docx(proposal: dict[str, Any], template: Path, output
             _remove_row(row)
 
     all_criteria = proposal.get("acceptance_criteria", [])
-    criteria = [x.get("criterion", "") for x in all_criteria if x.get("phase") != "optional"]
-    reference_criteria = [x.get("criterion", "") for x in all_criteria if x.get("phase") == "optional"]
+    criteria = [x.get("criterion", "") for x in all_criteria if x.get("phase", "committed") == "committed"]
+    option_titles = {wave.get("id"): wave.get("name") for wave in optional_phase.get("waves", []) if wave.get("id")}
+    if fast_track.get("id"):
+        option_titles[fast_track["id"]] = fast_track.get("title")
+    groups: dict[Any, list[str]] = {}
+    for x in all_criteria:
+        if x.get("phase", "committed") != "committed":
+            groups.setdefault(x.get("option_id"), []).append(x.get("criterion", ""))
     _replace_paragraph(p[138], _doc_text(proposal, "acceptance_intro", "A aceitação seguirá os critérios mínimos registrados na matriz de rastreabilidade. A POPULOS propõe, como instrumento complementar de apoio, checklists por entrega, sem prejuízo dos marcos formais de aceite do projeto:"))
     _set_rows_dynamic(p, range(139, 144), criteria, p[144])
-    if reference_criteria:
-        label = _insert_paragraph_like(p[144], p[138], _doc_text(proposal, "acceptance_optional_intro", "Critérios de referência da fase opcional, aplicáveis somente se contratada:"), copy_run_format=True)
+    for option_id, items in groups.items():
+        default_label = _doc_text(proposal, "acceptance_optional_intro", "Critérios de referência da fase opcional, aplicáveis somente se contratada:")
+        label_text = f"Critérios de aceite — {option_titles[option_id]}, aplicáveis somente se contratada:" if option_id in option_titles else default_label
+        label = _insert_paragraph_like(p[144], p[138], label_text, copy_run_format=True)
         label.paragraph_format.keep_with_next = True
-        for item in reference_criteria:
+        for item in items:
             _insert_paragraph_like(p[144], p[139], item)
     _replace_paragraph(p[146], _doc_text(proposal, "warranty_intro", "A garantia técnica cobre a correção de defeitos diretamente atribuíveis aos serviços executados pela POPULOS. O prazo consta do quadro Garantia e vigência."))
     _replace_paragraph(p[148], _doc_text(proposal, "closing", "O projeto encerra-se após o aceite e a estabilização assistida. Operação continuada, suporte gerenciado, NOC 24x7 e equipe residente exigem contratação específica."))

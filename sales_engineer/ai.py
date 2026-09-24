@@ -19,7 +19,7 @@ class GeminiClient:
     def configured(self) -> bool:
         return bool(self.api_key)
 
-    def generate_json(self, system: str, payload: dict[str, Any]) -> dict[str, Any]:
+    def generate_json(self, system: str, payload: dict[str, Any], max_output_tokens: int = 16384) -> dict[str, Any]:
         if not self.configured:
             raise RuntimeError("GEMINI_API_KEY não configurada")
 
@@ -43,7 +43,7 @@ class GeminiClient:
                 "generationConfig": {
                     "temperature": 0.1,
                     "responseMimeType": "application/json",
-                    "maxOutputTokens": 16384,
+                    "maxOutputTokens": max_output_tokens,
                 },
             }
             request = urllib.request.Request(

@@ -511,7 +511,33 @@ Regras v6 (em `_validate_rules_v6`, só para `rules_version >= 6`):
 
 O compositor agora renderiza todos os parágrafos do resumo executivo, e o gate estado × DOCX passou a cobri-los.
 
-## 17. Arquivos de trabalho fora da aplicação
+## 17. Motor v7 e rodada de casos diversos
+
+O motor v7 é genérico: não depende de um arquivo Python por caso. O autor (humano, Gemini ou subagente Claude) escreve um estado JSON no formato de `skills/akamai-proposal-authoring/references/state-schema.md`, e o motor valida e compõe.
+
+| Arquivo | Papel |
+|---|---|
+| `engine_config.json` | Versão do motor, limite de iterações (3), template e modelo de cada configuração. |
+| `authoring/AUTHOR_BRIEF.md` | Brief do autor, idêntico nas duas configurações. |
+| `sales_engineer/case_runner.py` | Extração do insumo, pacote da skill, validação, registro de tentativas e composição. |
+| `scripts/prepare_run.py` | Cria a pasta da execução com `insumo.md`, `catalog.json` e `request.json`. |
+| `scripts/validate_attempt.py` | Submete uma tentativa (`passN.json`, `attempts.json`) e compõe em `final/` quando está limpa. Recusa a partir da 4ª tentativa. |
+| `scripts/author_with_gemini.py` | Configuração A: autor via Gemini (requer `GEMINI_API_KEY`). |
+| `tests/test_v7_engine.py` | Regras v7 e executor genérico. |
+
+Regras v7 (`_validate_rules_v7`): `data_mode` como flag que não desliga checagem; aprovação explícita com `approved_by`, `approved_at` ISO, `approval_record` e `mode`, sem aprovação implícita nem marcação de teste no texto; estimativa de esforço com dono técnico; critério de aceite próprio para toda opção que toca produção; prazo de licenciamento em toda viabilidade e na trilha rápida.
+
+### Executar um caso
+
+```powershell
+python .\scripts\prepare_run.py <pasta-do-insumo> <pasta-da-execução> --config A --date 2026-09-24
+python .\scripts\author_with_gemini.py <pasta-da-execução>          # configuração A
+# configuração B: subagente Claude com contexto limpo, recebendo só AUTHOR_BRIEF.md e a pasta da execução
+```
+
+Resultado por execução: `pass1..3.json`, `attempts.json` (violações da primeira passada e da final), `notes.md` e, quando emitido, `final/` com o DOCX e o relatório de cobertura.
+
+## 18. Arquivos de trabalho fora da aplicação
 
 Estes arquivos ajudaram na geração e auditoria, mas não são necessários para executar a aplicação:
 

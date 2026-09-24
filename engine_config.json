@@ -1,0 +1,13 @@
+{
+  "engine_version": "motor-v7.0",
+  "rules_version": 7,
+  "max_iterations": 3,
+  "template": "assets/proposal_neutral_template.docx",
+  "template_version": "2026.09.24-1",
+  "author_brief": "authoring/AUTHOR_BRIEF.md",
+  "configurations": {
+    "A": {"description": "Autor único via API Gemini (scripts/author_with_gemini.py)", "author_model": "gemini-3.5-flash-lite"},
+    "B": {"description": "Autor único em subagente Claude com contexto limpo", "author_model": "claude-opus-5-5"}
+  },
+  "shared": "As duas configurações recebem o mesmo brief, a mesma skill, o mesmo validador e o mesmo limite de iterações."
+}

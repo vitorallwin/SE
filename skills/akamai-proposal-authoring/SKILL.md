@@ -24,16 +24,14 @@ Create the smallest complete proposal that explains the client's problem, the re
 
 1. Normalize the meeting into goals, pain points, requirements, constraints, volumes, dependencies, stakeholders, and open questions.
 2. Evaluate each catalog product independently. Do not begin with a preselected bundle.
-3. Produce solution decisions and a requirement traceability matrix.
-4. Build a document manifest from the decision, following [section model](references/section-model.md) and the approved neutral-template profile.
-5. Apply the product gating criteria in [solution gating](references/solution-gating.md).
+3. Apply the product gating criteria in [solution gating](references/solution-gating.md).
+4. Produce solution decisions and a requirement traceability matrix.
+5. Map the decisions onto the sections in [section model](references/section-model.md).
 6. Run a critic pass. Block unsupported products, absolute promises, hidden open questions, unmeasurable acceptance criteria, and unresolved internal POPULOS decisions.
 7. Render through deterministic code over the approved DOCX. The LLM writes structured state and the compositor only maps it into authorized slots.
 
 ## Output contract
 
-The structured result must contain `discovery`, `solution_decisions`, `architecture`, `traceability`, `sections`, `open_questions`, `qa`, and `quality_score`. The renderer may derive `document_manifest` deterministically from those fields.
-
-Each solution decision must contain `product_id`, `status`, `requirement_ids`, `rationale`, `confidence`, and `capabilities`.
+The structured result is the proposal state described in [state schema](references/state-schema.md), checked against [global rules](references/global-rules.md) by `scripts/validate_attempt.py`. Client-facing language follows `references/lexicon.json`.
 
 The proposal must not describe excluded products. Optional products must be separated from the recommended solution and state the condition that would justify their inclusion.
