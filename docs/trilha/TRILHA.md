@@ -159,11 +159,12 @@ final/<código>.docx + relatorio-cobertura.md
 | `sales_engineer/violation_codes.py` | Códigos estáveis de violação |
 | `assets/` | Template, whitelist institucional (hash do template, blocos, `sla_applies_to`, `institutional_decisions`), termos de resíduo |
 | `scripts/` | `make_workspace.py`, `validate_attempt.py`, `render_pdf.py`, `export_institutional_standards.py`, `author_with_gemini.py` |
-| `tests/` | 123 testes (v5 a v11) com fixtures **reais** das rodadas, incluindo as aprovações inventadas pelo Gemini |
+| `lab_server.py`, `lab/`, `sales_engineer/lab.py` | **Bancada de testes** (frontend MVP) sobre o motor v11; ver 7.1 |
+| `tests/` | 128 testes (v5 a v11 e bancada) com fixtures **reais** das rodadas, incluindo as aprovações inventadas pelo Gemini |
 | `GUIA_TECNICO_E_RELATORIO_V4.md` | Guia técnico, seção por versão |
 | `docs/trilha/` | Este documento, os relatórios das rodadas, as propostas emitidas, os insumos dos casos e a resposta da auditoria |
 
-O `pipeline.py` antigo (Gemini em várias etapas) é anterior ao motor e não conhece as regras atuais. O `test_pipeline.py` chama o Gemini de verdade e varia a cada execução.
+O `pipeline.py` antigo (Gemini em várias etapas) e a web app que o usa (`app.py`, `web/`, `run.ps1`) são anteriores ao motor e não conhece as regras atuais. O `test_pipeline.py` chama o Gemini de verdade e varia a cada execução.
 
 ### 4.3 O estado da proposta (contrato do autor)
 
@@ -233,7 +234,7 @@ O `pipeline.py` antigo (Gemini em várias etapas) é anterior ao motor e não co
 - **Pacotes por fabricante.** O núcleo (governança, proveniência, datas, Compositor) é genérico; catálogo, gating e textos do fabricante viram pacotes. O gate `sem_catalogo` já detecta a falta do pacote (caso Citrix).
 - **Template por tipo de engajamento.** Assessment e desenho precisam de outro bloco de SLA (ex.: prazo de resposta a dúvidas e de revisão de entregáveis) ou de omiti-lo.
 - **Pacotes padrão aprovados uma vez.** Decisões recorrentes viram `populos_standard` versionado, para que o motor não pare em toda proposta pequena.
-- **Aplicação web.** A interface consome o mesmo motor. O humano aprova as decisões internas pela tela, e a aprovação vira citação registrada.
+- **Aplicação web.** A bancada (7.1) já consome o motor. Próximo passo: aprovar decisões internas pela tela, com a aprovação registrada como citação (hoje isso é feito anexando o e-mail de aprovação ao insumo).
 
 ---
 
@@ -241,12 +242,27 @@ O `pipeline.py` antigo (Gemini em várias etapas) é anterior ao motor e não co
 
 ```bash
 pip install -r requirements.txt pytest
-python -m pytest tests/ --ignore=tests/test_pipeline.py        # 123 testes
+python -m pytest tests/ --ignore=tests/test_pipeline.py        # 128 testes
 python scripts/make_workspace.py docs/trilha/casos/bateria-1 <ws> --config B --sealed   # (aponte para a pasta de um caso)
 # autor escreve <ws>/execucao/estado.json e submete:
 cd <ws> && python scripts/validate_attempt.py execucao execucao/estado.json
 python scripts/render_pdf.py <ws>/execucao/final/<proposta>.docx   # QA visual
 ```
+
+### 7.1 Bancada de testes (frontend)
+
+```bash
+python lab_server.py          # Windows: .\run_lab.ps1
+# abre http://127.0.0.1:8765
+```
+
+- **Nova execução:** envia os arquivos do insumo (.md, .txt, .eml, .docx, .pdf, .csv) ou cola o texto. O motor extrai o `insumo.md` igual às rodadas.
+- **Autor:** "Rodar Claude" ou "Rodar Gemini" roda até 3 tentativas pela API, com o mesmo brief, skill e validador. As chaves ficam no `.env` do servidor (`ANTHROPIC_API_KEY`, `GEMINI_API_KEY`; `ANTHROPIC_MODEL` e `GEMINI_MODEL` opcionais) e nunca passam pelo navegador. "Colar estado.json" aceita um estado escrito fora (claude.ai, subagente) e consome uma tentativa.
+- **Leitura:** as 3 tentativas aparecem como 3 casas (limite físico). Violações agrupadas por código, veredito (emitida, bloqueio legítimo, violações do autor, limite esgotado), decisões internas abertas, perguntas ao cliente e o parágrafo de viabilidade calculado pelo motor.
+- **Saída:** DOCX, relatório de cobertura, `passN.json`, PDF e miniaturas das páginas (LibreOffice).
+- **Complementar insumo:** cria uma nova execução com o mesmo insumo e um texto anexado (ex.: o e-mail de aprovação da garantia). A execução original fica intacta.
+- As execuções ficam em `lab_runs/` (fora do Git). O servidor escuta só em `127.0.0.1`.
+- A bancada não é rodada selada: serve para exploração e casos novos. Rodada para auditoria continua pelo `make_workspace --sealed`.
 
 **Tags:** `motor-v7.0` e `motor-v8.0` estão no GitHub. `motor-v8.4` (`569bfe4`) e `motor-v8.5` (`985e2cd`) precisam ser publicadas a partir de uma máquina com permissão de push de tags:
 

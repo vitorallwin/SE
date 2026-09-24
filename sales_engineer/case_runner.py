@@ -78,6 +78,49 @@ def record_attempt(run_dir: Path, state_path: Path) -> dict[str, Any]:
     return {"status": "ok" if not errors else "violations", "limit": limit, **entry}
 
 
+AUTHOR_INSTRUCTION = (
+    "Siga o brief e a skill abaixo. Responda somente com o objeto JSON do estado da proposta. "
+    "Inclua o campo \"_notes\" com no máximo 15 linhas sobre pendências e bloqueios."
+)
+
+
+def author_loop(run_dir: Path, client: Any, on_attempt: Any = None) -> dict[str, Any]:
+    """One API author (Gemini or Claude) under the brief, the skill, the validator and the iteration limit.
+
+    The client exposes `model` and `generate_json(system, payload, max_output_tokens)`. Each attempt goes
+    through record_attempt, and the validator's violations are the only feedback for the next one.
+    """
+    request = json.loads((run_dir / "request.json").read_text(encoding="utf-8"))
+    system = AUTHOR_INSTRUCTION + "\n\n" + skill_bundle()
+    payload: dict[str, Any] = {
+        "pedido": {"data_da_proposta": request["proposal_date"], "data_mode": request["data_mode"], "template_version": request["template_version"]},
+        "catalogo": json.loads((run_dir / "catalog.json").read_text(encoding="utf-8")),
+        "insumo": (run_dir / "insumo.md").read_text(encoding="utf-8"),
+    }
+    log: dict[str, Any] = {"model": client.model, "started_at": datetime.now(timezone.utc).isoformat(), "attempts": []}
+    for _ in range(int(engine_config()["max_iterations"])):
+        try:
+            state = client.generate_json(system, payload, max_output_tokens=65536)
+        except RuntimeError as exc:
+            log["attempts"].append({"error": str(exc)})
+            break
+        notes = state.pop("_notes", "")
+        (run_dir / "notes.md").write_text(notes if isinstance(notes, str) else json.dumps(notes, ensure_ascii=False), encoding="utf-8")
+        candidate = run_dir / "candidate.json"
+        candidate.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+        result = record_attempt(run_dir, candidate)
+        log["attempts"].append({key: result.get(key) for key in ("attempt", "status", "errors_count")})
+        if on_attempt:
+            on_attempt(result)
+        if result["status"] != "violations":
+            break
+        payload["estado_anterior"] = state
+        payload["violacoes_do_validador"] = result["errors"]
+    log["finished_at"] = datetime.now(timezone.utc).isoformat()
+    (run_dir / "author_run.json").write_text(json.dumps(log, ensure_ascii=False, indent=2), encoding="utf-8")
+    return log
+
+
 TEXT_SUFFIXES = {".txt", ".md", ".eml", ".json", ".csv", ".html"}
 
 

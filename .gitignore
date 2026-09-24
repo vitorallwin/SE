@@ -9,3 +9,4 @@ data/generated/*.docx
 
 !data/proposals/20260923-e54ccb6.json
 ~$*
+lab_runs/

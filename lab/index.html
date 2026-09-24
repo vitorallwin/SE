@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bancada · Motor de propostas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">▚</span>
+      <span class="brand-name">Bancada</span>
+      <span class="brand-sub">motor de propostas POPULOS</span>
+    </div>
+    <dl class="engine" id="engine" aria-label="Versão do motor"></dl>
+  </header>
+
+  <div class="layout">
+    <nav class="rail" aria-label="Execuções">
+      <button class="btn btn-primary btn-block" id="new-run" type="button">Nova execução</button>
+      <ol class="runs" id="runs"></ol>
+    </nav>
+
+    <main class="sheet" id="sheet" tabindex="-1">
+      <section class="empty">
+        <h1>Nenhuma execução aberta</h1>
+        <p>Uma execução é um caso: insumo, até 3 tentativas do autor e o veredito do motor.</p>
+        <ol class="steps">
+          <li>Envie o insumo do cliente (e-mails, TR, transcrições).</li>
+          <li>Rode um autor ou cole um <code>estado.json</code> escrito fora daqui.</li>
+          <li>Leia as violações por código, pendências e datas do motor.</li>
+          <li>Baixe o DOCX e confira o PDF.</li>
+        </ol>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="dlg-new" class="dialog">
+    <form method="dialog" id="form-new">
+      <h2>Nova execução</h2>
+      <label class="field">Nome do caso
+        <input name="name" required maxlength="80" placeholder="Ex.: caso 11, varejo com congelamento">
+      </label>
+      <div class="field-row">
+        <label class="field">Data da proposta
+          <input name="proposal_date" type="date" required>
+        </label>
+        <label class="field">Dados
+          <select name="data_mode">
+            <option value="real">Reais</option>
+            <option value="demo">Demonstração</option>
+          </select>
+        </label>
+      </div>
+      <label class="drop" id="drop">
+        <input type="file" name="files" multiple accept=".md,.txt,.eml,.json,.csv,.html,.docx,.pdf">
+        <span class="drop-title">Arquivos do insumo</span>
+        <span class="drop-hint">Arraste ou clique · .md .txt .eml .docx .pdf .csv</span>
+        <span class="drop-list" id="drop-list"></span>
+      </label>
+      <label class="field">Ou cole o texto
+        <textarea name="text" rows="6" placeholder="Transcrição, e-mail, trecho do TR…"></textarea>
+      </label>
+      <p class="form-error" id="new-error" role="alert"></p>
+      <div class="actions">
+        <button class="btn" value="cancel" formnovalidate>Cancelar</button>
+        <button class="btn btn-primary" id="create" value="create">Criar execução</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-state" class="dialog dialog-wide">
+    <form method="dialog" id="form-state">
+      <h2>Submeter estado.json</h2>
+      <p class="hint">Cole o estado escrito por um autor externo. Cada envio consome uma tentativa.</p>
+      <textarea name="state" rows="18" class="mono" spellcheck="false" required placeholder='{"rules_version": 11, …}'></textarea>
+      <p class="form-error" id="state-error" role="alert"></p>
+      <div class="actions">
+        <button class="btn" value="cancel" formnovalidate>Cancelar</button>
+        <button class="btn btn-primary" value="submit">Validar tentativa</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="dlg-complement" class="dialog">
+    <form method="dialog" id="form-complement">
+      <h2>Complementar insumo</h2>
+      <p class="hint">Cria uma nova execução com o mesmo insumo e este texto anexado, por exemplo o e-mail de aprovação de uma decisão interna. A execução atual fica como está.</p>
+      <textarea name="text" rows="10" required placeholder="De: …&#10;Assunto: aprovação da garantia&#10;&#10;Aprovo garantia de 30 dias…"></textarea>
+      <p class="form-error" id="complement-error" role="alert"></p>
+      <div class="actions">
+        <button class="btn" value="cancel" formnovalidate>Cancelar</button>
+        <button class="btn btn-primary" value="submit">Criar execução complementada</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

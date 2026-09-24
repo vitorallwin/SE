@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 
 CODES = [
+    ("JSON-INVALIDO", r"^JSON inválido|^estado malformado"),
     ("GATE-INSUMO", r"^GATE insumo_insuficiente"),
     ("GATE-CATALOGO", r"^GATE sem_catalogo"),
     ("FORMATO", r"^formato \("),
