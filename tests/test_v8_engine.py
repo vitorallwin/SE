@@ -13,7 +13,7 @@ from sales_engineer.document_validation import (
 )
 from sales_engineer.neutral_template_builder import _diagram_boxes, build_neutral_template_docx
 from sales_engineer.proposal_rules import REQUIRED_DOCUMENT_TEXT, validate_proposal_rules
-from tests.test_v7_engine import vertice_v8
+from tests.test_v7_engine import vertice_latest as vertice_v8
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "assets" / "proposal_neutral_template.docx"
@@ -159,3 +159,61 @@ class SlaApplicabilityTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ApprovalQuoteTests(unittest.TestCase):
+    """v9 (rodada v8, config A): o autor escreveu aprovações que não existem no insumo."""
+
+    FIXTURES = ROOT / "tests" / "fixtures"
+
+    def _source(self, name: str) -> str:
+        return (self.FIXTURES / name).read_text(encoding="utf-8")
+
+    def _row(self, source: str, start: str) -> str:
+        return next(line for line in source.splitlines() if line.startswith(f"| {start}")).strip(" |")
+
+    def test_clean_fixture_quotes_the_source(self) -> None:
+        self.assertEqual(validate_proposal_rules(vertice_v8(), self._source("vertice_insumo.md")), [])
+
+    def test_quote_is_mandatory(self) -> None:
+        proposal = vertice_v8()
+        del proposal["governance"]["warranty"]["approval_quote"]
+        self.assertIn("aprovação sem citação literal do insumo (approval_quote): warranty",
+                      " | ".join(validate_proposal_rules(proposal, self._source("vertice_insumo.md"))))
+
+    def test_quote_absent_from_source_blocks(self) -> None:
+        proposal = vertice_v8()
+        proposal["governance"]["warranty"]["approval_quote"] = "Garantia de 90 dias aprovada por Vitor (dono comercial) em 24/09/2026"
+        self.assertIn("aprovação citada não existe no insumo (approval_quote): warranty",
+                      " | ".join(validate_proposal_rules(proposal, self._source("vertice_insumo.md"))))
+
+    def test_quote_of_another_decision_blocks(self) -> None:
+        source = self._source("vertice_insumo.md")
+        proposal = vertice_v8()
+        proposal["governance"]["warranty"]["approval_quote"] = self._row(source, "Licenciamento")
+        errors = " | ".join(validate_proposal_rules(proposal, source))
+        self.assertIn("citação da aprovação não trata desta decisão (garantia): warranty", errors)
+        self.assertIn("valor aprovado não aparece na citação do insumo: warranty", errors)
+
+    def test_real_quote_with_changed_value_blocks(self) -> None:
+        proposal = vertice_v8()
+        for field in ("value", "approved_value"):
+            proposal["governance"]["warranty"][field] = proposal["governance"]["warranty"][field].replace("30 dias", "90 dias")
+        self.assertIn("valor aprovado não aparece na citação do insumo: warranty",
+                      " | ".join(validate_proposal_rules(proposal, self._source("vertice_insumo.md"))))
+
+    def test_gemini_invented_license_approval_is_blocked(self) -> None:
+        """Estado real do Gemini (caso 04): a licença 'aprovada por Vitor' não existe no insumo."""
+        source = self._source("lumina_insumo.md")
+        proposal = json.loads((self.FIXTURES / "lumina_gemini_aprovacao_inventada.json").read_text(encoding="utf-8"))
+        proposal["rules_version"] = 9
+        governance = proposal["governance"]
+        for key, start in (("engagement_type", "engagement_type"), ("warranty", "Garantia"), ("esforco_estimate", "Estimativa de esforço")):
+            governance[key]["approval_quote"] = self._row(source, start)
+        # Melhor citação disponível para a licença: a linha real do insumo, que não traz aprovação.
+        governance["license_supply"]["approval_quote"] = "Licenciamento: não informado."
+        errors = [e for e in validate_proposal_rules(proposal, source) if "citação" in e or "approval_quote" in e]
+        self.assertTrue(errors)
+        self.assertTrue(all("license_supply" in e for e in errors), errors)
+        self.assertIn("valor aprovado não aparece na citação do insumo: license_supply", errors)
+        self.assertIn("citação da aprovação não nomeia o aprovador (Vitor (dono comercial)): license_supply", errors)

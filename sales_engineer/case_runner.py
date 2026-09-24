@@ -20,14 +20,14 @@ def engine_config() -> dict[str, Any]:
     return json.loads(ENGINE_CONFIG.read_text(encoding="utf-8"))
 
 
-def validate_state(state: Any) -> list[str]:
+def validate_state(state: Any, source_text: str | None = None) -> list[str]:
     """Rule violations for an authored state; a malformed state is reported, never raised."""
     if not isinstance(state, dict):
         return ["estado malformado: o documento raiz não é um objeto JSON"]
     if int(state.get("rules_version", 0) or 0) < LATEST_RULES_VERSION:
         return [f"rules_version deve ser {LATEST_RULES_VERSION} para o gerador genérico"]
     try:
-        return validate_proposal_rules(state)
+        return validate_proposal_rules(state, source_text)
     except Exception as exc:  # noqa: BLE001 - malformed fields must come back as feedback to the author
         return [f"estado malformado ({type(exc).__name__}): {exc}"]
 
@@ -64,7 +64,10 @@ def record_attempt(run_dir: Path, state_path: Path) -> dict[str, Any]:
     except json.JSONDecodeError as exc:
         state, errors = None, [f"JSON inválido: {exc}"]
     else:
-        errors = validate_state(state)
+        source = run_dir / "insumo.md"
+        errors = validate_state(state, source.read_text(encoding="utf-8") if source.exists() else None)
+        if not source.exists():
+            errors.append("insumo.md ausente na pasta da execução: aprovações não podem ser conferidas")
     entry = {"attempt": number, "at": datetime.now(timezone.utc).isoformat(), "errors_count": len(errors), "errors": errors}
     if not errors and state is not None:
         entry["composition"] = compose(state, run_dir / "final")
@@ -150,16 +153,44 @@ ENGINE_FILES = [
 ]
 
 
-def make_workspace(workspace: Path, source_dir: Path, proposal_date: str, data_mode: str, configuration: str) -> Path:
+SEALED_VALIDATOR = '''"""Submete uma tentativa ao motor, que fica fora desta pasta.
+
+Uso: python scripts/validate_attempt.py execucao execucao/estado.json
+"""
+import subprocess
+import sys
+from pathlib import Path
+
+ENGINE = Path({engine!r})
+args = [str(Path(arg).resolve()) for arg in sys.argv[1:]]
+sys.exit(subprocess.call([sys.executable, str(ENGINE / "scripts" / "validate_attempt.py"), *args]))
+'''
+
+
+def make_workspace(workspace: Path, source_dir: Path, proposal_date: str, data_mode: str, configuration: str,
+                   sealed: bool = False) -> Path:
     """Physical isolation: a folder with only what production gives the author (engine, skill, brief, one case).
 
-    No tests, fixtures, previous proposals, other cases, or version history are copied.
+    No tests, fixtures, previous proposals, other cases, or version history are copied. A sealed workspace
+    also leaves the engine out: the author gets the brief, the skill and the case, and submits through a
+    wrapper, so the rules are known only through the skill and the validator's messages.
     Returns the execution folder inside the workspace.
     """
     import shutil
 
     if workspace.exists():
         raise FileExistsError(f"Workspace já existe: {workspace}")
+    if sealed:
+        brief = workspace / "authoring" / "AUTHOR_BRIEF.md"
+        brief.parent.mkdir(parents=True)
+        shutil.copy2(ROOT / "authoring" / "AUTHOR_BRIEF.md", brief)
+        shutil.copytree(ROOT / "skills", workspace / "skills")
+        wrapper = workspace / "scripts" / "validate_attempt.py"
+        wrapper.parent.mkdir(parents=True)
+        wrapper.write_text(SEALED_VALIDATOR.format(engine=str(ROOT)), encoding="utf-8")
+        run_dir = workspace / "execucao"
+        prepare_run(source_dir, run_dir, proposal_date, data_mode, configuration)
+        return run_dir
     for relative in ENGINE_FILES:
         target = workspace / relative
         target.parent.mkdir(parents=True, exist_ok=True)

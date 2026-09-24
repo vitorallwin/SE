@@ -17,9 +17,13 @@ from tests.test_v6_rules import resolved_v6
 FIXTURES = Path(__file__).resolve().parent / "fixtures"
 
 
-def vertice_v8() -> dict:
-    """A real v8 authoring output (diverse-case round, case 01), used as the clean latest-contract state."""
-    return json.loads((FIXTURES / "vertice_v8.json").read_text(encoding="utf-8"))
+def vertice_latest() -> dict:
+    """A real authoring output (diverse-case round, case 01), upgraded to the latest contract."""
+    return json.loads((FIXTURES / "vertice_v9.json").read_text(encoding="utf-8"))
+
+
+def vertice_source() -> str:
+    return (FIXTURES / "vertice_insumo.md").read_text(encoding="utf-8")
 
 
 def resolved_v7() -> dict:
@@ -152,12 +156,14 @@ class CaseRunnerTests(unittest.TestCase):
         self.tmp.cleanup()
 
     def _submit(self, state) -> dict:
+        self.run_dir.mkdir(parents=True, exist_ok=True)
+        (self.run_dir / "insumo.md").write_text(vertice_source(), encoding="utf-8")
         path = Path(self.tmp.name) / "state.json"
         path.write_text(state if isinstance(state, str) else json.dumps(state, ensure_ascii=False), encoding="utf-8")
         return record_attempt(self.run_dir, path)
 
     def test_clean_attempt_is_composed(self) -> None:
-        result = self._submit(vertice_v8())
+        result = self._submit(vertice_latest())
         self.assertEqual(result["status"], "ok")
         self.assertEqual(result["composition"]["status"], "emitted", result["composition"])
         text = " ".join(p.text for p in Document(result["composition"]["docx"]).paragraphs)
@@ -167,16 +173,16 @@ class CaseRunnerTests(unittest.TestCase):
     def test_iteration_limit_is_enforced(self) -> None:
         with mock.patch.object(case_runner, "engine_config", return_value={"max_iterations": 2}):
             self.assertEqual(self._submit("{").get("status"), "violations")
-            self.assertEqual(self._submit({"rules_version": 8}).get("status"), "violations")
-            self.assertEqual(self._submit(vertice_v8())["status"], "limit_reached")
+            self.assertEqual(self._submit({"rules_version": 9}).get("status"), "violations")
+            self.assertEqual(self._submit(vertice_latest())["status"], "limit_reached")
         log = json.loads((self.run_dir / "attempts.json").read_text(encoding="utf-8"))
         self.assertEqual([a["attempt"] for a in log["attempts"]], [1, 2])
         self.assertTrue((self.run_dir / "pass1.json").exists())
 
     def test_malformed_and_old_states_come_back_as_feedback(self) -> None:
         self.assertIn("não é um objeto JSON", validate_state([])[0])
-        self.assertIn("rules_version deve ser 8", validate_state({"rules_version": 7})[0])
-        self.assertTrue(validate_state({"rules_version": 8, "input_assessment": "x"})[0].startswith("estado malformado"))
+        self.assertIn("rules_version deve ser 9", validate_state({"rules_version": 8})[0])
+        self.assertTrue(validate_state({"rules_version": 9, "input_assessment": "x"})[0].startswith("estado malformado"))
 
     def test_source_extraction_reads_text_and_docx(self) -> None:
         source = Path(self.tmp.name) / "insumo"
@@ -195,7 +201,7 @@ class CaseRunnerTests(unittest.TestCase):
         import subprocess, sys
         source = Path(self.tmp.name) / "caso"
         source.mkdir()
-        (source / "material.md").write_text("Pedido do cliente", encoding="utf-8")
+        (source / "material.md").write_text(vertice_source(), encoding="utf-8")
         workspace = Path(self.tmp.name) / "ws"
         run_dir = case_runner.make_workspace(workspace, source, "2026-09-24", "test", "B")
         files = {p.relative_to(workspace).as_posix() for p in workspace.rglob("*") if p.is_file()}
@@ -205,11 +211,28 @@ class CaseRunnerTests(unittest.TestCase):
         self.assertEqual(request["template_version"], "2026.09.24-1")
         self.assertEqual(request["skill_sha256"], case_runner.skill_hash())
         state = Path(self.tmp.name) / "estado.json"
-        state.write_text(json.dumps(vertice_v8(), ensure_ascii=False), encoding="utf-8")
+        state.write_text(json.dumps(vertice_latest(), ensure_ascii=False), encoding="utf-8")
         result = subprocess.run([sys.executable, "scripts/validate_attempt.py", "execucao", str(state)],
                                 cwd=workspace, capture_output=True, text=True, encoding="utf-8")
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertTrue((run_dir / "final" / "relatorio-cobertura.md").exists())
+
+    def test_sealed_workspace_has_no_engine_code_and_still_validates(self) -> None:
+        import subprocess, sys
+        source = Path(self.tmp.name) / "caso"
+        source.mkdir()
+        (source / "material.md").write_text(vertice_source(), encoding="utf-8")
+        workspace = Path(self.tmp.name) / "ws"
+        run_dir = case_runner.make_workspace(workspace, source, "2026-09-24", "test", "B", sealed=True)
+        files = {p.relative_to(workspace).as_posix() for p in workspace.rglob("*") if p.is_file()}
+        self.assertEqual([f for f in files if f.endswith(".py")], ["scripts/validate_attempt.py"])
+        self.assertFalse([f for f in files if f.startswith(("sales_engineer/", "assets/", "engine_config"))])
+        state = run_dir / "estado.json"
+        state.write_text(json.dumps(vertice_latest(), ensure_ascii=False), encoding="utf-8")
+        result = subprocess.run([sys.executable, "scripts/validate_attempt.py", "execucao", "execucao/estado.json"],
+                                cwd=workspace, capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertTrue(list((run_dir / "final").glob("*.docx")))
 
     def test_author_bundle_carries_no_case_material(self) -> None:
         bundle = skill_bundle()

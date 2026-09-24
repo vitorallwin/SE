@@ -35,7 +35,7 @@ The global state separates client facts, requirements, decisions, scope, commerc
 
 ## Decisions, provenance and feasibility (rules v6 and v7)
 
-- A decision is committed only with an explicit approval: approver, ISO date, and a record of where the approval happened. Moving on without objecting is not approval. The approved text is kept verbatim; context goes outside it.
+- A decision is committed only with an explicit approval written in the source material: approver, ISO date, a record of where the approval happened, and a verbatim quote of it. Moving on without objecting is not approval. The approved text is kept verbatim; context goes outside it.
 - A decision is bound to the engagement type it was made for. When the engagement changes, dependent decisions reopen. An institutional block (such as the SLA table) is emitted only where the institution declares it applicable, or where an approved case decision extends it.
 - `data_mode: test` marks the origin of the data. It never disables a check.
 - An institutional standard is versioned with the approved template and is not approved per case.

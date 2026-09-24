@@ -554,6 +554,12 @@ A rodada v7 (config B, casos 01 a 06, 3 execuções cada) acertou 18/18 decisõe
 
 O fixture `tests/fixtures/vertice_v8.json` é uma saída real da rodada (caso 01), usada como estado limpo do contrato v8. Os testes estão em `tests/test_v8_engine.py`.
 
+### Motor v8.1 (regras v9)
+
+Na rodada v8, o autor Gemini escreveu decisões "aprovadas por Vitor" que não existem no insumo (garantia de 12 meses no caso 02, licenciamento no caso 04). O validador conferia só o preenchimento dos campos. Na v9, toda decisão de caso em `commitment` cita `approval_quote`, um trecho literal do insumo. O `record_attempt` passa o `insumo.md` ao validador, que confere: a citação existe no insumo, trata da decisão, nomeia o aprovador e contém o valor aprovado. O estado real do Gemini ficou como fixture (`tests/fixtures/lumina_gemini_aprovacao_inventada.json`).
+
+O `make_workspace --sealed` cria um workspace sem o código do motor: só brief, skill, caso e um `validate_attempt.py` que chama o motor fora da pasta. Assim o autor conhece as regras apenas pela skill e pelas mensagens do validador.
+
 ## 19. Arquivos de trabalho fora da aplicação
 
 Estes arquivos ajudaram na geração e auditoria, mas não são necessários para executar a aplicação:

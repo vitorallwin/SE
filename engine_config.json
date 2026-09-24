@@ -1,6 +1,6 @@
 {
-  "engine_version": "motor-v8.0",
-  "rules_version": 8,
+  "engine_version": "motor-v8.1",
+  "rules_version": 9,
   "max_iterations": 3,
   "template": "assets/proposal_neutral_template.docx",
   "template_version": "2026.09.24-1",

@@ -1,5 +1,5 @@
 {
- "rules_version": 8,
+ "rules_version": 9,
  "data_mode": "test",
  "client_name": "Vértice Educação",
  "opportunity": "Migração de DNS autoritativo para Edge DNS",
@@ -23,7 +23,8 @@
    "approved_by": "Vitor (dono comercial)",
    "approved_at": "2026-09-24",
    "approval_record": "E-mail interno de aprovação de 24/09/2026",
-   "mode": "test"
+   "mode": "test",
+   "approval_quote": "engagement_type | implementation | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
   },
   "warranty": {
    "state": "commitment",
@@ -34,7 +35,8 @@
    "approved_at": "2026-09-24",
    "approval_record": "E-mail interno de aprovação de 24/09/2026",
    "mode": "test",
-   "engagement_ref": "implementation"
+   "engagement_ref": "implementation",
+   "approval_quote": "Garantia | A POPULOS corrigirá defeitos diretamente atribuíveis aos serviços executados por 30 dias corridos após o aceite final. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
   },
   "license_supply": {
    "state": "commitment",
@@ -45,7 +47,8 @@
    "approved_at": "2026-09-24",
    "approval_record": "E-mail interno de aprovação de 24/09/2026",
    "mode": "test",
-   "engagement_ref": "implementation"
+   "engagement_ref": "implementation",
+   "approval_quote": "Licenciamento | As licenças Akamai serão adquiridas diretamente pela Vértice Educação junto à Akamai. | Vitor (dono comercial) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
   },
   "sla": {
    "state": "commitment",
@@ -65,7 +68,8 @@
    "approved_at": "2026-09-24",
    "approval_record": "E-mail interno de aprovação de 24/09/2026",
    "mode": "test",
-   "engagement_ref": "implementation"
+   "engagement_ref": "implementation",
+   "approval_quote": "Estimativa de esforço | 3 a 4 semanas | Ana (arquiteta responsável) | 24/09/2026 | E-mail interno de aprovação de 24/09/2026"
   }
  },
  "discovery": {

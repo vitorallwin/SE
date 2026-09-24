@@ -13,7 +13,7 @@ Não consulte nenhum arquivo fora desta pasta de trabalho.
 
 ## Saída
 
-Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 8` e o `data_mode` informado no pedido.
+Um único objeto JSON no formato de `state-schema.md`, com `rules_version: 9` e o `data_mode` informado no pedido.
 
 Antes de escrever a proposta, avalie o insumo (`input_assessment`) e o encaixe no catálogo (`catalog_fit`). Quando o insumo não basta ou o pedido está fora do catálogo, o resultado correto é o bloqueio, com as perguntas ou a lacuna declaradas, e não uma proposta.
 
@@ -23,6 +23,7 @@ Antes de escrever a proposta, avalie o insumo (`input_assessment`) e o encaixe n
 2. O validador devolve as violações. Corrija e submeta de novo.
 3. O limite é de 3 submissões por execução; a quarta é recusada. Se a terceira ainda tiver violações, pare e entregue como está.
 4. Só o `validate_attempt.py` conta como submissão. Não importe nem execute o validador por outro caminho.
+5. O validador é uma caixa-preta: as regras estão na skill, e as violações vêm nas mensagens dele. Não leia código-fonte.
 
 Uma proposta bloqueada por uma decisão que só a POPULOS ou o cliente podem tomar é um resultado legítimo. Não force uma decisão para passar no validador.
 

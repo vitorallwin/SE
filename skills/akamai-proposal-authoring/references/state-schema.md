@@ -1,4 +1,4 @@
-# Proposal state schema (rules v8)
+# Proposal state schema (rules v9)
 
 The author produces one JSON object. The validator (`scripts/validate_attempt.py`) checks the rules; the compositor maps the fields below into fixed slots of the approved template. Text fields are client-facing Portuguese unless noted. Values in angle brackets are placeholders, not examples to copy.
 
@@ -6,7 +6,7 @@ The author produces one JSON object. The validator (`scripts/validate_attempt.py
 
 | Field | Type | Notes |
 |---|---|---|
-| `rules_version` | int | Must be `8`. |
+| `rules_version` | int | Must be `9`. |
 | `data_mode` | `"test"` or `"production"` | Marks where the data comes from. It never relaxes a check. |
 | `client_name`, `opportunity`, `code`, `opportunity_id` | string | `code` names the output file. |
 
@@ -21,9 +21,10 @@ Both fields are required and are checked before any other rule.
 
 - `client_scope`: `{ "type": <engagement the client asked for>, "excludes_implementation": bool, "source": <quote/reference from the source material>, "forbidden_in_committed": [<terms the committed phase may not require, e.g. production-only actions>] }`.
 - `governance`: object keyed by decision. Required keys: `engagement_type` (`assessment`, `design`, `implementation`, `phased`), `warranty`, `license_supply`, `sla`. Estimate decisions use a key ending in `_estimate`.
-- Each decision: `{ "state": "commitment" | "populos_internal_decision", "value", "approved_value", "source", "approved_by", "approved_at" (YYYY-MM-DD), "approval_record", "mode", "engagement_ref", "approver_role" (estimates), }`.
+- Each decision: `{ "state": "commitment" | "populos_internal_decision", "value", "approved_value", "source", "approved_by", "approved_at" (YYYY-MM-DD), "approval_record", "mode", "engagement_ref", "approver_role" (estimates), "approval_quote" }`.
   - A decision is `commitment` only when the source material contains an explicit approval: who, when, and where it is recorded (`approval_record`). Otherwise keep `populos_internal_decision` with `value: null`; emission then blocks, which is the correct outcome.
   - `approved_value` equals `value`. `engagement_ref` equals the current `engagement_type` value.
+  - `approval_quote` is a verbatim excerpt of the source material that records the approval: it names the decision, the approver and the approved value (for a table, the whole row). The validator looks for it in the source material; an approval that is not written there does not exist.
   - An institutional standard (such as the fixed SLA table) is not approved per case: use `{ "state": "commitment", "basis": "populos_standard", "value", "source", "template_version": <current template version> }`, without approver fields.
   - The engine decides where the institutional SLA table applies. For an engagement type outside that list, the case needs an approved decision `sla_applicability` (a commitment whose `value` lists the engagement types). Without it, emission blocks as an internal decision; do not create it without an explicit approval in the source material.
 

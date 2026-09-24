@@ -46,8 +46,11 @@ def _client_visible_texts(proposal: dict[str, Any]) -> Iterable[str]:
     yield from proposal.get("assumptions", [])
 
 
-def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
-    """Return every violation of the v5 fidelity and integrity rules (empty list = compliant)."""
+def validate_proposal_rules(proposal: dict[str, Any], source_text: str | None = None) -> list[str]:
+    """Return every violation of the v5 fidelity and integrity rules (empty list = compliant).
+
+    `source_text` is the extracted source material; from rules v9 on, case approvals are checked against it.
+    """
     gate = _pre_proposal_gate(proposal)
     if gate is not None:
         return gate
@@ -166,10 +169,12 @@ def validate_proposal_rules(proposal: dict[str, Any]) -> list[str]:
         errors.extend(_validate_rules_v7(proposal))
     if int(proposal.get("rules_version", 0) or 0) >= 8:
         errors.extend(_validate_rules_v8(proposal))
+    if int(proposal.get("rules_version", 0) or 0) >= 9 and source_text is not None:
+        errors.extend(_validate_approval_quotes(proposal, source_text))
     return errors
 
 
-LATEST_RULES_VERSION = 8
+LATEST_RULES_VERSION = 9
 DATA_MODES = {"test", "production"}
 # Prefixos normalizados (sem acento, minúsculos): aceitam "Arquiteto", "arquiteta", "Engenheira de redes"...
 _TECHNICAL_ROLE_PREFIXES = ("arquitet", "engenh", "delivery", "pre-vendas tecnic", "pre vendas tecnic", "presales tecnic")
@@ -487,6 +492,53 @@ def _validate_rules_v8(proposal: dict[str, Any]) -> list[str]:
         errors.append(
             f"decisão interna aberta: sla_applicability (a tabela institucional de SLA não está prevista para '{engagement}')"
         )
+    return errors
+
+
+# Palavra que a citação da aprovação precisa conter, por decisão: impede citar a linha de outra decisão.
+_APPROVAL_TOPICS = {
+    "warranty": ("garantia",),
+    "license_supply": ("licen",),
+    "engagement_type": ("engajamento", "engagement"),
+    "sla_applicability": ("sla",),
+}
+_ESTIMATE_TOPICS = ("estimativa", "semana")
+MIN_QUOTE_LENGTH = 15
+
+
+def _quote_text(value: Any) -> str:
+    """Normalized text for quote matching: table pipes and markup never decide a match."""
+    text = re.sub(r"[|*_`>#]", " ", str(value or ""))
+    return normalize_document_text(text)
+
+
+def _validate_approval_quotes(proposal: dict[str, Any], source_text: str) -> list[str]:
+    """v9: a case approval exists only if the source material says so, literally.
+
+    Every committed case decision cites `approval_quote`, a verbatim excerpt of the source material
+    that names the decision topic and the approver. An approval absent from the material blocks.
+    """
+    errors: list[str] = []
+    source = _quote_text(source_text)
+    for key, decision in proposal.get("governance", {}).items():
+        if decision.get("state") != "commitment" or is_populos_standard(decision):
+            continue
+        quote = _quote_text(decision.get("approval_quote"))
+        if len(quote) < MIN_QUOTE_LENGTH:
+            errors.append(f"aprovação sem citação literal do insumo (approval_quote): {key}")
+            continue
+        if quote not in source:
+            errors.append(f"aprovação citada não existe no insumo (approval_quote): {key}")
+            continue
+        topics = _ESTIMATE_TOPICS if key.endswith("_estimate") else _APPROVAL_TOPICS.get(key, ())
+        if topics and not any(topic in quote for topic in topics):
+            errors.append(f"citação da aprovação não trata desta decisão ({'/'.join(topics)}): {key}")
+        value = decision.get("approved_value", decision.get("value"))
+        if isinstance(value, str) and _quote_text(value) not in quote:
+            errors.append(f"valor aprovado não aparece na citação do insumo: {key}")
+        approver = _quote_text(str(decision.get("approved_by", "")).split("(")[0]).split(" ")[0]
+        if approver and approver not in quote:
+            errors.append(f"citação da aprovação não nomeia o aprovador ({decision.get('approved_by')}): {key}")
     return errors
 
 
